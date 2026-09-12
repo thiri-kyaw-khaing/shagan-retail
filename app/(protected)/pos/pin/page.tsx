@@ -1,7 +1,7 @@
 import React from "react";
 
 function StaffPin() {
-  return <div>StaffPin</div>;
+  return <div>StaffPin + panel</div>;
 }
 
 export default StaffPin;
