@@ -33,7 +33,6 @@ function OpenShift() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-page px-4 py-8">
       <div className="bg-background p-6 sm:p-8 rounded-lg shadow-md w-full max-w-sm">
-        {/* <PinDots total={4} current={pin.length} /> */}
         {/* Logo + Branch Info */}
         <div className="flex flex-col items-center gap-3 sm:gap-4 mb-2">
           <Logo icon={<Monitor />} className="h-10 w-10 sm:h-12 sm:w-12" />
