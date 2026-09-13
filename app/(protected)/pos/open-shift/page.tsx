@@ -1,12 +1,12 @@
 "use client";
 import NumPad from "@/components/custom/common/numpad";
-import Logo from "@/components/custom/logo/logo";
 import FormInput from "@/components/custom/common/forms/form-input";
 import CustomButton from "@/components/custom/common/custom-button";
 import { Form } from "@/components/ui/form";
-import { Monitor } from "lucide-react";
+import { ArrowLeft, Monitor } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import Logo from "@/components/custom/logo/logo";
 
 type OpenShiftFormValues = {
   cash: string;
@@ -33,6 +33,12 @@ function OpenShift() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-page px-4 py-8">
       <div className="bg-background p-6 sm:p-8 rounded-lg shadow-md w-full max-w-sm">
+        {/* <PinDots total={4} current={pin.length} /> */}
+        <CustomButton
+          icon={ArrowLeft}
+          onClick={() => router.back()}
+          className="size-11 rounded-xl bg-transparent p-0 text-slate-600 shadow-none hover:bg-rose-50 hover:text-rose-600 focus-visible:ring-2 focus-visible:ring-rose-500"
+        />
         {/* Logo + Branch Info */}
         <div className="flex flex-col items-center gap-3 sm:gap-4 mb-2">
           <Logo icon={<Monitor />} className="h-10 w-10 sm:h-12 sm:w-12" />
@@ -67,6 +73,7 @@ function OpenShift() {
             <CustomButton
               label="Open Shift"
               type="submit"
+              disabled={cash === "0"}
               className="mt-4 h-11 w-full bg-brand hover:bg-brand/90 text-base font-semibold sm:text-sm"
             />
           </form>
