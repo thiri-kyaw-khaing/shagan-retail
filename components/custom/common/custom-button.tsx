@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type CustomButtonProps = {
   label?: string;
@@ -14,7 +15,7 @@ export default function CustomButton({
   label,
   onClick,
   icon: Icon,
-  className = "",
+  className,
   type = "button",
   disabled,
 }: CustomButtonProps) {
@@ -23,9 +24,12 @@ export default function CustomButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center justify-center text-white transition hover:opacity-90 ${className}`}
+      className={cn(
+        "flex items-center justify-center text-white transition hover:brightness-110",
+        className,
+      )}
     >
-      <h1>{label}</h1>
+      <span>{label}</span>
       {Icon && <Icon className="h-5 w-5" />}
     </Button>
   );
