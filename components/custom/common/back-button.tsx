@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+
 interface BackButtonProps {
   /**
    * Where "Back" navigates to. Always used directly rather than falling back
@@ -12,14 +12,14 @@ interface BackButtonProps {
   fallbackHref?: string;
   /** Optional style override; defaults to the primary button style. */
   className?: string;
-  /** Button icon. */
-  icon?: React.ReactNode;
+  /** Button label. */
+  label?: string;
 }
 
 function BackButton({
   fallbackHref = "/staff",
   className,
-  icon = <ArrowLeft />,
+  label = "Back",
 }: BackButtonProps) {
   const router = useRouter();
 
@@ -33,10 +33,10 @@ function BackButton({
       onClick={backFunction}
       className={
         className ??
-        "rounded-lg bg-primary-button px-4 py-2 text-sm text-black hover:outline"
+        "rounded-lg bg-primary-button px-4 py-2 text-sm text-white hover:border-amber-100 hover:border-2"
       }
     >
-      {icon}
+      {label}
     </button>
   );
 }
