@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/static-components */
 // components/custom/pos/numpad.tsx
 "use client";
 
