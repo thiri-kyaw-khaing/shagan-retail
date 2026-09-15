@@ -1,31 +1,8 @@
 "use client";
 
-import {
-  Grid2X2,
-  Utensils,
-  CupSoda,
-  House,
-  PackageCheck,
-  type LucideIcon,
-} from "lucide-react";
 import CustomButton from "@/components/custom/common/custom-button";
+import { categories, type CategoryId } from "@/lib/types/model/categories";
 import { cn } from "@/lib/utils";
-
-export type CategoryId = number | null;
-
-type Category = {
-  id: CategoryId;
-  label: string;
-  icon: LucideIcon;
-};
-
-const categories: Category[] = [
-  { id: null, label: "All", icon: Grid2X2 },
-  { id: 1, label: "Food", icon: Utensils },
-  { id: 2, label: "Drink", icon: CupSoda },
-  { id: 3, label: "Household", icon: House },
-  { id: 4, label: "Combos", icon: PackageCheck },
-];
 
 type CategoryTabsProps = {
   selected: CategoryId;

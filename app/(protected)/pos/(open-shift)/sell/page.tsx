@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import CategoryTabs, {
-  type CategoryId,
-} from "@/components/custom/pos/category-tabs";
+import CategoryTabs from "@/components/custom/pos/category-tabs";
 import React from "react";
+import { CategoryId } from "@/lib/types/model/categories";
 
 function ProductTilesDashboard() {
   const [selectedCategoryId, setSelectedCategoryId] =
