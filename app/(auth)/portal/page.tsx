@@ -14,7 +14,7 @@ function UserPortalPage() {
         <p className="text-muted-foreground">Choose a portal to continue</p>
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <PortalCard
-            href="/pos/pin"
+            href="/pos/select-staff"
             icon={<Monitor />}
             title="POS"
             subtitle="Sales & Transactions"
