@@ -1,23 +1,43 @@
 "use client";
 
-import { useState } from "react";
-import CategoryTabs from "@/components/custom/pos/category-tabs";
-import React from "react";
-import { CategoryId } from "@/lib/types/model/categories";
+import { useMemo, useState } from "react";
 
-function ProductTilesDashboard() {
+import CategoryTabs from "@/components/custom/pos/category-tabs";
+import ProductGrid from "@/components/custom/pos/product-grid";
+import { products } from "@/lib/types/model/product";
+import type { CategoryId } from "@/lib/types/model/categories";
+import type { Product } from "@/lib/types/model/product";
+
+type ProductTilesDashboardProps = {
+  onSelectProduct: (product: Product) => void;
+};
+
+export default function ProductTilesDashboard({
+  onSelectProduct,
+}: ProductTilesDashboardProps) {
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<CategoryId>(null);
 
+  const filteredProducts = useMemo(() => {
+    return products.filter(
+      (product) =>
+        product.isActive &&
+        (selectedCategoryId === null ||
+          product.categoryId === selectedCategoryId),
+    );
+  }, [selectedCategoryId]);
+
   return (
-    <div>
+    <section className="min-w-0 bg-slate-50">
       <CategoryTabs
         selected={selectedCategoryId}
         onSelect={setSelectedCategoryId}
       />
-      <div>ProductTilesDashboard</div>
-    </div>
+
+      <ProductGrid
+        products={filteredProducts}
+        onSelectProduct={onSelectProduct}
+      />
+    </section>
   );
 }
-
-export default ProductTilesDashboard;
