@@ -1,0 +1,27 @@
+[
+  {
+    "id": null,
+    "label": "All",
+    "icon": "grid"
+  },
+  {
+    "id": 1,
+    "label": "Food",
+    "icon": "food"
+  },
+  {
+    "id": 2,
+    "label": "Drink",
+    "icon": "drink"
+  },
+  {
+    "id": 3,
+    "label": "Household",
+    "icon": "household"
+  },
+  {
+    "id": 4,
+    "label": "Combos",
+    "icon": "combos"
+  }
+]
