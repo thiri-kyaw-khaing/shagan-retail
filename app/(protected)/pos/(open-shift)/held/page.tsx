@@ -1,8 +1,12 @@
+import HeldSaleComponent from "@/components/custom/common/pos/held-sale";
 import React from "react";
-import page from "../sell/page";
 
-function Held() {
-  return <div>Held page</div>;
+function HeldPage() {
+  return (
+    <div className="min-h-screen bg-rose-50 p-15 sm:p-5">
+      <HeldSaleComponent />
+    </div>
+  );
 }
 
-export default Held;
+export default HeldPage;

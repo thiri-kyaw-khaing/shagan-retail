@@ -3,6 +3,8 @@
 import { Card } from "@/components/ui/card";
 import BackButton from "@/components/custom/common/back-button";
 import StaffCard from "@/components/custom/pos/staff-card";
+import CustomButton from "@/components/custom/common/custom-button";
+import StaffCard from "@/components/custom/common/pos/staff-card";
 import { staffs } from "@/lib/types/model/staffs";
 
 function SelectStaffPage() {
