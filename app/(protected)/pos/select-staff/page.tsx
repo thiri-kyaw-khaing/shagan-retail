@@ -1,24 +1,18 @@
 "use client";
 
-import { ChevronLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
+import BackButton from "@/components/custom/common/back-button";
+import StaffCard from "@/components/custom/pos/staff-card";
 import CustomButton from "@/components/custom/common/custom-button";
 import StaffCard from "@/components/custom/common/pos/staff-card";
 import { staffs } from "@/lib/types/model/staffs";
 
 function SelectStaffPage() {
-  const router = useRouter();
-
   return (
     <div className="flex min-h-dvh items-center justify-center bg-page px-4 py-10">
       <Card size="sm" className="w-full max-w-xl p-6 sm:p-10">
         <div className="text-center">
-          <CustomButton
-            icon={ChevronLeft}
-            onClick={() => router.back()}
-            className="bg-transparent p-2 text-ink hover:bg-transparent hover:opacity-70"
-          />
+          <BackButton href="/portal" />
 
           <h1 className="mt-6 text-2xl font-bold text-ink sm:text-3xl">
             Select your name to continue

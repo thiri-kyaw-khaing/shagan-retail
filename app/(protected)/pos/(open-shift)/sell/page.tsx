@@ -9,17 +9,29 @@ import ProductGrid from "@/components/custom/common/pos/product-grid";
 import ProductSearchBar from "@/components/custom/common/pos/search-bar";
 import NumPad from "@/components/custom/common/numpad";
 import CustomButton from "@/components/custom/common/custom-button";
+import { Input } from "@/components/ui/input";
+
 import { products } from "@/lib/types/model/product";
 import type { CartItemData } from "@/lib/types/model/cart";
 import type { CategoryId } from "@/lib/types/model/categories";
 import type { Product } from "@/lib/types/model/product";
+import { useLocale } from "@/lib/i18n/locale-context";
+import { formatCurrency } from "@/lib/i18n/format";
+import { cn } from "@/lib/utils";
 import { usePos } from "@/components/custom/common/pos/pos-context";
 
 export default function SellPage() {
+  const { locale } = useLocale();
+
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<CategoryId>(null);
 
   const [search, setSearch] = useState("");
+  const [cart, setCart] = useState<CartItemData[]>([]);
+
+  const [isDiscountPanelOpen, setIsDiscountPanelOpen] = useState(false);
+  const [discountPercentInput, setDiscountPercentInput] = useState("");
+  const [appliedDiscountPercent, setAppliedDiscountPercent] = useState(0);
   const { cart, setCart, holdCurrentCart } = usePos();
   const [numpadValue, setNumpadValue] = useState("");
 
@@ -92,6 +104,18 @@ export default function SellPage() {
     0,
   );
 
+  const discountAmount = Math.round((subtotal * appliedDiscountPercent) / 100);
+
+  const total = subtotal - discountAmount;
+
+  const applyDiscount = () => {
+    const parsed = Number(discountPercentInput);
+    const clamped = Number.isFinite(parsed)
+      ? Math.min(Math.max(parsed, 0), 100)
+      : 0;
+
+    setAppliedDiscountPercent(clamped);
+    setIsDiscountPanelOpen(false);
   const total = subtotal;
   const handleHold = () => {
     if (cart.length === 0) return;
@@ -178,41 +202,66 @@ export default function SellPage() {
             <div className="space-y-2 px-5 py-4">
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal</span>
-                <span>K {subtotal.toLocaleString()}</span>
+                <span>{formatCurrency(subtotal, locale)}</span>
               </div>
 
-              <div className="flex justify-between text-slate-600">
-                <span>Discount</span>
-                <span>None</span>
-              </div>
+              {appliedDiscountPercent > 0 && (
+                <div className="flex justify-between text-rose-600">
+                  <span>Discount ({appliedDiscountPercent}%)</span>
+                  <span>− {formatCurrency(discountAmount, locale)}</span>
+                </div>
+              )}
 
               <div className="flex justify-between border-t pt-3 text-xl font-bold">
                 <span>Total</span>
 
                 <span className="text-rose-900">
-                  K {total.toLocaleString()}
+                  {formatCurrency(total, locale)}
                 </span>
               </div>
             </div>
 
-            {/* Qty, discount and price controls */}
-            <div className="grid grid-cols-3 gap-2 px-4 pb-2">
-              {["Qty", "% Disc", "Price"].map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  className="min-h-11 rounded-lg bg-slate-100 font-semibold"
-                >
-                  {label}
-                </button>
-              ))}
+            {/* Discount input*/}
+            {isDiscountPanelOpen && (
+              <div className="flex items-center gap-2 px-4 pb-2">
+                <span className="shrink-0 text-sm font-bold text-rose-800">
+                  DISC %
+                </span>
+
+                <Input
+                  readOnly
+                  value={discountPercentInput}
+                  className="text-right font-semibold"
+                />
+
+                <CustomButton
+                  label="Apply"
+                  onClick={applyDiscount}
+                  className="min-h-11 shrink-0 bg-brand px-6 font-semibold text-white"
+                />
+              </div>
+            )}
+
+            {/* Discount toggle */}
+            <div className="px-4 pb-2">
+              <CustomButton
+                label="% Disc"
+                onClick={() => setIsDiscountPanelOpen((open) => !open)}
+                className={cn(
+                  "min-h-11 px-6 font-semibold",
+                  isDiscountPanelOpen
+                    ? "bg-brand text-white"
+                    : "bg-slate-100 text-slate-900 hover:bg-brand/50 border border-slate-200",
+                )}
+              />
             </div>
 
+            {/* Numpad — always visible, drives the discount input above */}
             {/* numpad */}
             <div className="px-4">
               <NumPad
-                value={numpadValue}
-                onChange={setNumpadValue}
+                value={discountPercentInput}
+                onChange={setDiscountPercentInput}
                 mode="pos"
               />
             </div>
