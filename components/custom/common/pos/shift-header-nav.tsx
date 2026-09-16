@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { History, Pause, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n/use-translation";
+import { usePos } from "@/components/custom/common/pos/pos-context";
 
 type ShiftHeaderNavProps = {
   heldCount?: number;
@@ -22,6 +23,8 @@ const NAV_ITEMS = [
 ] as const;
 
 export default function ShiftHeaderNav({ heldCount = 0 }: ShiftHeaderNavProps) {
+  const { heldSales } = usePos();
+
   const pathname = usePathname();
   const { t } = useTranslation();
 

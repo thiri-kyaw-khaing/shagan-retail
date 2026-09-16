@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import CustomButton from "@/components/custom/common/custom-button";
-import StaffCard from "@/components/custom/pos/staff-card";
+import StaffCard from "@/components/custom/common/pos/staff-card";
 import { staffs } from "@/lib/types/model/staffs";
 
 function SelectStaffPage() {

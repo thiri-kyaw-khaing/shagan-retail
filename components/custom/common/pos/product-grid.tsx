@@ -1,4 +1,4 @@
-import ProductCard from "@/components/custom/pos/product-card";
+import ProductCard from "@/components/custom/common/pos/product-card";
 import type { Product } from "@/lib/types/model/product";
 
 type ProductGridProps = {
