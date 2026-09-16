@@ -3,27 +3,24 @@
 import { useMemo, useState } from "react";
 import { ArrowRight, CircleUserRound, ShoppingBag } from "lucide-react";
 
-import CartItem from "@/components/custom/pos/cart-item";
-import CategoryTabs from "@/components/custom/pos/category-tabs";
-import ProductGrid from "@/components/custom/pos/product-grid";
+import CartItem from "@/components/custom/common/pos/cart-item";
+import CategoryTabs from "@/components/custom/common/pos/category-tabs";
+import ProductGrid from "@/components/custom/common/pos/product-grid";
 import ProductSearchBar from "@/components/custom/common/pos/search-bar";
 import NumPad from "@/components/custom/common/numpad";
 import CustomButton from "@/components/custom/common/custom-button";
-
-// Replace this import with your team's real header component.
-import ShiftHeader from "@/components/custom/common/pos/shift-header";
-
 import { products } from "@/lib/types/model/product";
 import type { CartItemData } from "@/lib/types/model/cart";
 import type { CategoryId } from "@/lib/types/model/categories";
 import type { Product } from "@/lib/types/model/product";
+import { usePos } from "@/components/custom/common/pos/pos-context";
 
 export default function SellPage() {
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<CategoryId>(null);
 
   const [search, setSearch] = useState("");
-  const [cart, setCart] = useState<CartItemData[]>([]);
+  const { cart, setCart, holdCurrentCart } = usePos();
   const [numpadValue, setNumpadValue] = useState("");
 
   const filteredProducts = useMemo(() => {
@@ -96,12 +93,14 @@ export default function SellPage() {
   );
 
   const total = subtotal;
+  const handleHold = () => {
+    if (cart.length === 0) return;
+
+    holdCurrentCart("Walk-in", null);
+  };
 
   return (
     <main className="flex h-dvh min-h-0 flex-col overflow-hidden bg-slate-50">
-      {/* Existing component created by your teammate */}
-      {/* <ShiftHeader /> */}
-
       {/* Main workspace */}
       <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1.7fr)_minmax(380px,1fr)]">
         {/* LEFT SIDE */}
@@ -148,7 +147,7 @@ export default function SellPage() {
             </button>
           </div>
 
-          {/* Your cart-item component */}
+          {/* cart-item component */}
           <div className="min-h-0 flex-1 overflow-y-auto">
             {cart.length === 0 ? (
               <div className="flex h-full min-h-52 flex-col items-center justify-center text-center">
@@ -174,7 +173,6 @@ export default function SellPage() {
             )}
           </div>
 
-          {/* Components below this point can be managed by your friend */}
           <div className="shrink-0 border-t bg-slate-50">
             {/* Totals */}
             <div className="space-y-2 px-5 py-4">
@@ -210,7 +208,7 @@ export default function SellPage() {
               ))}
             </div>
 
-            {/* Existing numpad */}
+            {/* numpad */}
             <div className="px-4">
               <NumPad
                 value={numpadValue}
@@ -223,7 +221,9 @@ export default function SellPage() {
             <div className="grid grid-cols-[1fr_2fr] gap-2 p-4">
               <CustomButton
                 label="Hold"
-                className="min-h-12 bg-slate-100 text-slate-600"
+                onClick={handleHold}
+                disabled={cart.length === 0}
+                className="min-h-12 bg-slate-200 text-slate-600  hover:bg-slate-400"
               />
 
               <CustomButton
