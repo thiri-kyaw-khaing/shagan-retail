@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowRight, CircleUserRound, ShoppingBag } from "lucide-react";
+import { CircleUserRound, ShoppingBag } from "lucide-react";
 
 import CartItem from "@/components/custom/common/pos/cart-item";
 import CategoryTabs from "@/components/custom/common/pos/category-tabs";
@@ -27,7 +27,6 @@ export default function SellPage() {
     useState<CategoryId>(null);
 
   const [search, setSearch] = useState("");
-  const [cart, setCart] = useState<CartItemData[]>([]);
 
   const [isDiscountPanelOpen, setIsDiscountPanelOpen] = useState(false);
   const [discountPercentInput, setDiscountPercentInput] = useState("");
@@ -116,7 +115,8 @@ export default function SellPage() {
 
     setAppliedDiscountPercent(clamped);
     setIsDiscountPanelOpen(false);
-  const total = subtotal;
+  };
+
   const handleHold = () => {
     if (cart.length === 0) return;
 
@@ -257,7 +257,6 @@ export default function SellPage() {
             </div>
 
             {/* Numpad — always visible, drives the discount input above */}
-            {/* numpad */}
             <div className="px-4">
               <NumPad
                 value={discountPercentInput}
@@ -273,13 +272,6 @@ export default function SellPage() {
                 onClick={handleHold}
                 disabled={cart.length === 0}
                 className="min-h-12 bg-slate-200 text-slate-600  hover:bg-slate-400"
-              />
-
-              <CustomButton
-                label="Payment"
-                icon={ArrowRight}
-                disabled={cart.length === 0}
-                className="min-h-12 bg-brand font-semibold text-white disabled:bg-rose-200"
               />
             </div>
           </div>
