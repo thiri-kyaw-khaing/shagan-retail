@@ -1,44 +1,26 @@
 "use client";
 
+import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import CustomButton from "./custom-button";
 
-interface BackButtonProps {
-  /**
-   * Where "Back" navigates to. Always used directly rather than falling back
-   * to router.back() — window.history.length reflects the whole tab's
-   * browsing history, not just in-app navigation, so it's not a reliable way
-   * to tell whether "back" has a sensible in-app destination.
-   */
-  fallbackHref?: string;
-  /** Optional style override; defaults to the primary button style. */
+type BackButtonProps = {
+  href: string;
   className?: string;
-  /** Button label. */
-  label?: string;
-}
+};
 
-function BackButton({
-  fallbackHref = "/staff",
-  className,
-  label = "Back",
-}: BackButtonProps) {
+export default function BackButton({ href, className }: BackButtonProps) {
   const router = useRouter();
 
-  const backFunction = () => {
-    router.push(fallbackHref);
-  };
-
   return (
-    <button
-      type="button"
-      onClick={backFunction}
-      className={
-        className ??
-        "rounded-lg bg-primary-button px-4 py-2 text-sm text-white hover:border-amber-100 hover:border-2"
-      }
-    >
-      {label}
-    </button>
+    <CustomButton
+      icon={ChevronLeft}
+      onClick={() => router.push(href)}
+      className={cn(
+        "bg-transparent p-2 text-ink hover:bg-transparent hover:opacity-70",
+        className,
+      )}
+    />
   );
 }
-
-export default BackButton;
