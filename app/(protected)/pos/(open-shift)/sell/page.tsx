@@ -131,7 +131,11 @@ export default function SellPage() {
         <section className="flex min-h-0 min-w-0 flex-col border-r border-slate-200">
           {/* Existing search component */}
           <div className="shrink-0 border-b bg-white p-4">
-            <ProductSearchBar value={search} onChange={setSearch} />
+            <ProductSearchBar
+              value={search}
+              onChange={setSearch}
+              placeholder="Scan barcode or search products"
+            />
           </div>
 
           {/* Your category component */}
