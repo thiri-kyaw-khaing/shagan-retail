@@ -19,14 +19,14 @@ export default function ShiftHeader({
   hasMoreAlert = false,
 }: ShiftHeaderProps) {
   return (
-    <header className="flex items-center justify-between gap-4 bg-brand px-6 py-3">
+    <header className="flex flex-col gap-3 bg-brand px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
       <ShiftHeaderBrand
         storeName={storeName}
         branchName={branchName}
         time={time}
       />
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-2 sm:justify-end sm:gap-3">
         <ShiftHeaderNav heldCount={heldSales.length} />
         <ShiftHeaderActions hasAlert={hasMoreAlert} />
       </div>

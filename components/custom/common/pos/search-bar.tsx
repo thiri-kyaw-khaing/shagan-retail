@@ -14,7 +14,7 @@ type ProductSearchBarProps = {
 export default function ProductSearchBar({
   value,
   onChange,
-  placeholder = "Scan barcode or search product...",
+  placeholder,
   className,
 }: ProductSearchBarProps) {
   return (

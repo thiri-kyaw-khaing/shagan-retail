@@ -29,7 +29,7 @@ export default function ShiftHeaderNav({ heldCount = 0 }: ShiftHeaderNavProps) {
   const { t } = useTranslation();
 
   return (
-    <nav className="flex items-center gap-2">
+    <nav className="flex items-center gap-1.5 sm:gap-2">
       {NAV_ITEMS.map(({ id, href, labelKey, icon: Icon }) => {
         const isActive = pathname.startsWith(href);
         const count = id === "held" ? heldCount : 0;
@@ -39,14 +39,14 @@ export default function ShiftHeaderNav({ heldCount = 0 }: ShiftHeaderNavProps) {
             key={href}
             href={href}
             className={cn(
-              "relative flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition",
+              "relative flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-semibold transition sm:px-3",
               isActive
                 ? "bg-white text-brand"
                 : "bg-white/15 text-white hover:bg-white/25",
             )}
           >
             <Icon className="h-4 w-4" />
-            {t(labelKey)}
+            <span className="hidden sm:inline">{t(labelKey)}</span>
             {count > 0 && (
               <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-dark text-[10px] font-bold text-white">
                 {count}
