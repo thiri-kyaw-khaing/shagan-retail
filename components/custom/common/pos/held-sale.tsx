@@ -1,11 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import BackButton from "@/components/custom/common/back-button";
 import CustomButton from "@/components/custom/common/custom-button";
-import { HeldSale, heldSales } from "@/lib/types/model/heldsale";
 import { usePos } from "./pos-context";
 
 export default function HeldSaleComponent() {
@@ -25,10 +25,9 @@ export default function HeldSaleComponent() {
       <Card className="gap-0 overflow-hidden rounded-xl border-0 py-0 shadow-md">
         {/* Rose header */}
         <CardHeader className="flex flex-row items-center gap-5 bg-brand px-4 py-4 text-white sm:px-8">
-          <CustomButton
-            icon={ArrowLeft}
-            onClick={() => router.push("/pos/sell")}
-            className="size-11 shrink-0 bg-transparent p-0 text-white shadow-none hover:bg-white/15"
+          <BackButton
+            href="/pos/sell"
+            className="size-11 shrink-0 p-0 text-white hover:bg-white/15"
           />
 
           <div>
