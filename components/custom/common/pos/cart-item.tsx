@@ -1,7 +1,6 @@
 import Image from "next/image";
-import { Minus, Plus } from "lucide-react";
 
-import CustomButton from "@/components/custom/common/custom-button";
+import QuantityStepper from "@/components/custom/common/quantity-stepper";
 import type { CartItemData } from "@/lib/types/model/cart";
 
 type CartItemProps = {
@@ -34,24 +33,14 @@ export default function CartItem({
       <div className="min-w-0 flex-1">
         <h3 className="truncate font-semibold text-slate-900">{item.name}</h3>
 
-        <div className="mt-2 flex items-center gap-3">
-          <CustomButton
-            icon={Minus}
-            onClick={() => onDecrease(item.productId)}
-            className="size-11 rounded-lg bg-slate-100 p-0 text-slate-600 shadow-none hover:bg-slate-200"
-          />
-
-          <span
-            className="min-w-6 text-center font-semibold text-slate-900"
-            aria-label={`Quantity ${item.quantity}`}
-          >
-            {item.quantity}
-          </span>
-
-          <CustomButton
-            icon={Plus}
-            onClick={() => onIncrease(item.productId)}
-            className="size-11 rounded-lg bg-slate-100 p-0 text-slate-600 shadow-none hover:bg-slate-200"
+        <div className="mt-2">
+          <QuantityStepper
+            value={item.quantity}
+            min={0}
+            onChange={(next) => {
+              if (next > item.quantity) onIncrease(item.productId);
+              else onDecrease(item.productId);
+            }}
           />
         </div>
       </div>

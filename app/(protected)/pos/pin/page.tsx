@@ -9,6 +9,7 @@ import NumPad, { PinDots } from "@/components/custom/common/numpad";
 import { DeviceStatusCard } from "@/components/custom/common/device-status-card";
 import { StockAlertsCard } from "@/components/custom/common/stock-alerts-card";
 import CustomButton from "@/components/custom/common/custom-button";
+import BackButton from "@/components/custom/common/back-button";
 
 export default function StaffPin() {
   const router = useRouter();
@@ -36,10 +37,9 @@ export default function StaffPin() {
         {/* PIN section */}
         <section className="relative rounded-2xl bg-white p-6 shadow-md sm:p-10 lg:min-h-[700px]">
           {/* Back button */}
-          <CustomButton
-            icon={ArrowLeft}
-            onClick={() => router.back()}
-            className="size-11 rounded-xl bg-transparent p-0 text-slate-600 shadow-none hover:bg-rose-50 hover:text-rose-600 focus-visible:ring-2 focus-visible:ring-rose-500"
+          <BackButton
+            href="/pos/select-staff"
+            className="absolute left-6 top-6"
           />
 
           {/* PIN content */}
