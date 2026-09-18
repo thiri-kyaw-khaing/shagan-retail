@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 type SummaryRow = {
   label: ReactNode;
   value: ReactNode;
-  /** Bolds the label, enlarges/colors the value, and adds a divider above the row. */
   emphasize?: boolean;
 };
 
@@ -23,10 +22,6 @@ export default function SummaryCard({ rows, className }: SummaryCardProps) {
     >
       {rows.map((row, index) => (
         <Fragment key={index}>
-          <dt className="text-ink-muted">{row.label}</dt>
-          <dd className="text-right font-semibold text-ink">{row.value}</dd>
-      {rows.map((row) => (
-        <Fragment key={row.label}>
           <dt
             className={cn(
               row.emphasize
@@ -36,6 +31,7 @@ export default function SummaryCard({ rows, className }: SummaryCardProps) {
           >
             {row.label}
           </dt>
+
           <dd
             className={cn(
               "text-right",
