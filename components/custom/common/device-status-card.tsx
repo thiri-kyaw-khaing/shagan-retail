@@ -1,7 +1,12 @@
-import { Printer, ScanLine } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
 
-const devices = [
+import { useState } from "react";
+import { Printer, ScanLine, RefreshCw } from "lucide-react";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import CustomButton from "@/components/custom/common/custom-button";
+
+const initialDevices = [
   {
     name: "Receipt Printer",
     status: "Connected",
@@ -19,6 +24,35 @@ const devices = [
 ];
 
 export function DeviceStatusCard() {
+  const [devices, setDevices] = useState(initialDevices);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (refreshing) return;
+
+    setRefreshing(true);
+
+    try {
+      // Temporary UI simulation.
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const checkedAt = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+
+      setDevices((currentDevices) =>
+        currentDevices.map((device) => ({
+          ...device,
+          lastChecked: checkedAt,
+        })),
+      );
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <Card className="rounded-2xl border-0 shadow-md">
       <CardHeader>
@@ -32,7 +66,7 @@ export function DeviceStatusCard() {
           return (
             <div
               key={device.name}
-              className="flex items-center justify-between gap-4 rounded-2xl border p-5"
+              className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5"
             >
               <div className="flex min-w-0 items-center gap-4">
                 <Icon
@@ -58,11 +92,22 @@ export function DeviceStatusCard() {
                   aria-hidden="true"
                   className="size-3 rounded-full bg-current"
                 />
+
                 <span>{device.status}</span>
               </div>
             </div>
           );
         })}
+
+        <CustomButton
+          label={refreshing ? "Checking devices…" : "Refresh Device Status"}
+          icon={RefreshCw}
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className={`min-h-12 w-full rounded-xl border border-rose-200 bg-white font-semibold text-rose-800 shadow-none hover:bg-rose-50 ${
+            refreshing ? "[&_svg]:animate-spin" : ""
+          }`}
+        />
       </CardContent>
     </Card>
   );
