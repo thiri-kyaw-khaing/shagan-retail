@@ -2,7 +2,7 @@ import { Fragment, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type SummaryRow = {
-  label: string;
+  label: ReactNode;
   value: ReactNode;
   /** Bolds the label, enlarges/colors the value, and adds a divider above the row. */
   emphasize?: boolean;
@@ -21,6 +21,10 @@ export default function SummaryCard({ rows, className }: SummaryCardProps) {
         className,
       )}
     >
+      {rows.map((row, index) => (
+        <Fragment key={index}>
+          <dt className="text-ink-muted">{row.label}</dt>
+          <dd className="text-right font-semibold text-ink">{row.value}</dd>
       {rows.map((row) => (
         <Fragment key={row.label}>
           <dt
