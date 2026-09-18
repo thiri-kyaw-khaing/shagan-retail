@@ -19,7 +19,7 @@ export default function ShiftHeader({
   hasMoreAlert = false,
 }: ShiftHeaderProps) {
   return (
-    <header className="flex flex-col gap-3 bg-brand px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
+    <header className="flex flex-col gap-3 bg-brand px-4 py-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:px-6">
       <ShiftHeaderBrand
         storeName={storeName}
         branchName={branchName}
