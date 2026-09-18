@@ -6,7 +6,7 @@ import type { SaleId } from "@/lib/types/model/sales";
 import { cn } from "@/lib/utils";
 
 const actionClass =
-  "rounded-xl border border-slate-200 bg-white py-3 text-sm text-ink hover:border-slate-300 hover:bg-slate-50";
+  "rounded-xl h-12 border border-slate-300 bg-white py-3 text-sm text-ink hover:border-slate-400 hover:bg-slate-50";
 
 export default function ReceiptActions({ saleId }: { saleId: SaleId }) {
   const router = useRouter();
