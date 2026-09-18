@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Globe, MoreHorizontal } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useClickOutside } from "@/lib/hooks/use-click-outside";
 import LanguageMenu from "./language-menu";
 import MoreMenu from "./more-menu";
@@ -13,6 +14,7 @@ type ShiftHeaderActionsProps = {
 };
 
 export default function ShiftHeaderActions({ hasAlert = false }: ShiftHeaderActionsProps) {
+  const router = useRouter();
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -78,7 +80,10 @@ export default function ShiftHeaderActions({ hasAlert = false }: ShiftHeaderActi
       <CloseShiftDialog
         isOpen={isCloseShiftOpen}
         onClose={() => setIsCloseShiftOpen(false)}
-        onConfirm={() => setIsCloseShiftOpen(false)}
+        onConfirm={() => {
+          setIsCloseShiftOpen(false);
+          router.push("/pos/close-shift");
+        }}
       />
     </>
   );
