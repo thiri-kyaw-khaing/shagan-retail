@@ -92,6 +92,15 @@ const zh: typeof en = {
   "sell.viewCart": "查看购物车",
   "sell.itemsSuffix": "件商品",
 
+  "customerDialog.title": "选择客户",
+  "customerDialog.searchPlaceholder": "按姓名或电话搜索...",
+  "customerDialog.createNew": "+ 新建客户",
+  "customerDialog.continueAsWalkIn": "以散客身份继续",
+  "customerDialog.fullNamePlaceholder": "姓名",
+  "customerDialog.phonePlaceholder": "电话号码",
+  "customerDialog.saveAndSelect": "保存并选择",
+  "customerDialog.noResults": "未找到客户",
+
   "category.all": "全部",
   "category.food": "食品",
   "category.drink": "饮品",

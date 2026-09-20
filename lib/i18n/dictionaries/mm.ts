@@ -95,6 +95,15 @@ const mm: typeof en = {
   "sell.viewCart": "လှည်းကိုကြည့်ရန်",
   "sell.itemsSuffix": "ပစ္စည်းများ",
 
+  "customerDialog.title": "ဖောက်သည် ရွေးချယ်ရန်",
+  "customerDialog.searchPlaceholder": "အမည် သို့မဟုတ် ဖုန်းနံပါတ်ဖြင့် ရှာပါ...",
+  "customerDialog.createNew": "+ ဖောက်သည်အသစ် ဖန်တီးရန်",
+  "customerDialog.continueAsWalkIn": "အလွတ်ဝင်ဝယ်သူအဖြစ် ဆက်လက်လုပ်ဆောင်ရန်",
+  "customerDialog.fullNamePlaceholder": "အမည်အပြည့်အစုံ",
+  "customerDialog.phonePlaceholder": "ဖုန်းနံပါတ်",
+  "customerDialog.saveAndSelect": "သိမ်းဆည်း၍ ရွေးချယ်ရန်",
+  "customerDialog.noResults": "ဖောက်သည် မတွေ့ပါ",
+
   "category.all": "အားလုံး",
   "category.food": "အစားအစာ",
   "category.drink": "အချိုရည်",

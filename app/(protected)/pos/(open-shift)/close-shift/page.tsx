@@ -85,7 +85,7 @@ export default function CloseShiftPage() {
             label={t("closeShift.openDrawer")}
             icon={PanelsTopLeft}
             onClick={() => setIsOpenDrawerOpen(true)}
-            className="min-h-11 rounded-xl border border-rose-200 bg-white px-4 text-slate-700 shadow-none hover:bg-rose-100"
+            className="min-h-11 rounded-xl border-2 border-rose-300 bg-white px-4 text-slate-700 shadow-none hover:bg-rose-100"
           />
         </header>
 

@@ -53,7 +53,7 @@ export default function CloseShiftDialog({
           <CustomButton
             label={t("closeShiftDialog.keepOpen")}
             onClick={onClose}
-            className="min-h-11 w-full rounded-xl border border-rose-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-none hover:bg-rose-50"
+            className="min-h-11 w-full rounded-xl border-2 border-rose-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-none hover:bg-rose-50"
           />
 
           <CustomButton

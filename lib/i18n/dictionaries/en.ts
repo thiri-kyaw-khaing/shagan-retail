@@ -91,6 +91,15 @@ const en = {
   "sell.viewCart": "View Cart",
   "sell.itemsSuffix": "items",
 
+  "customerDialog.title": "Choose Customer",
+  "customerDialog.searchPlaceholder": "Search by name or phone...",
+  "customerDialog.createNew": "+ Create new customer",
+  "customerDialog.continueAsWalkIn": "Continue as Walk-in",
+  "customerDialog.fullNamePlaceholder": "Full name",
+  "customerDialog.phonePlaceholder": "Phone number",
+  "customerDialog.saveAndSelect": "Save & Select",
+  "customerDialog.noResults": "No customers found",
+
   "category.all": "All",
   "category.food": "Food",
   "category.drink": "Drink",
