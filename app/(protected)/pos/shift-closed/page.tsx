@@ -4,9 +4,11 @@ import { CircleUserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import CustomButton from "@/components/custom/common/custom-button";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 export default function ShiftClosedPage() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <main className="flex min-h-dvh items-center justify-center overflow-y-auto bg-rose-50 px-4 py-8">
@@ -18,16 +20,18 @@ export default function ShiftClosedPage() {
           />
         </div>
 
-        <h1 className="mt-7 text-3xl font-bold text-slate-900">Shift closed</h1>
+        <h1 className="mt-7 text-3xl font-bold text-slate-900">
+          {t("shiftClosed.title")}
+        </h1>
         <p className="mt-2 text-xl text-slate-600">
-          See you next time, Ma Thida!
+          {t("shiftClosed.greeting")}
         </p>
         <p className="mt-1 text-base text-slate-500">
-          Your shift summary has been saved.
+          {t("shiftClosed.summarySaved")}
         </p>
 
         <CustomButton
-          label="Sign in for next shift"
+          label={t("shiftClosed.signInNext")}
           onClick={() => router.push("/portal")}
           className="mt-10 min-h-16 w-full max-w-sm rounded-xl bg-brand px-6 text-lg font-bold text-white hover:bg-brand/90"
         />

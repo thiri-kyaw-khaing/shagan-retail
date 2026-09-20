@@ -1,6 +1,7 @@
 import CustomButton from "@/components/custom/common/custom-button";
 import ReturnItemRow from "@/components/custom/common/pos/return-item-row";
 import type { SaleItem } from "@/lib/types/model/sale-items";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import { cn } from "@/lib/utils";
 
 type ReturnSelectStepProps = {
@@ -20,9 +21,11 @@ export default function ReturnSelectStep({
   canContinue,
   onContinue,
 }: ReturnSelectStepProps) {
+  const { t } = useTranslation();
+
   return (
     <>
-      <p className="mx-4 text-sm text-ink-muted">Select items to return:</p>
+      <p className="mx-4 text-sm text-ink-muted">{t("return.selectPrompt")}</p>
 
       <div className="mx-4 mt-3 space-y-2">
         {items.map((item) => (
@@ -37,13 +40,13 @@ export default function ReturnSelectStep({
 
       {refundTotal > 0 && (
         <p className="mx-4 mt-3 text-right text-sm font-semibold text-ink">
-          Refund: K {refundTotal.toLocaleString()}
+          {t("return.refundPrefix")}: K {refundTotal.toLocaleString()}
         </p>
       )}
 
       <div className="m-4">
         <CustomButton
-          label="Continue →"
+          label={`${t("return.continue")} →`}
           onClick={() => canContinue && onContinue()}
           disabled={!canContinue}
           className={cn(

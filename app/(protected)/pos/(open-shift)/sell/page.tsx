@@ -13,12 +13,14 @@ import { products } from "@/lib/types/model/product";
 import type { CategoryId } from "@/lib/types/model/categories";
 import type { Product } from "@/lib/types/model/product";
 import { useLocale } from "@/lib/i18n/locale-context";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import { formatCurrency } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 import { usePos } from "@/components/custom/common/pos/pos-context";
 
 export default function SellPage() {
   const { locale } = useLocale();
+  const { t } = useTranslation();
 
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<CategoryId>(null);
@@ -120,7 +122,7 @@ export default function SellPage() {
   const handleHold = () => {
     if (cart.length === 0) return;
 
-    holdCurrentCart("Walk-in", null);
+    holdCurrentCart(t("sell.walkIn"), null);
   };
 
   return (
@@ -137,7 +139,7 @@ export default function SellPage() {
             <ProductSearchBar
               value={search}
               onChange={setSearch}
-              placeholder="Scan barcode or search products"
+              placeholder={t("sell.searchPlaceholder")}
             />
           </div>
 
@@ -214,13 +216,15 @@ export default function SellPage() {
         )}
       >
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-slate-500">{cartQuantity} items</p>
+          <p className="text-sm text-slate-500">
+            {cartQuantity} {t("sell.itemsSuffix")}
+          </p>
           <p className="truncate text-xl font-bold text-rose-900">
             {formatCurrency(total, locale)}
           </p>
         </div>
         <CustomButton
-          label="View Cart"
+          label={t("sell.viewCart")}
           icon={ArrowRight}
           onClick={() => setCompactView("checkout")}
           disabled={cart.length === 0}

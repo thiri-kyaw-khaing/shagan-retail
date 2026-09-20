@@ -1,5 +1,8 @@
+"use client";
+
 import { TriangleAlert } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 const alerts = [
   { product: "Canned Fish", quantity: 8 },
@@ -7,12 +10,14 @@ const alerts = [
 ];
 
 export function StockAlertsCard() {
+  const { t } = useTranslation();
+
   return (
     <Card className="rounded-2xl border-0 shadow-md">
       <CardHeader>
         <CardTitle className="flex items-center gap-3 text-lg text-slate-500">
           <TriangleAlert aria-hidden="true" className="size-5 text-amber-500" />
-          STOCK ALERTS
+          {t("stockAlerts.title")}
         </CardTitle>
       </CardHeader>
 
@@ -28,7 +33,7 @@ export function StockAlertsCard() {
               <span className="text-lg text-slate-700">{alert.product}</span>
 
               <span className="font-semibold text-amber-600">
-                {alert.quantity} left
+                {alert.quantity} {t("stockAlerts.left")}
               </span>
             </li>
           ))}

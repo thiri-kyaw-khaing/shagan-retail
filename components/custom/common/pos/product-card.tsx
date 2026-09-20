@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import type { Product } from "@/lib/types/model/product";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 type ProductCardProps = {
   product: Product;
@@ -17,6 +18,8 @@ export default function ProductCard({
   onIncrease,
   onDecrease,
 }: ProductCardProps) {
+  const { t } = useTranslation();
+
   const image = (
     <div className="relative size-20 overflow-hidden rounded-lg bg-slate-100">
       <Image
@@ -63,7 +66,7 @@ export default function ProductCard({
           <div className="mt-3 flex items-center gap-3">
             <button
               type="button"
-              aria-label={`Decrease ${product.name} quantity`}
+              aria-label={t("product.decreaseQuantity")}
               onClick={() => onDecrease(product.id)}
               className="flex size-11 items-center justify-center rounded-lg bg-brand text-xl font-bold text-white hover:bg-brand/90"
             >
@@ -72,7 +75,7 @@ export default function ProductCard({
             <span className="min-w-5 font-bold text-slate-900">{quantity}</span>
             <button
               type="button"
-              aria-label={`Increase ${product.name} quantity`}
+              aria-label={t("product.increaseQuantity")}
               onClick={() => onIncrease(product.id)}
               className="flex size-11 items-center justify-center rounded-lg bg-brand text-xl font-bold text-white hover:bg-brand/90"
             >
@@ -86,7 +89,7 @@ export default function ProductCard({
             disabled={!product.isActive}
             className="mt-3 min-h-11 w-full rounded-lg bg-brand px-4 font-semibold text-white hover:bg-brand/90 disabled:opacity-50"
           >
-            Add
+            {t("product.add")}
           </button>
         )}
       </article>

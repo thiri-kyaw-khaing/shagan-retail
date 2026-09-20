@@ -9,11 +9,15 @@ import {
   type Sale,
 } from "@/lib/types/model/sales";
 import { staffs } from "@/lib/types/model/staffs";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 export default function ReceiptRow({ sale }: { sale: Sale }) {
+  const { t } = useTranslation();
   const cashier = staffs.find((staff) => staff.id === sale.staffId);
   const customerLabel =
-    sale.customerId === null ? "Walk-in" : `Customer #${sale.customerId}`;
+    sale.customerId === null
+      ? t("sell.walkIn")
+      : `Customer #${sale.customerId}`;
   const isVoided = sale.status === "voided";
   const time = formatSaleTime(sale.completedAt);
 

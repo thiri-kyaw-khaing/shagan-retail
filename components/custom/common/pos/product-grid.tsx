@@ -1,6 +1,7 @@
 import ProductCard from "@/components/custom/common/pos/product-card";
 import type { CartItemData } from "@/lib/types/model/cart";
 import type { Product } from "@/lib/types/model/product";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 type ProductGridProps = {
   products: Product[];
@@ -17,10 +18,12 @@ export default function ProductGrid({
   onIncrease,
   onDecrease,
 }: ProductGridProps) {
+  const { t } = useTranslation();
+
   if (products.length === 0) {
     return (
       <div className="flex min-h-64 items-center justify-center p-6 text-center text-slate-500">
-        No products are available in this category.
+        {t("product.emptyCategory")}
       </div>
     );
   }

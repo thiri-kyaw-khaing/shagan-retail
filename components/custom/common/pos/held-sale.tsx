@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BackButton from "@/components/custom/common/back-button";
 import CustomButton from "@/components/custom/common/custom-button";
 import { usePos } from "./pos-context";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 export default function HeldSaleComponent() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { heldSales, resumeHeldSale } = usePos();
 
   const handleResume = (heldSaleId: number) => {
@@ -32,11 +34,11 @@ export default function HeldSaleComponent() {
 
           <div>
             <CardTitle className="text-lg font-bold text-white">
-              Held Sales
+              {t("held.title")}
             </CardTitle>
 
             <p className="mt-1 text-sm font-medium text-white/90">
-              {heldSales.length} carts paused
+              {heldSales.length} {t("held.cartsPaused")}
             </p>
           </div>
         </CardHeader>
@@ -44,10 +46,12 @@ export default function HeldSaleComponent() {
         <CardContent className="p-0">
           {heldSales.length === 0 ? (
             <div className="flex min-h-64 flex-col items-center justify-center p-4 text-center">
-              <h2 className="font-semibold text-slate-800">No held sales</h2>
+              <h2 className="font-semibold text-slate-800">
+                {t("held.emptyTitle")}
+              </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Held carts will appear here.
+                {t("held.emptySubtitle")}
               </p>
             </div>
           ) : (
@@ -84,13 +88,14 @@ export default function HeldSaleComponent() {
                       </h2>
 
                       <p className="mt-1 text-base text-slate-500">
-                        {itemCount} {itemCount === 1 ? "item" : "items"} · held{" "}
-                        {heldMinutesAgo} min ago
+                        {itemCount} {itemCount === 1 ? t("held.item") : t("held.items")} ·{" "}
+                        {t("held.heldAgoPrefix")} {heldMinutesAgo}{" "}
+                        {t("held.minAgoSuffix")}
                       </p>
 
                       {(sale.discountPercent ?? 0) > 0 && (
                         <p className="mt-1 text-sm text-slate-500">
-                          {sale.discountPercent}% discount
+                          {sale.discountPercent}% {t("held.discountSuffix")}
                         </p>
                       )}
 
@@ -106,7 +111,7 @@ export default function HeldSaleComponent() {
                       </p>
 
                       <CustomButton
-                        label="Resume"
+                        label={t("held.resume")}
                         icon={ArrowRight}
                         onClick={() => handleResume(sale.id)}
                         className="mt-1 min-h-11 bg-transparent p-0 font-semibold text-rose-800 shadow-none hover:bg-transparent hover:text-rose-600"

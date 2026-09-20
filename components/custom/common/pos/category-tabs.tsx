@@ -2,6 +2,7 @@
 
 import CustomButton from "@/components/custom/common/custom-button";
 import { categories, type CategoryId } from "@/lib/types/model/categories";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import { cn } from "@/lib/utils";
 
 type CategoryTabsProps = {
@@ -9,10 +10,20 @@ type CategoryTabsProps = {
   onSelect: (categoryId: CategoryId) => void;
 };
 
+const CATEGORY_LABEL_KEYS = {
+  All: "category.all",
+  Food: "category.food",
+  Drink: "category.drink",
+  Household: "category.household",
+  Combos: "category.combos",
+} as const;
+
 export default function CategoryTabs({
   selected,
   onSelect,
 }: CategoryTabsProps) {
+  const { t } = useTranslation();
+
   return (
     <div
       role="tablist"
@@ -21,11 +32,15 @@ export default function CategoryTabs({
     >
       {categories.map((category) => {
         const active = selected === category.id;
+        const labelKey =
+          CATEGORY_LABEL_KEYS[
+            category.label as keyof typeof CATEGORY_LABEL_KEYS
+          ];
 
         return (
           <CustomButton
             key={category.id ?? "all"}
-            label={category.label}
+            label={labelKey ? t(labelKey) : category.label}
             icon={category.icon}
             onClick={() => onSelect(category.id)}
             className={cn(

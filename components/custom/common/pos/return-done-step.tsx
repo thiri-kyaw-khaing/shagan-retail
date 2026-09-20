@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import CustomButton from "@/components/custom/common/custom-button";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 type ReturnDoneStepProps = {
   itemCount: number;
@@ -12,6 +13,8 @@ export default function ReturnDoneStep({
   refundMethod,
   onBackToSalesHistory,
 }: ReturnDoneStepProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-md">
@@ -19,14 +22,15 @@ export default function ReturnDoneStep({
           <Check className="size-7" />
         </div>
 
-        <h1 className="mt-4 text-xl font-bold text-ink">Done</h1>
+        <h1 className="mt-4 text-xl font-bold text-ink">{t("return.done")}</h1>
         <p className="mt-1 text-sm text-ink-muted">
-          Return processed — {itemCount} item{itemCount === 1 ? "" : "s"}{" "}
-          refunded via {refundMethod}
+          {t("return.processedPrefix")} {itemCount}{" "}
+          {itemCount === 1 ? t("return.item") : t("return.items")}{" "}
+          {t("return.refundedViaSuffix")} {refundMethod}
         </p>
 
         <CustomButton
-          label="Back to Sales History"
+          label={t("return.backToSalesHistory")}
           onClick={onBackToSalesHistory}
           className="mt-6 h-12 w-full py-3 font-semibold bg-brand text-white hover:bg-brand/90"
         />

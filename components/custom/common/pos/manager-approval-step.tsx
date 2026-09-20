@@ -1,6 +1,7 @@
 import { Lock } from "lucide-react";
 import CustomButton from "@/components/custom/common/custom-button";
 import NumPad, { PinDots } from "@/components/custom/common/numpad";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import { cn } from "@/lib/utils";
 
 const PIN_LENGTH = 6;
@@ -18,6 +19,7 @@ export default function ManagerApprovalStep({
   onPinChange,
   onSubmit,
 }: ManagerApprovalStepProps) {
+  const { t } = useTranslation();
   const canSubmit = pin.length === PIN_LENGTH;
 
   return (
@@ -27,10 +29,10 @@ export default function ManagerApprovalStep({
       </div>
 
       <h1 className="mt-4 text-xl font-bold text-ink">
-        Manager Approval Required
+        {t("return.managerApprovalRequired")}
       </h1>
       <p className="mt-1 text-sm text-ink-muted">
-        Approving refund of K {amount.toLocaleString()}
+        {t("return.approvingRefundPrefix")} K {amount.toLocaleString()}
       </p>
 
       <div className="mt-6">
@@ -48,7 +50,7 @@ export default function ManagerApprovalStep({
 
       <div className="mt-6 w-full">
         <CustomButton
-          label="Continue →"
+          label={`${t("return.continue")} →`}
           onClick={onSubmit}
           disabled={!canSubmit}
           className={cn(

@@ -9,8 +9,10 @@ import SalesStatusTabs, {
   type SalesStatusFilter,
 } from "@/components/custom/common/pos/sales-status-tabs";
 import { getReceiptNumber, sales } from "@/lib/types/model/sales";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 function SalesHistoryPage() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<SalesStatusFilter>("all");
 
@@ -33,8 +35,8 @@ function SalesHistoryPage() {
   return (
     <>
       <Header
-        title="Sales History"
-        description="Find a sale, view details or manage a receipt"
+        title={t("salesHistory.title")}
+        description={t("salesHistory.description")}
       >
         <BackButton href="/pos/sell" className="text-white" />
       </Header>
@@ -42,7 +44,7 @@ function SalesHistoryPage() {
       <ProductSearchBar
         value={search}
         onChange={setSearch}
-        placeholder="Search by receipt number or customer name..."
+        placeholder={t("salesHistory.searchPlaceholder")}
       />
 
       <SalesStatusTabs selected={statusFilter} onSelect={setStatusFilter} />
@@ -50,7 +52,7 @@ function SalesHistoryPage() {
       <div className="mx-4 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100 bg-white">
         {filteredSales.length === 0 ? (
           <p className="p-6 text-center text-sm text-ink-muted">
-            No receipts found
+            {t("salesHistory.noReceipts")}
           </p>
         ) : (
           filteredSales.map((sale) => <ReceiptRow key={sale.id} sale={sale} />)

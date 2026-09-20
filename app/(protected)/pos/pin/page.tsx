@@ -10,9 +10,11 @@ import { DeviceStatusCard } from "@/components/custom/common/device-status-card"
 import { StockAlertsCard } from "@/components/custom/common/stock-alerts-card";
 import CustomButton from "@/components/custom/common/custom-button";
 import BackButton from "@/components/custom/common/back-button";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 export default function StaffPin() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [pin, setPin] = useState("");
 
   const handlePinChange = (nextPin: string) => {
@@ -50,7 +52,7 @@ export default function StaffPin() {
             </div>
 
             <h1 className="mt-8 text-center text-2xl font-medium text-slate-600">
-              Enter your PIN to continue
+              {t("pin.title")}
             </h1>
 
             <div className="mt-8">
@@ -68,7 +70,7 @@ export default function StaffPin() {
           </div>
           {/* Continue Button*/}
           <CustomButton
-            label="Continue"
+            label={t("pin.continue")}
             icon={ArrowRight}
             onClick={handleContinue}
             disabled={pin.length !== 4}

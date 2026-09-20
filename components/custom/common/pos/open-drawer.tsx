@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 
 import CustomButton from "../custom-button";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 type OpenDrawerProps = {
   isOpen: boolean;
@@ -24,6 +25,8 @@ export default function OpenDrawer({
   onClose,
   onConfirm,
 }: OpenDrawerProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog
       open={isOpen}
@@ -38,23 +41,23 @@ export default function OpenDrawer({
 
         <DialogHeader className="space-y-2 text-left">
           <DialogTitle className="text-xl font-bold text-slate-800">
-            Open cash drawer?
+            {t("openDrawer.title")}
           </DialogTitle>
 
           <DialogDescription className="text-base leading-relaxed text-slate-500">
-            Open the cash drawer without a sale? This will be logged.
+            {t("openDrawer.description")}
           </DialogDescription>
         </DialogHeader>
 
         <DialogFooter className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <CustomButton
-            label="Cancel"
+            label={t("openDrawer.cancel")}
             onClick={onClose}
             className="min-h-11 w-full rounded-xl border border-rose-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-none hover:bg-rose-50"
           />
 
           <CustomButton
-            label="Open Drawer"
+            label={t("openDrawer.confirm")}
             onClick={onConfirm}
             className="min-h-11 w-full rounded-xl bg-rose-600 px-3 text-sm font-semibold text-white hover:bg-rose-700"
           />

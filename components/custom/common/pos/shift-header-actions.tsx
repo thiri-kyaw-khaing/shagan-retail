@@ -8,6 +8,7 @@ import LanguageMenu from "./language-menu";
 import MoreMenu from "./more-menu";
 import SettingsDialog from "./settings-dialog";
 import CloseShiftDialog from "./close-shift-dialog";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 type ShiftHeaderActionsProps = {
   hasAlert?: boolean;
@@ -15,6 +16,7 @@ type ShiftHeaderActionsProps = {
 
 export default function ShiftHeaderActions({ hasAlert = false }: ShiftHeaderActionsProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -33,7 +35,7 @@ export default function ShiftHeaderActions({ hasAlert = false }: ShiftHeaderActi
           <button
             type="button"
             onClick={() => setIsLanguageOpen((open) => !open)}
-            aria-label="Switch language"
+            aria-label={t("language.switchLabel")}
             className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-white transition hover:bg-white/25"
           >
             <Globe className="h-4 w-4" />
@@ -48,7 +50,7 @@ export default function ShiftHeaderActions({ hasAlert = false }: ShiftHeaderActi
           <button
             type="button"
             onClick={() => setIsMoreOpen((open) => !open)}
-            aria-label="More options"
+            aria-label={t("moreMenu.ariaLabel")}
             className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-white transition hover:bg-white/25"
           >
             <MoreHorizontal className="h-4 w-4" />

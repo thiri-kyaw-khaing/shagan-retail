@@ -11,6 +11,7 @@ import {
 import SyncStatus from "@/components/custom/common/pos/sync-status";
 import { DeviceStatusCard } from "@/components/custom/common/device-status-card";
 import CustomButton from "@/components/custom/common/custom-button";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 type SettingsDialogProps = {
   isOpen: boolean;
@@ -21,6 +22,8 @@ export default function SettingsDialog({
   isOpen,
   onClose,
 }: SettingsDialogProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog
       open={isOpen}
@@ -32,11 +35,11 @@ export default function SettingsDialog({
         {/* Header */}
         <DialogHeader className="shrink-0 border-b border-rose-200 px-6 py-6 text-left sm:px-8">
           <DialogTitle className="text-2xl font-bold text-slate-800">
-            Settings
+            {t("settingsDialog.title")}
           </DialogTitle>
 
           <DialogDescription className="mt-2 text-base text-slate-500">
-            Check synchronization and connected devices.
+            {t("settingsDialog.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -47,11 +50,11 @@ export default function SettingsDialog({
           <section className="border-t border-rose-200 pt-6">
             <div className="mb-4">
               <h2 className="text-lg font-bold text-slate-800">
-                Device Health Check
+                {t("settingsDialog.deviceHealthTitle")}
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Check whether your POS devices are ready.
+                {t("settingsDialog.deviceHealthSubtitle")}
               </p>
             </div>
 

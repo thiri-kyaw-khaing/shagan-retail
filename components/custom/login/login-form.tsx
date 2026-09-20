@@ -19,6 +19,7 @@ import { Form } from "@/components/ui/form";
 import Logo from "../logo/logo";
 import FormInput from "../common/forms/form-input";
 import CustomButton from "../common/custom-button";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 const LoginSchema = z.object({
   email: z
@@ -32,6 +33,7 @@ type LoginFormData = z.infer<typeof LoginSchema>;
 
 function LoginForm() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(LoginSchema),
@@ -57,10 +59,10 @@ function LoginForm() {
               </div>
               <div className="flex flex-col items-center">
                 <CardTitle className="mb-2 text-center text-xl font-bold sm:text-2xl">
-                  Shagan Retail
+                  {t("login.title")}
                 </CardTitle>
                 <CardDescription className="text-center">
-                  Enter your email below to login to your account
+                  {t("login.subtitle")}
                 </CardDescription>
               </div>
             </CardHeader>
@@ -70,9 +72,9 @@ function LoginForm() {
                 <FormInput
                   control={form.control}
                   path="email"
-                  label="Email"
+                  label={t("login.emailLabel")}
                   inputClassName="h-11 text-base sm:text-sm"
-                  placeholder="Enter your email"
+                  placeholder={t("login.emailPlaceholder")}
                   type="email"
                 />
 
@@ -80,9 +82,9 @@ function LoginForm() {
                   <FormInput
                     control={form.control}
                     path="password"
-                    label="Password"
+                    label={t("login.passwordLabel")}
                     inputClassName="h-11 text-base sm:text-sm"
-                    placeholder="Enter your password"
+                    placeholder={t("login.passwordPlaceholder")}
                     type="password"
                   />
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -90,7 +92,7 @@ function LoginForm() {
                       href="/forgot-password"
                       className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                     >
-                      Forgot your password?
+                      {t("login.forgotPassword")}
                     </Link>
                   </div>
                 </div>
@@ -99,7 +101,7 @@ function LoginForm() {
 
             <CardFooter className="flex-col gap-2 px-8">
               <CustomButton
-                label="Login"
+                label={t("login.submit")}
                 type="submit"
                 className="h-11 w-full bg-brand hover:bg-brand/90 text-base sm:text-sm"
               />

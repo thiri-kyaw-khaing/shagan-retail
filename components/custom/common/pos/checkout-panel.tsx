@@ -13,6 +13,7 @@ import CustomButton from "@/components/custom/common/custom-button";
 import { Input } from "@/components/ui/input";
 import type { CheckoutPanelProps } from "@/lib/types/model/checkout";
 import { formatCurrency } from "@/lib/i18n/format";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import { cn } from "@/lib/utils";
 
 export default function CheckoutPanel({
@@ -33,6 +34,8 @@ export default function CheckoutPanel({
   onHold,
   onBackToProducts,
 }: CheckoutPanelProps) {
+  const { t } = useTranslation();
+
   return (
     <aside className={cn("min-h-0 min-w-0 flex-col bg-white", className)}>
       <div className="flex min-h-16 shrink-0 items-center justify-between border-b px-5">
@@ -40,20 +43,22 @@ export default function CheckoutPanel({
           <div className="flex size-10 items-center justify-center rounded-full bg-slate-100">
             <CircleUserRound className="size-5 text-rose-800" />
           </div>
-          <span className="font-semibold text-slate-900">Walk-in</span>
+          <span className="font-semibold text-slate-900">
+            {t("sell.walkIn")}
+          </span>
         </div>
         <button
           type="button"
           className="min-h-11 text-sm text-slate-500 hover:text-rose-600"
         >
-          Tap to change →
+          {t("sell.tapToChange")}
         </button>
       </div>
 
       {onBackToProducts && (
         <div className="shrink-0 border-b px-4 py-2">
           <CustomButton
-            label="Back to Products"
+            label={t("sell.backToProducts")}
             icon={ArrowLeft}
             onClick={onBackToProducts}
             className="min-h-11 bg-transparent px-0 text-slate-600 shadow-none hover:bg-transparent hover:text-rose-600"
@@ -65,8 +70,12 @@ export default function CheckoutPanel({
         {cart.length === 0 ? (
           <div className="flex min-h-52 flex-col items-center justify-center text-center">
             <ShoppingBag className="size-10 text-slate-200" />
-            <p className="mt-3 font-semibold text-slate-300">Cart is empty</p>
-            <p className="mt-1 text-sm text-slate-300">Tap a product to add</p>
+            <p className="mt-3 font-semibold text-slate-300">
+              {t("sell.cartEmpty")}
+            </p>
+            <p className="mt-1 text-sm text-slate-300">
+              {t("sell.tapProductToAdd")}
+            </p>
           </div>
         ) : (
           cart.map((item) => (
@@ -83,17 +92,19 @@ export default function CheckoutPanel({
       <div className="shrink-0 border-t bg-slate-50">
         <div className="space-y-2 px-5 py-4">
           <div className="flex justify-between text-slate-600">
-            <span>Subtotal</span>
+            <span>{t("sell.subtotal")}</span>
             <span>{formatCurrency(subtotal, locale)}</span>
           </div>
           {appliedDiscountPercent > 0 && (
             <div className="flex justify-between text-rose-600">
-              <span>Discount ({appliedDiscountPercent}%)</span>
+              <span>
+                {t("sell.discountPrefix")} ({appliedDiscountPercent}%)
+              </span>
               <span>− {formatCurrency(discountAmount, locale)}</span>
             </div>
           )}
           <div className="flex justify-between border-t pt-3 text-xl font-bold">
-            <span>Total</span>
+            <span>{t("sell.total")}</span>
             <span className="text-rose-900">
               {formatCurrency(total, locale)}
             </span>
@@ -103,7 +114,7 @@ export default function CheckoutPanel({
         {isDiscountPanelOpen && (
           <div className="flex items-center gap-2 px-4 pb-2">
             <span className="shrink-0 text-sm font-bold text-rose-800">
-              DISC %
+              {t("sell.discPercent")}
             </span>
             <Input
               readOnly
@@ -111,7 +122,7 @@ export default function CheckoutPanel({
               className="text-right font-semibold"
             />
             <CustomButton
-              label="Apply"
+              label={t("sell.apply")}
               onClick={onApplyDiscount}
               className="min-h-11 shrink-0 bg-brand px-6 font-semibold text-white"
             />
@@ -120,7 +131,7 @@ export default function CheckoutPanel({
 
         <div className="px-4 pb-2">
           <CustomButton
-            label="% Disc"
+            label={t("sell.discToggle")}
             onClick={onToggleDiscount}
             className={cn(
               "min-h-11 px-6 font-semibold",
@@ -141,13 +152,13 @@ export default function CheckoutPanel({
 
         <div className="grid grid-cols-[1fr_2fr] gap-2 p-4">
           <CustomButton
-            label="Hold"
+            label={t("sell.hold")}
             onClick={onHold}
             disabled={cart.length === 0}
             className="min-h-12 bg-slate-200 text-slate-600 hover:bg-slate-400"
           />
           <CustomButton
-            label="Payment"
+            label={t("sell.payment")}
             icon={ArrowRight}
             disabled={cart.length === 0}
             className="min-h-12 bg-brand font-semibold text-white disabled:bg-rose-200"
