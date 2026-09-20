@@ -8,6 +8,7 @@ import BackButton from "@/components/custom/common/back-button";
 import NumPad from "@/components/custom/common/numpad";
 import CustomButton from "@/components/custom/common/custom-button";
 import OpenDrawer from "@/components/custom/common/pos/open-drawer";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 const shiftSummary = {
   startedAt: "11:03 AM",
@@ -25,6 +26,7 @@ const formatMoney = (amount: number) => `K ${amount.toLocaleString("en-US")}`;
 
 export default function CloseShiftPage() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const [cashInput, setCashInput] = useState("");
   const [reason, setReason] = useState("");
@@ -69,7 +71,9 @@ export default function CloseShiftPage() {
             </div>
 
             <div>
-              <h1 className="text-xl font-bold text-slate-800">Close Shift</h1>
+              <h1 className="text-xl font-bold text-slate-800">
+                {t("closeShift.title")}
+              </h1>
 
               <p className="text-sm text-slate-500">
                 {shiftSummary.branchName} · {shiftSummary.staffName}
@@ -78,7 +82,7 @@ export default function CloseShiftPage() {
           </div>
 
           <CustomButton
-            label="Open Drawer"
+            label={t("closeShift.openDrawer")}
             icon={PanelsTopLeft}
             onClick={() => setIsOpenDrawerOpen(true)}
             className="min-h-11 rounded-xl border border-rose-200 bg-white px-4 text-slate-700 shadow-none hover:bg-rose-100"
@@ -91,30 +95,30 @@ export default function CloseShiftPage() {
             {/* Shift summary */}
             <dl className="overflow-hidden rounded-xl border border-rose-200">
               <SummaryRow
-                label="Shift started"
+                label={t("closeShift.shiftStarted")}
                 value={shiftSummary.startedAt}
               />
 
               <SummaryRow
-                label="Sales completed"
+                label={t("closeShift.salesCompleted")}
                 value={String(shiftSummary.salesCompleted)}
               />
 
               <SummaryRow
-                label="Opening cash"
+                label={t("closeShift.openingCash")}
                 value={formatMoney(shiftSummary.openingCash)}
               />
 
               <SummaryRow
-                label="Cash sales"
+                label={t("closeShift.cashSales")}
                 value={formatMoney(shiftSummary.cashSales)}
-                detail={`${shiftSummary.cashReceipts} receipts`}
+                detail={`${shiftSummary.cashReceipts} ${t("closeShift.receiptsSuffix")}`}
               />
 
               <SummaryRow
-                label="QR sales"
+                label={t("closeShift.qrSales")}
                 value={formatMoney(shiftSummary.qrSales)}
-                detail={`${shiftSummary.qrReceipts} receipts`}
+                detail={`${shiftSummary.qrReceipts} ${t("closeShift.receiptsSuffix")}`}
                 last
               />
             </dl>
@@ -126,7 +130,7 @@ export default function CloseShiftPage() {
                   htmlFor="counted-cash"
                   className="block text-sm text-slate-500"
                 >
-                  Counted cash in till
+                  {t("closeShift.countedCashLabel")}
                 </label>
 
                 <input
@@ -154,21 +158,23 @@ export default function CloseShiftPage() {
           {hasCashCount ? (
             <dl className="space-y-2 rounded-xl border border-rose-200 bg-rose-50 p-5">
               <div className="flex justify-between gap-4">
-                <dt className="text-slate-500">Expected</dt>
+                <dt className="text-slate-500">{t("closeShift.expected")}</dt>
                 <dd className="font-semibold text-slate-800">
                   {formatMoney(expectedCash)}
                 </dd>
               </div>
 
               <div className="flex justify-between gap-4">
-                <dt className="text-slate-500">Counted</dt>
+                <dt className="text-slate-500">{t("closeShift.counted")}</dt>
                 <dd className="font-semibold text-slate-800">
                   {formatMoney(countedCash)}
                 </dd>
               </div>
 
               <div className="flex justify-between gap-4 border-t border-rose-200 pt-3">
-                <dt className="font-semibold text-slate-500">Difference</dt>
+                <dt className="font-semibold text-slate-500">
+                  {t("closeShift.difference")}
+                </dt>
 
                 <dd
                   className={`font-bold ${
@@ -186,7 +192,7 @@ export default function CloseShiftPage() {
             </dl>
           ) : (
             <p className="rounded-xl border border-rose-100 p-4 text-center text-slate-500">
-              Enter counted cash to see reconciliation.
+              {t("closeShift.enterCashPrompt")}
             </p>
           )}
 
@@ -197,7 +203,7 @@ export default function CloseShiftPage() {
                 htmlFor="difference-reason"
                 className="mb-2 block text-sm font-semibold text-amber-700"
               >
-                Reason for difference (required)
+                {t("closeShift.reasonLabel")}
               </label>
 
               <textarea
@@ -207,7 +213,7 @@ export default function CloseShiftPage() {
                 onChange={(event) => {
                   setReason(event.target.value);
                 }}
-                placeholder="e.g. Counted twice, petty cash used..."
+                placeholder={t("closeShift.reasonPlaceholder")}
                 rows={2}
                 className="w-full resize-y rounded-xl border border-amber-300 bg-amber-50 p-4 text-base text-slate-800 outline-none placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-amber-400"
               />
@@ -217,7 +223,9 @@ export default function CloseShiftPage() {
           {/* Bottom actions */}
           <div className="grid gap-4 border-t border-rose-200 pt-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
             <div className="flex items-center justify-between gap-4 rounded-xl border border-rose-200 bg-rose-50 px-5 py-4">
-              <span className="font-semibold text-slate-600">Total sales</span>
+              <span className="font-semibold text-slate-600">
+                {t("closeShift.totalSales")}
+              </span>
 
               <span className="text-2xl font-bold text-rose-950">
                 {formatMoney(totalSales)}
@@ -225,7 +233,7 @@ export default function CloseShiftPage() {
             </div>
 
             <CustomButton
-              label="Close Shift"
+              label={t("closeShift.title")}
               onClick={handleCloseShift}
               disabled={!canClose}
               className="min-h-14 w-full rounded-xl bg-brand text-base font-bold text-white hover:bg-brand/90 disabled:bg-rose-200 disabled:opacity-100"

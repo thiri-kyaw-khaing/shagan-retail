@@ -2,20 +2,19 @@ import CustomButton from "@/components/custom/common/custom-button";
 import OptionTiles from "@/components/custom/common/option-tiles";
 import SummaryCard from "@/components/custom/common/summary-card";
 import type { ItemCondition } from "@/components/custom/common/pos/return-reason-step";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import { cn } from "@/lib/utils";
 
 export type RefundMethod = "cash" | "qr";
 
-const REFUND_METHODS: { id: RefundMethod; label: string }[] = [
-  { id: "cash", label: "Cash" },
-  { id: "qr", label: "QR" },
-];
-
-const CONDITION_LABELS: Record<ItemCondition, string> = {
-  sellable: "Sellable",
-  damaged: "Damaged",
-  expired: "Expired",
-  other: "Other",
+const CONDITION_LABEL_KEYS: Record<
+  ItemCondition,
+  "return.conditionSellable" | "return.conditionDamaged" | "return.conditionExpired" | "return.conditionOther"
+> = {
+  sellable: "return.conditionSellable",
+  damaged: "return.conditionDamaged",
+  expired: "return.conditionExpired",
+  other: "return.conditionOther",
 };
 
 type ReturnConfirmStepProps = {
@@ -35,15 +34,25 @@ export default function ReturnConfirmStep({
   onRefundMethodChange,
   onSubmit,
 }: ReturnConfirmStepProps) {
+  const { t } = useTranslation();
+
+  const refundMethods: { id: RefundMethod; label: string }[] = [
+    { id: "cash", label: t("return.cash") },
+    { id: "qr", label: t("return.qr") },
+  ];
+
   return (
     <>
       <div className="mx-4">
         <SummaryCard
           rows={[
-            { label: "Items", value: selectedCount },
-            { label: "Condition", value: CONDITION_LABELS[condition] },
+            { label: t("return.items"), value: selectedCount },
             {
-              label: "Refund",
+              label: t("return.itemCondition"),
+              value: t(CONDITION_LABEL_KEYS[condition]),
+            },
+            {
+              label: t("return.refundPrefix"),
               value: `K ${refundTotal.toLocaleString()}`,
               emphasize: true,
             },
@@ -52,10 +61,12 @@ export default function ReturnConfirmStep({
       </div>
 
       <div className="mx-4 mt-4">
-        <h2 className="mb-2 text-sm font-bold text-ink">Refund method</h2>
+        <h2 className="mb-2 text-sm font-bold text-ink">
+          {t("return.refundMethod")}
+        </h2>
 
         <OptionTiles
-          options={REFUND_METHODS}
+          options={refundMethods}
           value={refundMethod}
           onChange={onRefundMethodChange}
         />
@@ -63,7 +74,7 @@ export default function ReturnConfirmStep({
 
       <div className="m-4">
         <CustomButton
-          label="Request Return →"
+          label={`${t("return.requestReturn")} →`}
           onClick={onSubmit}
           disabled={!refundMethod}
           className={cn(

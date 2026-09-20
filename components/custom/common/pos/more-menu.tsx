@@ -1,6 +1,7 @@
 "use client";
 
 import { Settings, Lock } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 type MoreMenuProps = {
   onOpenSettings: () => void;
@@ -8,6 +9,8 @@ type MoreMenuProps = {
 };
 
 export default function MoreMenu({ onOpenSettings, onOpenCloseShift }: MoreMenuProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="absolute top-full right-0 z-20 mt-2 w-72 rounded-2xl bg-white p-2 text-ink shadow-xl">
       <button
@@ -19,9 +22,11 @@ export default function MoreMenu({ onOpenSettings, onOpenCloseShift }: MoreMenuP
           <Settings className="h-5 w-5" />
         </span>
         <span>
-          <span className="block font-semibold">Settings</span>
+          <span className="block font-semibold">
+            {t("moreMenu.settingsTitle")}
+          </span>
           <span className="block text-sm text-ink-muted">
-            Sync and device status
+            {t("moreMenu.settingsSubtitle")}
           </span>
         </span>
       </button>
@@ -37,9 +42,11 @@ export default function MoreMenu({ onOpenSettings, onOpenCloseShift }: MoreMenuP
           <Lock className="h-5 w-5" />
         </span>
         <span>
-          <span className="block font-semibold text-brand">Close Shift</span>
+          <span className="block font-semibold text-brand">
+            {t("moreMenu.closeShiftTitle")}
+          </span>
           <span className="block text-sm text-brand/70">
-            Count cash and end the current shift
+            {t("moreMenu.closeShiftSubtitle")}
           </span>
         </span>
       </button>

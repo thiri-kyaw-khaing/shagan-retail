@@ -18,6 +18,7 @@ import {
 import { voids } from "@/lib/types/model/voids";
 import { returns } from "@/lib/types/model/returns";
 import { staffs } from "@/lib/types/model/staffs";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 type ReceiptDetailPageProps = {
   params: Promise<{ saleId: string }>;
@@ -25,13 +26,16 @@ type ReceiptDetailPageProps = {
 
 export default function ReceiptDetailPage({ params }: ReceiptDetailPageProps) {
   const { saleId } = use(params);
+  const { t } = useTranslation();
   const sale = sales.find((item) => item.id === saleId);
 
   if (!sale) notFound();
 
   const cashier = staffs.find((staff) => staff.id === sale.staffId);
   const customerLabel =
-    sale.customerId === null ? "Walk-in" : `Customer #${sale.customerId}`;
+    sale.customerId === null
+      ? t("sell.walkIn")
+      : `Customer #${sale.customerId}`;
   const isVoided = sale.status === "voided";
   const relatedVoid = voids.find((item) => item.saleId === sale.id);
   const relatedReturn = returns.find((item) => item.saleId === sale.id);
@@ -39,7 +43,7 @@ export default function ReceiptDetailPage({ params }: ReceiptDetailPageProps) {
   return (
     <>
       <Header
-        title={`Receipt #${getReceiptNumber(sale.id)}`}
+        title={`${t("receiptDetail.receipt")} #${getReceiptNumber(sale.id)}`}
         right={
           <div className="text-right">
             <p className="text-sm font-medium text-white/90">
@@ -57,11 +61,23 @@ export default function ReceiptDetailPage({ params }: ReceiptDetailPageProps) {
       <div className="mx-4 space-y-4 rounded-2xl bg-white p-4">
         <SummaryCard
           rows={[
-            { label: "Receipt", value: `#${getReceiptNumber(sale.id)}` },
-            { label: "Date & Time", value: formatSaleDateTime(sale.completedAt) },
-            { label: "Customer", value: customerLabel },
-            { label: "Cashier", value: cashier?.name ?? "—" },
-            { label: "Status", value: <StatusBadge isVoided={isVoided} /> },
+            {
+              label: t("receiptDetail.receipt"),
+              value: `#${getReceiptNumber(sale.id)}`,
+            },
+            {
+              label: t("receiptDetail.dateTime"),
+              value: formatSaleDateTime(sale.completedAt),
+            },
+            { label: t("receiptDetail.customer"), value: customerLabel },
+            {
+              label: t("receiptDetail.cashier"),
+              value: cashier?.name ?? "—",
+            },
+            {
+              label: t("receiptDetail.status"),
+              value: <StatusBadge isVoided={isVoided} />,
+            },
           ]}
         />
 
@@ -73,7 +89,7 @@ export default function ReceiptDetailPage({ params }: ReceiptDetailPageProps) {
         />
 
         {relatedVoid && (
-          <NoticeBanner tone="rose" title="Voided">
+          <NoticeBanner tone="rose" title={t("receiptDetail.voidedTitle")}>
             {relatedVoid.explanation ?? relatedVoid.reason}
           </NoticeBanner>
         )}
@@ -81,7 +97,7 @@ export default function ReceiptDetailPage({ params }: ReceiptDetailPageProps) {
         {relatedReturn && (
           <NoticeBanner
             tone="amber"
-            title={`Returned · K ${relatedReturn.refundTotal.toLocaleString()} via ${relatedReturn.refundMethod}`}
+            title={`${t("receiptDetail.returnedPrefix")} · K ${relatedReturn.refundTotal.toLocaleString()} ${t("receiptDetail.viaConnector")} ${relatedReturn.refundMethod}`}
           />
         )}
 

@@ -2,14 +2,15 @@
 
 import CustomButton from "@/components/custom/common/custom-button";
 import type { SaleStatus } from "@/lib/types/model/sales";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import { cn } from "@/lib/utils";
 
 export type SalesStatusFilter = "all" | SaleStatus;
 
-const TABS: { id: SalesStatusFilter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "completed", label: "Completed" },
-  { id: "voided", label: "Voided" },
+const TABS: { id: SalesStatusFilter; labelKey: "salesHistory.tabs.all" | "salesHistory.tabs.completed" | "salesHistory.tabs.voided" }[] = [
+  { id: "all", labelKey: "salesHistory.tabs.all" },
+  { id: "completed", labelKey: "salesHistory.tabs.completed" },
+  { id: "voided", labelKey: "salesHistory.tabs.voided" },
 ];
 
 type SalesStatusTabsProps = {
@@ -21,6 +22,8 @@ export default function SalesStatusTabs({
   selected,
   onSelect,
 }: SalesStatusTabsProps) {
+  const { t } = useTranslation();
+
   return (
     <div
       role="tablist"
@@ -33,7 +36,7 @@ export default function SalesStatusTabs({
         return (
           <CustomButton
             key={tab.id}
-            label={tab.label}
+            label={t(tab.labelKey)}
             onClick={() => onSelect(tab.id)}
             className={cn(
               "min-h-8 shrink-0 rounded-xl px-3 py-1.5 text-sm font-semibold",

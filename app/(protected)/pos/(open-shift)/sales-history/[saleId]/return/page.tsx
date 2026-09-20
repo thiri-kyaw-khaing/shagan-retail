@@ -18,6 +18,7 @@ import ManagerApprovalStep from "@/components/custom/common/pos/manager-approval
 import ReturnDoneStep from "@/components/custom/common/pos/return-done-step";
 import { sales } from "@/lib/types/model/sales";
 import { saleItems } from "@/lib/types/model/sale-items";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 type Step = "select" | "reason" | "confirm" | "approval" | "done";
 
@@ -29,14 +30,6 @@ const PREVIOUS_STEP: Record<Step, Step | null> = {
   done: null,
 };
 
-const STEP_TITLE: Record<Step, string> = {
-  select: "Return items",
-  reason: "Return items",
-  confirm: "Return items",
-  approval: "Manager Approval",
-  done: "",
-};
-
 type ReturnItemsPageProps = {
   params: Promise<{ saleId: string }>;
 };
@@ -44,6 +37,15 @@ type ReturnItemsPageProps = {
 export default function ReturnItemsPage({ params }: ReturnItemsPageProps) {
   const { saleId } = use(params);
   const router = useRouter();
+  const { t } = useTranslation();
+
+  const STEP_TITLE: Record<Step, string> = {
+    select: t("return.title"),
+    reason: t("return.title"),
+    confirm: t("return.title"),
+    approval: t("return.managerApprovalTitle"),
+    done: "",
+  };
 
   const sale = sales.find((item) => item.id === saleId);
   const items = useMemo(
@@ -65,7 +67,9 @@ export default function ReturnItemsPage({ params }: ReturnItemsPageProps) {
   }
 
   const customerLabel =
-    sale.customerId === null ? "Walk-in" : `Customer #${sale.customerId}`;
+    sale.customerId === null
+      ? t("sell.walkIn")
+      : `Customer #${sale.customerId}`;
 
   const selectedLines = items
     .map((item) => ({ item, qty: returnQtyByItemId[item.id] ?? 0 }))

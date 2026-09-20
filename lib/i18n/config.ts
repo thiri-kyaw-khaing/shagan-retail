@@ -2,10 +2,10 @@ export type Locale = "en" | "mm" | "zh";
 
 export const DEFAULT_LOCALE: Locale = "en";
 
-export const LOCALE_OPTIONS: { id: Locale; label: string }[] = [
-  { id: "en", label: "English" },
-  { id: "mm", label: "မြန်မာ" },
-  { id: "zh", label: "中文" },
+export const LOCALE_OPTIONS: { id: Locale; label: string; descriptor: string }[] = [
+  { id: "mm", label: "မြန်မာဘာသာ", descriptor: "Myanmar" },
+  { id: "en", label: "English", descriptor: "United Kingdom / USA" },
+  { id: "zh", label: "中文", descriptor: "Mandarin / Simplified" },
 ];
 
 const BCP47: Record<Locale, string> = {

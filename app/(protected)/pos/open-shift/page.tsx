@@ -8,6 +8,7 @@ import { Monitor } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/custom/logo/logo";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 type OpenShiftFormValues = {
   cash: string;
@@ -15,6 +16,7 @@ type OpenShiftFormValues = {
 
 function OpenShift() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const form = useForm<OpenShiftFormValues>({
     defaultValues: { cash: "K 0" },
@@ -39,11 +41,15 @@ function OpenShift() {
         <div className="flex flex-col items-center gap-3 sm:gap-4 mb-2">
           <Logo icon={<Monitor />} className="h-10 w-10 sm:h-12 sm:w-12" />
           <div className="text-center text-sm ">
-            <p className="text-muted-foreground">Starting Shift</p>
+            <p className="text-muted-foreground">
+              {t("openShift.startingShift")}
+            </p>
             <h1 className="text-base sm:text-lg font-semibold">
               Main Street Branch
             </h1>
-            <p className="text-muted-foreground">Cashier: Ma Thida</p>
+            <p className="text-muted-foreground">
+              {t("openShift.cashierLabel")}: Ma Thida
+            </p>
           </div>
         </div>
 
@@ -52,7 +58,7 @@ function OpenShift() {
             <FormInput
               control={form.control}
               path="cash"
-              label="Enter Cash Amount"
+              label={t("openShift.cashAmountLabel")}
               placeholder="K 0"
               readonly
               className="mb-4"
@@ -67,7 +73,7 @@ function OpenShift() {
             />
 
             <CustomButton
-              label="Open Shift"
+              label={t("openShift.submit")}
               type="submit"
               disabled={cash === "0"}
               className="mt-4 h-11 w-full bg-brand hover:bg-brand/90 text-base font-semibold sm:text-sm"
