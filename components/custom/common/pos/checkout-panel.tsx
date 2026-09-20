@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -8,6 +9,7 @@ import {
 } from "lucide-react";
 
 import CartItem from "@/components/custom/common/pos/cart-item";
+import ChooseCustomerDialog from "@/components/custom/common/pos/choose-customer-dialog";
 import NumPad from "@/components/custom/common/numpad";
 import CustomButton from "@/components/custom/common/custom-button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,8 @@ export default function CheckoutPanel({
   discountAmount,
   total,
   locale,
+  customer,
+  onChangeCustomer,
   appliedDiscountPercent,
   isDiscountPanelOpen,
   discountPercentInput,
@@ -35,6 +39,7 @@ export default function CheckoutPanel({
   onBackToProducts,
 }: CheckoutPanelProps) {
   const { t } = useTranslation();
+  const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
 
   return (
     <aside className={cn("min-h-0 min-w-0 flex-col bg-white", className)}>
@@ -44,15 +49,22 @@ export default function CheckoutPanel({
             <CircleUserRound className="size-5 text-rose-800" />
           </div>
           <span className="font-semibold text-slate-900">
-            {t("sell.walkIn")}
+            {customer?.name ?? t("sell.walkIn")}
           </span>
         </div>
         <button
           type="button"
+          onClick={() => setIsCustomerDialogOpen(true)}
           className="min-h-11 text-sm text-slate-500 hover:text-rose-600"
         >
           {t("sell.tapToChange")}
         </button>
+
+        <ChooseCustomerDialog
+          isOpen={isCustomerDialogOpen}
+          onClose={() => setIsCustomerDialogOpen(false)}
+          onSelect={onChangeCustomer}
+        />
       </div>
 
       {onBackToProducts && (
@@ -137,7 +149,7 @@ export default function CheckoutPanel({
               "min-h-11 px-6 font-semibold",
               isDiscountPanelOpen
                 ? "bg-brand text-white"
-                : "border border-slate-200 bg-slate-100 text-slate-900 hover:bg-brand/50",
+                : "border-2 border-slate-300 bg-slate-100 text-slate-900 hover:bg-brand/50",
             )}
           />
         </div>

@@ -119,7 +119,7 @@ export function DeviceStatusCard() {
           icon={RefreshCw}
           onClick={handleRefresh}
           disabled={refreshing}
-          className={`min-h-12 w-full rounded-xl border border-rose-200 bg-white font-semibold text-rose-800 shadow-none hover:bg-rose-50 ${
+          className={`min-h-12 w-full rounded-xl border-2 border-rose-300 bg-white font-semibold text-rose-800 shadow-none hover:bg-rose-50 ${
             refreshing ? "[&_svg]:animate-spin" : ""
           }`}
         />

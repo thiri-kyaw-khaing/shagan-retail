@@ -7,7 +7,7 @@ import { useTranslation } from "@/lib/i18n/use-translation";
 import { cn } from "@/lib/utils";
 
 const actionClass =
-  "rounded-xl h-12 border border-slate-300 bg-white py-3 text-sm text-ink hover:border-slate-400 hover:bg-slate-50";
+  "rounded-xl h-12 border-2 border-slate-300 bg-white py-3 text-sm text-ink hover:border-slate-400 hover:bg-slate-50";
 
 export default function ReceiptActions({ saleId }: { saleId: SaleId }) {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function ReceiptActions({ saleId }: { saleId: SaleId }) {
 
       <CustomButton
         label={t("receiptDetail.voidSale")}
-        className="w-full rounded-xl border border-rose-200 bg-white py-3 text-sm text-rose-600 hover:bg-rose-50"
+        className="w-full rounded-xl border-2 border-rose-300 bg-white py-3 text-sm text-rose-600 hover:bg-rose-50"
       />
     </div>
   );

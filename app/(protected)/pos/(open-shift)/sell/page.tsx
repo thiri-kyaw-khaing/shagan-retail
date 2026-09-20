@@ -12,6 +12,7 @@ import CustomButton from "@/components/custom/common/custom-button";
 import { products } from "@/lib/types/model/product";
 import type { CategoryId } from "@/lib/types/model/categories";
 import type { Product } from "@/lib/types/model/product";
+import type { Customer } from "@/lib/types/model/customers";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { formatCurrency } from "@/lib/i18n/format";
@@ -33,6 +34,7 @@ export default function SellPage() {
   const [compactView, setCompactView] = useState<"products" | "checkout">(
     "products",
   );
+  const [customer, setCustomer] = useState<Customer | null>(null);
   const { cart, setCart, holdCurrentCart } = usePos();
 
   const filteredProducts = useMemo(() => {
@@ -122,7 +124,7 @@ export default function SellPage() {
   const handleHold = () => {
     if (cart.length === 0) return;
 
-    holdCurrentCart(t("sell.walkIn"), null);
+    holdCurrentCart(customer?.name ?? t("sell.walkIn"), null);
   };
 
   return (
@@ -168,6 +170,8 @@ export default function SellPage() {
           discountAmount={discountAmount}
           total={total}
           locale={locale}
+          customer={customer}
+          onChangeCustomer={setCustomer}
           appliedDiscountPercent={appliedDiscountPercent}
           isDiscountPanelOpen={isDiscountPanelOpen}
           discountPercentInput={discountPercentInput}
@@ -196,6 +200,8 @@ export default function SellPage() {
           discountAmount={discountAmount}
           total={total}
           locale={locale}
+          customer={customer}
+          onChangeCustomer={setCustomer}
           appliedDiscountPercent={appliedDiscountPercent}
           isDiscountPanelOpen={isDiscountPanelOpen}
           discountPercentInput={discountPercentInput}
