@@ -36,6 +36,7 @@ export default function CheckoutPanel({
   onIncrease,
   onDecrease,
   onHold,
+  onPayment,
   onBackToProducts,
 }: CheckoutPanelProps) {
   const { t } = useTranslation();
@@ -172,6 +173,7 @@ export default function CheckoutPanel({
           <CustomButton
             label={t("sell.payment")}
             icon={ArrowRight}
+            onClick={onPayment}
             disabled={cart.length === 0}
             className="min-h-12 bg-brand font-semibold text-white disabled:bg-rose-200"
           />
