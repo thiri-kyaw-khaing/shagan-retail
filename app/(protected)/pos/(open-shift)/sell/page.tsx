@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import CategoryTabs from "@/components/custom/common/pos/category-tabs";
 import CheckoutPanel from "@/components/custom/common/pos/checkout-panel";
@@ -18,10 +19,16 @@ import { cn } from "@/lib/utils";
 import { usePos } from "@/components/custom/common/pos/pos-context";
 
 export default function SellPage() {
+  const router = useRouter();
   const { locale } = useLocale();
   const { t } = useTranslation();
-  const { cart, addToCart, increaseQuantity, decreaseQuantity, holdCurrentCart } =
-    usePos();
+  const {
+    cart,
+    addToCart,
+    increaseQuantity,
+    decreaseQuantity,
+    holdCurrentCart,
+  } = usePos();
 
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<CategoryId>(null);
@@ -73,6 +80,12 @@ export default function SellPage() {
     holdCurrentCart(customer?.name ?? t("sell.walkIn"), null);
   };
 
+  const handlePayment = () => {
+    if (cart.length === 0) return;
+
+    router.push(`/pos/payment?total=${encodeURIComponent(total)}`);
+  };
+
   const checkoutPanelProps = {
     cart,
     subtotal,
@@ -90,6 +103,7 @@ export default function SellPage() {
     onIncrease: increaseQuantity,
     onDecrease: decreaseQuantity,
     onHold: handleHold,
+    onPayment: handlePayment,
   };
 
   return (

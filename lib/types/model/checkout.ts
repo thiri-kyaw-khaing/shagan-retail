@@ -20,5 +20,6 @@ export type CheckoutPanelProps = {
   onIncrease: (productId: number) => void;
   onDecrease: (productId: number) => void;
   onHold: () => void;
+  onPayment: () => void;
   onBackToProducts?: () => void;
 };
