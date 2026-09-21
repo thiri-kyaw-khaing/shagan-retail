@@ -18,16 +18,16 @@ export default function StaffPin() {
   const [pin, setPin] = useState("");
 
   const handlePinChange = (nextPin: string) => {
-    const fourDigitPin = nextPin.slice(0, 4);
-    setPin(fourDigitPin);
+    const sixDigitPin = nextPin.slice(0, 6);
+    setPin(sixDigitPin);
 
-    if (fourDigitPin.length === 4) {
+    if (sixDigitPin.length === 6) {
       // Later, verify the PIN here.
-      console.log("Entered PIN:", fourDigitPin);
+      console.log("Entered PIN:", sixDigitPin);
     }
   };
   const handleContinue = () => {
-    if (pin.length !== 4) return;
+    if (pin.length !== 6) return;
 
     // Verify the PIN here later.
     router.push("/pos/open-shift");
@@ -56,14 +56,14 @@ export default function StaffPin() {
             </h1>
 
             <div className="mt-8">
-              <PinDots total={4} current={pin.length} />
+              <PinDots total={6} current={pin.length} />
             </div>
             <div className="mt-10 w-full">
               <NumPad
                 value={pin}
                 onChange={handlePinChange}
                 mode="pin"
-                maxPin={4}
+                maxPin={6}
                 large
               />
             </div>
@@ -73,7 +73,7 @@ export default function StaffPin() {
             label={t("pin.continue")}
             icon={ArrowRight}
             onClick={handleContinue}
-            disabled={pin.length !== 4}
+            disabled={pin.length !== 6}
             className="mt-6 min-h-12 w-full rounded-xl bg-rose-600 text-base font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
           />
         </section>
