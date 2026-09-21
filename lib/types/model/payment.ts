@@ -30,6 +30,24 @@ export type CashPaymentProps = {
   onContinue: () => void;
 };
 
+export type QrPaymentProps = {
+  totalDue: number;
+  locale: Locale;
+  isConfirmed: boolean;
+  onBack: () => void;
+  onSelectMethod: (method: PaymentMethod) => void;
+  onConfirmPayment: () => void;
+  onCompleteSale: () => void;
+};
+
+export type SplitPaymentProps = {
+  totalDue: number;
+  locale: Locale;
+  onBack: () => void;
+  onSelectMethod: (method: PaymentMethod) => void;
+  onCompleteSale: () => void;
+};
+
 export type PaymentCompleteProps = {
   totalDue: number;
   customerGives: number;
