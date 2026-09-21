@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import type { CartItemData } from "@/lib/types/model/cart";
+import type { Product } from "@/lib/types/model/product";
 import {
   heldSales as initialHeldSales,
   type HeldSale,
@@ -18,6 +19,9 @@ import {
 type PosContextValue = {
   cart: CartItemData[];
   setCart: Dispatch<SetStateAction<CartItemData[]>>;
+  addToCart: (product: Product) => void;
+  increaseQuantity: (productId: number) => void;
+  decreaseQuantity: (productId: number) => void;
   heldSales: HeldSale[];
   holdCurrentCart: (
     customerName: string,
@@ -32,6 +36,55 @@ export function PosProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItemData[]>([]);
 
   const [heldSales, setHeldSales] = useState<HeldSale[]>(initialHeldSales);
+
+  const addToCart = (product: Product) => {
+    setCart((currentCart) => {
+      const existingItem = currentCart.find(
+        (item) => item.productId === product.id,
+      );
+
+      if (existingItem) {
+        return currentCart.map((item) =>
+          item.productId === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        );
+      }
+
+      return [
+        ...currentCart,
+        {
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          imageUrl: product.imageUrl,
+          quantity: 1,
+        },
+      ];
+    });
+  };
+
+  const increaseQuantity = (productId: number) => {
+    setCart((currentCart) =>
+      currentCart.map((item) =>
+        item.productId === productId
+          ? { ...item, quantity: item.quantity + 1 }
+          : item,
+      ),
+    );
+  };
+
+  const decreaseQuantity = (productId: number) => {
+    setCart((currentCart) =>
+      currentCart
+        .map((item) =>
+          item.productId === productId
+            ? { ...item, quantity: item.quantity - 1 }
+            : item,
+        )
+        .filter((item) => item.quantity > 0),
+    );
+  };
 
   const holdCurrentCart = (
     customerName: string,
@@ -70,6 +123,9 @@ export function PosProvider({ children }: { children: ReactNode }) {
       value={{
         cart,
         setCart,
+        addToCart,
+        increaseQuantity,
+        decreaseQuantity,
         heldSales,
         holdCurrentCart,
         resumeHeldSale,

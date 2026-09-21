@@ -1,17 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowRight } from "lucide-react";
 
 import CategoryTabs from "@/components/custom/common/pos/category-tabs";
 import CheckoutPanel from "@/components/custom/common/pos/checkout-panel";
+import MobileCartBar from "@/components/custom/common/pos/mobile-cart-bar";
 import ProductGrid from "@/components/custom/common/pos/product-grid";
 import ProductSearchBar from "@/components/custom/common/pos/search-bar";
-import CustomButton from "@/components/custom/common/custom-button";
 
 import { products } from "@/lib/types/model/product";
 import type { CategoryId } from "@/lib/types/model/categories";
-import type { Product } from "@/lib/types/model/product";
 import type { Customer } from "@/lib/types/model/customers";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { useTranslation } from "@/lib/i18n/use-translation";
@@ -22,12 +20,12 @@ import { usePos } from "@/components/custom/common/pos/pos-context";
 export default function SellPage() {
   const { locale } = useLocale();
   const { t } = useTranslation();
+  const { cart, addToCart, increaseQuantity, decreaseQuantity, holdCurrentCart } =
+    usePos();
 
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<CategoryId>(null);
-
   const [search, setSearch] = useState("");
-
   const [isDiscountPanelOpen, setIsDiscountPanelOpen] = useState(false);
   const [discountPercentInput, setDiscountPercentInput] = useState("");
   const [appliedDiscountPercent, setAppliedDiscountPercent] = useState(0);
@@ -35,7 +33,6 @@ export default function SellPage() {
     "products",
   );
   const [customer, setCustomer] = useState<Customer | null>(null);
-  const { cart, setCart, holdCurrentCart } = usePos();
 
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -52,62 +49,11 @@ export default function SellPage() {
     });
   }, [search, selectedCategoryId]);
 
-  const addToCart = (product: Product) => {
-    setCart((currentCart) => {
-      const existingItem = currentCart.find(
-        (item) => item.productId === product.id,
-      );
-
-      if (existingItem) {
-        return currentCart.map((item) =>
-          item.productId === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
-        );
-      }
-
-      return [
-        ...currentCart,
-        {
-          productId: product.id,
-          name: product.name,
-          price: product.price,
-          imageUrl: product.imageUrl,
-          quantity: 1,
-        },
-      ];
-    });
-  };
-
-  const increaseQuantity = (productId: number) => {
-    setCart((currentCart) =>
-      currentCart.map((item) =>
-        item.productId === productId
-          ? { ...item, quantity: item.quantity + 1 }
-          : item,
-      ),
-    );
-  };
-
-  const decreaseQuantity = (productId: number) => {
-    setCart((currentCart) =>
-      currentCart
-        .map((item) =>
-          item.productId === productId
-            ? { ...item, quantity: item.quantity - 1 }
-            : item,
-        )
-        .filter((item) => item.quantity > 0),
-    );
-  };
-
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
-
   const discountAmount = Math.round((subtotal * appliedDiscountPercent) / 100);
-
   const total = subtotal - discountAmount;
   const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -125,6 +71,25 @@ export default function SellPage() {
     if (cart.length === 0) return;
 
     holdCurrentCart(customer?.name ?? t("sell.walkIn"), null);
+  };
+
+  const checkoutPanelProps = {
+    cart,
+    subtotal,
+    discountAmount,
+    total,
+    locale,
+    customer,
+    onChangeCustomer: setCustomer,
+    appliedDiscountPercent,
+    isDiscountPanelOpen,
+    discountPercentInput,
+    onDiscountInputChange: setDiscountPercentInput,
+    onToggleDiscount: () => setIsDiscountPanelOpen((open) => !open),
+    onApplyDiscount: applyDiscount,
+    onIncrease: increaseQuantity,
+    onDecrease: decreaseQuantity,
+    onHold: handleHold,
   };
 
   return (
@@ -164,23 +129,8 @@ export default function SellPage() {
         </section>
 
         <CheckoutPanel
+          {...checkoutPanelProps}
           className="hidden min-w-105 lg:flex lg:basis-[42%]"
-          cart={cart}
-          subtotal={subtotal}
-          discountAmount={discountAmount}
-          total={total}
-          locale={locale}
-          customer={customer}
-          onChangeCustomer={setCustomer}
-          appliedDiscountPercent={appliedDiscountPercent}
-          isDiscountPanelOpen={isDiscountPanelOpen}
-          discountPercentInput={discountPercentInput}
-          onDiscountInputChange={setDiscountPercentInput}
-          onToggleDiscount={() => setIsDiscountPanelOpen((open) => !open)}
-          onApplyDiscount={applyDiscount}
-          onIncrease={increaseQuantity}
-          onDecrease={decreaseQuantity}
-          onHold={handleHold}
         />
       </div>
 
@@ -191,52 +141,23 @@ export default function SellPage() {
         )}
       >
         <CheckoutPanel
+          {...checkoutPanelProps}
           className={cn(
             "flex min-h-full flex-col",
             compactView === "checkout" ? "" : "hidden",
           )}
-          cart={cart}
-          subtotal={subtotal}
-          discountAmount={discountAmount}
-          total={total}
-          locale={locale}
-          customer={customer}
-          onChangeCustomer={setCustomer}
-          appliedDiscountPercent={appliedDiscountPercent}
-          isDiscountPanelOpen={isDiscountPanelOpen}
-          discountPercentInput={discountPercentInput}
-          onDiscountInputChange={setDiscountPercentInput}
-          onToggleDiscount={() => setIsDiscountPanelOpen((open) => !open)}
-          onApplyDiscount={applyDiscount}
-          onIncrease={increaseQuantity}
-          onDecrease={decreaseQuantity}
-          onHold={handleHold}
           onBackToProducts={() => setCompactView("products")}
         />
       </div>
 
-      <div
-        className={cn(
-          "shrink-0 items-center gap-3 border-t bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden",
-          compactView === "products" ? "flex" : "hidden",
-        )}
-      >
-        <div className="min-w-0 flex-1">
-          <p className="text-sm text-slate-500">
-            {cartQuantity} {t("sell.itemsSuffix")}
-          </p>
-          <p className="truncate text-xl font-bold text-rose-900">
-            {formatCurrency(total, locale)}
-          </p>
-        </div>
-        <CustomButton
-          label={t("sell.viewCart")}
-          icon={ArrowRight}
-          onClick={() => setCompactView("checkout")}
+      {compactView === "products" && (
+        <MobileCartBar
+          itemCount={cartQuantity}
+          totalLabel={formatCurrency(total, locale)}
           disabled={cart.length === 0}
-          className="min-h-14 min-w-36 bg-brand px-5 font-bold text-white disabled:bg-rose-200"
+          onViewCart={() => setCompactView("checkout")}
         />
-      </div>
+      )}
     </main>
   );
 }
