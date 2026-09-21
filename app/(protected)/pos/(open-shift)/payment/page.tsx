@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import BackButton from "@/components/custom/common/back-button";
 import CashPayment from "@/components/custom/common/pos/cash-payment";
-import CustomButton from "@/components/custom/common/custom-button";
 import PaymentComplete from "@/components/custom/common/pos/payment-complete";
 import PaymentMethodSelection from "@/components/custom/common/pos/payment-method-selection";
+import QrPayment from "@/components/custom/common/pos/qr-payment";
 import SaleComplete from "@/components/custom/common/pos/sale-complete";
+import SplitPayment from "@/components/custom/common/pos/split-payment";
 import { usePos } from "@/components/custom/common/pos/pos-context";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { PaymentMethod } from "@/lib/types/model/payment";
@@ -22,6 +22,7 @@ export default function PaymentPage() {
   );
   const [cashInput, setCashInput] = useState("");
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+  const [isQrConfirmed, setIsQrConfirmed] = useState(false);
   const [isSaleComplete, setIsSaleComplete] = useState(false);
 
   const totalDue = cart.reduce(
@@ -57,7 +58,10 @@ export default function PaymentPage() {
           <PaymentMethodSelection
             totalDue={totalDue}
             locale={locale}
-            onSelect={setPaymentMethod}
+            onSelect={(method) => {
+              setPaymentMethod(method);
+              setIsQrConfirmed(false);
+            }}
           />
         )}
 
@@ -73,9 +77,25 @@ export default function PaymentPage() {
             onSelectMethod={(method) => {
               setPaymentMethod(method);
               setIsPaymentComplete(false);
+              setIsQrConfirmed(false);
             }}
             onCashChange={setCashInput}
             onContinue={handleCashContinue}
+          />
+        )}
+
+        {!isSaleComplete && paymentMethod === "qr" && (
+          <QrPayment
+            totalDue={totalDue}
+            locale={locale}
+            isConfirmed={isQrConfirmed}
+            onBack={() => setPaymentMethod(null)}
+            onSelectMethod={(method) => {
+              setPaymentMethod(method);
+              setIsQrConfirmed(false);
+            }}
+            onConfirmPayment={() => setIsQrConfirmed(true)}
+            onCompleteSale={() => setIsSaleComplete(true)}
           />
         )}
 
@@ -90,27 +110,18 @@ export default function PaymentPage() {
           />
         )}
 
-        {!isSaleComplete &&
-          paymentMethod !== null &&
-          paymentMethod !== "cash" && (
-            <div className="p-6 sm:p-8">
-              <BackButton
-                href="/pos/sell"
-                className="size-11 p-0 text-slate-600 hover:bg-rose-50"
-              />
-              <h1 className="mt-4 text-xl font-bold text-slate-900">
-                {paymentMethod === "qr" ? "QR Code payment" : "Split payment"}
-              </h1>
-              <p className="mt-2 text-slate-500">
-                This payment method is ready for integration.
-              </p>
-              <CustomButton
-                label="Back to payment methods"
-                onClick={() => setPaymentMethod(null)}
-                className="mt-6 min-h-12 bg-brand font-semibold text-white"
-              />
-            </div>
-          )}
+        {!isSaleComplete && paymentMethod === "split" && (
+          <SplitPayment
+            totalDue={totalDue}
+            locale={locale}
+            onBack={() => setPaymentMethod(null)}
+            onSelectMethod={(method) => {
+              setPaymentMethod(method);
+              setIsQrConfirmed(false);
+            }}
+            onCompleteSale={() => setIsSaleComplete(true)}
+          />
+        )}
       </section>
     </main>
   );
