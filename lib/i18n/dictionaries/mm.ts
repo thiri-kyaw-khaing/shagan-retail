@@ -216,6 +216,38 @@ const mm: typeof en = {
   "backOffice.subtitle": "Back Office v0.1",
   "backOffice.exitToPortal": "Portal သို့ ထွက်ရန်",
   "backOffice.signOut": "ထွက်ရန်",
+
+  "chooseSection.helpCenter": "အကူအညီစင်တာ",
+  "chooseSection.customizeReceipt": "ဘောက်ချာစိတ်ကြိုက်ပြင်ဆင်ရန်",
+  "chooseSection.openDrawer": "ငွေဒရာဝါဖွင့်ရန်",
+
+  "helpCenterDialog.title": "အကူအညီစင်တာ",
+  "helpCenterDialog.description": "အကူအညီစာရွက်စာတမ်းများ မကြာမီ လာပါမည်။",
+  "helpCenterDialog.close": "ပိတ်ရန်",
+
+  "dashboardPreview.title": "ဒက်ရှ်ဘုတ်",
+  "dashboardPreview.subtitle": "ယနေ့ ဆိုင်ခြုံငုံသုံးသပ်ချက်နှင့် အဓိက စွမ်းဆောင်ရည်ကိန်းများ",
+  "dashboardPreview.salesToday": "ယနေ့ ရောင်းချမှု",
+  "dashboardPreview.revenue": "ဝင်ငွေ",
+  "dashboardPreview.lowStock": "ပစ္စည်း နည်းနေသည်",
+  "dashboardPreview.totalExpenses": "စုစုပေါင်း အသုံးစရိတ်",
+
+  "sections.staff.title": "ဝန်ထမ်းစီမံခန့်ခွဲမှု",
+  "sections.staff.subtitle": "သင့်အဖွဲ့နှင့် PIN များကို စီမံပါ",
+  "sections.products.title": "ကုန်ပစ္စည်းစာရင်း",
+  "sections.products.subtitle": "ကုန်ပစ္စည်း၊ ဈေးနှုန်းနှင့် ပက်ကေ့ဂျ်များ",
+  "sections.inventoryLedger.title": "ပစ္စည်းစာရင်း မှတ်တမ်း",
+  "sections.inventoryLedger.subtitle": "ဌာနခွဲများအကြား ပစ္စည်းရွှေ့ပြောင်းမှုများ",
+  "sections.suppliers.title": "ပေးသွင်းသူ",
+  "sections.suppliers.subtitle": "ပေးသွင်းသူများနှင့် ဝယ်ယူမှု အမှာစာများ",
+  "sections.customers.title": "ဖောက်သည်",
+  "sections.customers.subtitle": "ဖောက်သည် အချက်အလက်နှင့် ကုန်ကျစရိတ်",
+  "sections.salesHistory.title": "ရောင်းချမှတ်တမ်း",
+  "sections.salesHistory.subtitle": "ဘောက်ချာများ ကြည့်ရှု၊ ပြန်ပေး၊ လဲလှယ်နှင့် ပယ်ဖျက်ရန်",
+  "sections.auditLog.title": "စစ်ဆေးမှု မှတ်တမ်း",
+  "sections.auditLog.subtitle": "အသုံးပြုသူ အားလုံး၏ စနစ်လှုပ်ရှားမှုများ",
+  "sections.reports.title": "အစီရင်ခံစာများ",
+  "sections.reports.subtitle": "ရောင်းချမှုနှင့် ကုန်ပစ္စည်း စွမ်းဆောင်ရည်",
 };
 
 export default mm;

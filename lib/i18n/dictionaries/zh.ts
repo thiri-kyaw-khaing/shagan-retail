@@ -209,6 +209,38 @@ const zh: typeof en = {
   "backOffice.subtitle": "后台管理 v0.1",
   "backOffice.exitToPortal": "返回门户",
   "backOffice.signOut": "退出登录",
+
+  "chooseSection.helpCenter": "帮助中心",
+  "chooseSection.customizeReceipt": "自定义收据",
+  "chooseSection.openDrawer": "打开钱箱",
+
+  "helpCenterDialog.title": "帮助中心",
+  "helpCenterDialog.description": "帮助文档即将推出。",
+  "helpCenterDialog.close": "关闭",
+
+  "dashboardPreview.title": "仪表板",
+  "dashboardPreview.subtitle": "今日门店概览及关键绩效指标",
+  "dashboardPreview.salesToday": "今日销售",
+  "dashboardPreview.revenue": "营业额",
+  "dashboardPreview.lowStock": "库存不足",
+  "dashboardPreview.totalExpenses": "总支出",
+
+  "sections.staff.title": "员工管理",
+  "sections.staff.subtitle": "管理团队及密码",
+  "sections.products.title": "商品目录",
+  "sections.products.subtitle": "商品、价格与套餐",
+  "sections.inventoryLedger.title": "库存台账",
+  "sections.inventoryLedger.subtitle": "各分店库存变动记录",
+  "sections.suppliers.title": "供应商",
+  "sections.suppliers.subtitle": "供应商与采购订单",
+  "sections.customers.title": "客户",
+  "sections.customers.subtitle": "客户资料与消费记录",
+  "sections.salesHistory.title": "销售记录",
+  "sections.salesHistory.subtitle": "浏览、退货、换货和作废收据",
+  "sections.auditLog.title": "审计日志",
+  "sections.auditLog.subtitle": "所有用户的系统活动记录",
+  "sections.reports.title": "报表",
+  "sections.reports.subtitle": "销售与商品表现",
 };
 
 export default zh;

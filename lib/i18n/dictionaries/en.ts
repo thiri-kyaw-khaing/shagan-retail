@@ -212,6 +212,38 @@ const en = {
   "backOffice.subtitle": "Back Office v0.1",
   "backOffice.exitToPortal": "Exit to Portal",
   "backOffice.signOut": "Sign out",
+
+  "chooseSection.helpCenter": "Help Center",
+  "chooseSection.customizeReceipt": "Customize Receipt",
+  "chooseSection.openDrawer": "Open Drawer",
+
+  "helpCenterDialog.title": "Help Center",
+  "helpCenterDialog.description": "Help documentation is coming soon.",
+  "helpCenterDialog.close": "Close",
+
+  "dashboardPreview.title": "Dashboard",
+  "dashboardPreview.subtitle": "Today's shop overview and key performance metrics",
+  "dashboardPreview.salesToday": "Sales Today",
+  "dashboardPreview.revenue": "Revenue",
+  "dashboardPreview.lowStock": "Low Stock",
+  "dashboardPreview.totalExpenses": "Total Expenses",
+
+  "sections.staff.title": "Staff Management",
+  "sections.staff.subtitle": "Manage your team and PINs",
+  "sections.products.title": "Product Catalog",
+  "sections.products.subtitle": "Products, prices, and combos",
+  "sections.inventoryLedger.title": "Inventory Ledger",
+  "sections.inventoryLedger.subtitle": "Stock movements across branches",
+  "sections.suppliers.title": "Supplier",
+  "sections.suppliers.subtitle": "Suppliers and purchase orders",
+  "sections.customers.title": "Customer",
+  "sections.customers.subtitle": "Customer profiles and spend",
+  "sections.salesHistory.title": "Sales History",
+  "sections.salesHistory.subtitle": "Browse, return, exchange and void receipts",
+  "sections.auditLog.title": "Audit Log",
+  "sections.auditLog.subtitle": "System activity across all users",
+  "sections.reports.title": "Reports",
+  "sections.reports.subtitle": "Sales and product performance",
 };
 
 export default en;
