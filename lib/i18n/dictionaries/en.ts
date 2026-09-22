@@ -205,6 +205,13 @@ const en = {
   "return.processedPrefix": "Return processed —",
   "return.refundedViaSuffix": "refunded via",
   "return.backToSalesHistory": "Back to Sales History",
+
+  "managerPin.title": "Manager access",
+  "managerPin.subtitle": "Enter manager PIN to open Back Office",
+
+  "backOffice.subtitle": "Back Office v0.1",
+  "backOffice.exitToPortal": "Exit to Portal",
+  "backOffice.signOut": "Sign out",
 };
 
 export default en;

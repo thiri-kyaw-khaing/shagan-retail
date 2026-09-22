@@ -7,14 +7,16 @@ import { cn } from "@/lib/utils";
 const PIN_LENGTH = 6;
 
 type ManagerApprovalStepProps = {
-  amount: number;
+  title: string;
+  subtitle: string;
   pin: string;
   onPinChange: (pin: string) => void;
   onSubmit: () => void;
 };
 
 export default function ManagerApprovalStep({
-  amount,
+  title,
+  subtitle,
   pin,
   onPinChange,
   onSubmit,
@@ -28,12 +30,8 @@ export default function ManagerApprovalStep({
         <Lock className="size-7" />
       </div>
 
-      <h1 className="mt-4 text-xl font-bold text-ink">
-        {t("return.managerApprovalRequired")}
-      </h1>
-      <p className="mt-1 text-sm text-ink-muted">
-        {t("return.approvingRefundPrefix")} K {amount.toLocaleString()}
-      </p>
+      <h1 className="mt-4 text-xl font-bold text-ink">{title}</h1>
+      <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>
 
       <div className="mt-6">
         <PinDots total={PIN_LENGTH} current={pin.length} />
