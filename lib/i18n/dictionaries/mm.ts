@@ -209,6 +209,13 @@ const mm: typeof en = {
   "return.processedPrefix": "ပြန်ပေးမှု လုပ်ဆောင်ပြီးပါပြီ —",
   "return.refundedViaSuffix": "မှတဆင့် ငွေပြန်အမ်းပြီး",
   "return.backToSalesHistory": "ရောင်းချမှတ်တမ်းသို့ ပြန်သွားရန်",
+
+  "managerPin.title": "မန်နေဂျာ အသုံးပြုခွင့်",
+  "managerPin.subtitle": "Back Office ကို ဖွင့်ရန် မန်နေဂျာ PIN ရိုက်ထည့်ပါ",
+
+  "backOffice.subtitle": "Back Office v0.1",
+  "backOffice.exitToPortal": "Portal သို့ ထွက်ရန်",
+  "backOffice.signOut": "ထွက်ရန်",
 };
 
 export default mm;

@@ -24,7 +24,7 @@ function UserPortalPage() {
             subtitle={t("portal.pos.subtitle")}
           />
           <PortalCard
-            href="/admin/pin"
+            href="/manager/pin"
             icon={<Archive />}
             title={t("portal.backOffice.title")}
             subtitle={t("portal.backOffice.subtitle")}

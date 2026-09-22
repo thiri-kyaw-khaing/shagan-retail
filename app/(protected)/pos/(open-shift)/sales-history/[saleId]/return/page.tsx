@@ -190,7 +190,8 @@ export default function ReturnItemsPage({ params }: ReturnItemsPageProps) {
 
       {step === "approval" && (
         <ManagerApprovalStep
-          amount={refundTotal}
+          title={t("return.managerApprovalRequired")}
+          subtitle={`${t("return.approvingRefundPrefix")} K ${refundTotal.toLocaleString()}`}
           pin={managerPin}
           onPinChange={setManagerPin}
           onSubmit={handleApprove}

@@ -202,6 +202,13 @@ const zh: typeof en = {
   "return.processedPrefix": "退货已处理 —",
   "return.refundedViaSuffix": "已退款，方式为",
   "return.backToSalesHistory": "返回销售记录",
+
+  "managerPin.title": "经理权限",
+  "managerPin.subtitle": "输入经理密码以打开后台管理",
+
+  "backOffice.subtitle": "后台管理 v0.1",
+  "backOffice.exitToPortal": "返回门户",
+  "backOffice.signOut": "退出登录",
 };
 
 export default zh;
