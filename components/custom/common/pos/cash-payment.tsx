@@ -7,6 +7,7 @@ import CustomButton from "@/components/custom/common/custom-button";
 import NumPad from "@/components/custom/common/numpad";
 import { PaymentMethodButton } from "@/components/custom/common/pos/payment-method-selection";
 import { formatCurrency } from "@/lib/i18n/format";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import type { CashPaymentProps } from "@/lib/types/model/payment";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,7 @@ export default function CashPayment({
   onCashChange,
   onContinue,
 }: CashPaymentProps) {
+  const { t } = useTranslation();
   const isShort = cashInput !== "" && !hasEnoughCash;
 
   return (
@@ -33,11 +35,12 @@ export default function CashPayment({
             className="-ml-2 size-11 bg-transparent p-0 text-slate-600 shadow-none hover:bg-slate-50"
           />
           <p className="mt-2 text-sm text-slate-500">
-            Customer: <strong className="text-slate-900">Walk-in</strong>
+            {t("payment.customerPrefix")}{" "}
+            <strong className="text-slate-900">{t("sell.walkIn")}</strong>
           </p>
         </div>
         <div className="text-right">
-          <p className="text-sm text-slate-500">Total due</p>
+          <p className="text-sm text-slate-500">{t("payment.totalDue")}</p>
           <p className="text-3xl font-bold text-rose-900">
             {formatCurrency(totalDue, locale)}
           </p>
@@ -47,31 +50,31 @@ export default function CashPayment({
       <div className="mt-5 grid grid-cols-3 gap-3">
         <PaymentMethodButton
           icon={Banknote}
-          label="Cash"
+          label={t("payment.cash")}
           onClick={() => onSelectMethod("cash")}
           className="border-rose-500 bg-rose-50 text-rose-700"
         />
         <PaymentMethodButton
           icon={QrCode}
-          label="QR Code"
+          label={t("payment.qrCode")}
           onClick={() => onSelectMethod("qr")}
         />
         <PaymentMethodButton
           icon={Layers3}
-          label="Split"
+          label={t("payment.split")}
           onClick={() => onSelectMethod("split")}
         />
       </div>
 
       <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
         <div className="flex justify-between font-semibold text-slate-700">
-          <span>Amount Due</span>
+          <span>{t("payment.amountDue")}</span>
           <span>{formatCurrency(totalDue, locale)}</span>
         </div>
       </div>
 
       <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-        Customer gives
+        {t("payment.customerGives")}
         <div
           className={cn(
             "mt-1 rounded-xl border bg-slate-50 px-4 py-3 text-right text-2xl font-bold",
@@ -86,14 +89,16 @@ export default function CashPayment({
 
       {isShort && (
         <p className="mt-2 text-center text-sm font-medium text-rose-600">
-          Amount is {formatCurrency(Math.abs(difference), locale)} short
+          {t("payment.amountShortPrefix")}{" "}
+          {formatCurrency(Math.abs(difference), locale)}{" "}
+          {t("payment.amountShortSuffix")}
         </p>
       )}
 
       {hasEnoughCash && (
         <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
           <div className="flex justify-between font-semibold text-emerald-700">
-            <span>Change</span>
+            <span>{t("payment.change")}</span>
             <span>{formatCurrency(difference, locale)}</span>
           </div>
         </div>
@@ -105,12 +110,12 @@ export default function CashPayment({
 
       <div className="mt-4 grid grid-cols-2 gap-2">
         <CustomButton
-          label="‹ Back"
+          label={`‹ ${t("payment.back")}`}
           onClick={onBack}
           className="min-h-12 border border-slate-200 bg-white text-slate-600 shadow-none hover:bg-slate-50"
         />
         <CustomButton
-          label="Continue"
+          label={t("payment.continue")}
           icon={ArrowRight}
           onClick={onContinue}
           disabled={!hasEnoughCash}

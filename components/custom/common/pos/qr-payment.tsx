@@ -6,6 +6,7 @@ import BackButton from "@/components/custom/common/back-button";
 import CustomButton from "@/components/custom/common/custom-button";
 import { PaymentMethodButton } from "@/components/custom/common/pos/payment-method-selection";
 import { formatCurrency } from "@/lib/i18n/format";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import type { QrPaymentProps } from "@/lib/types/model/payment";
 
 export default function QrPayment({
@@ -17,6 +18,8 @@ export default function QrPayment({
   onConfirmPayment,
   onCompleteSale,
 }: QrPaymentProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="p-5 sm:p-6">
       <div className="flex items-start justify-between border-b pb-5">
@@ -26,14 +29,15 @@ export default function QrPayment({
             className="-ml-2 size-11 p-0 text-slate-600 hover:bg-rose-50"
           />
           <p className="mt-3 text-sm text-slate-500">
-            Customer: <strong className="text-slate-900">Walk-in</strong>
+            {t("payment.customerPrefix")}{" "}
+            <strong className="text-slate-900">{t("sell.walkIn")}</strong>
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            Choose a payment method below
+            {t("payment.choosePaymentMethod")}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-sm text-slate-500">Total due</p>
+          <p className="text-sm text-slate-500">{t("payment.totalDue")}</p>
           <p className="text-3xl font-bold text-rose-900">
             {formatCurrency(totalDue, locale)}
           </p>
@@ -43,18 +47,18 @@ export default function QrPayment({
       <div className="mt-5 grid grid-cols-3 gap-3">
         <PaymentMethodButton
           icon={Banknote}
-          label="Cash"
+          label={t("payment.cash")}
           onClick={() => onSelectMethod("cash")}
         />
         <PaymentMethodButton
           icon={QrCode}
-          label="QR Code"
+          label={t("payment.qrCode")}
           onClick={() => onSelectMethod("qr")}
           className="border-rose-500 bg-rose-50 text-rose-700"
         />
         <PaymentMethodButton
           icon={Layers3}
-          label="Split"
+          label={t("payment.split")}
           onClick={() => onSelectMethod("split")}
         />
       </div>
@@ -64,12 +68,16 @@ export default function QrPayment({
           <QrCode className="size-16 text-slate-500" />
         </div>
         <p className="mx-auto mt-4 max-w-md text-sm text-slate-500">
-          Show the QR code to the customer and wait for payment on your device.
+          {t("payment.showQrInstruction")}
         </p>
       </div>
 
       <CustomButton
-        label={isConfirmed ? "Payment confirmed" : "Payment received — confirm"}
+        label={
+          isConfirmed
+            ? t("payment.paymentConfirmed")
+            : t("payment.paymentReceivedConfirm")
+        }
         icon={Check}
         onClick={onConfirmPayment}
         disabled={isConfirmed}
@@ -77,7 +85,7 @@ export default function QrPayment({
       />
 
       <CustomButton
-        label="Complete Sale"
+        label={t("payment.completeSale")}
         icon={ArrowRight}
         onClick={onCompleteSale}
         disabled={!isConfirmed}

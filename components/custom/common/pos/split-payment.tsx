@@ -8,6 +8,7 @@ import CustomButton from "@/components/custom/common/custom-button";
 import NumPad from "@/components/custom/common/numpad";
 import { PaymentMethodButton } from "@/components/custom/common/pos/payment-method-selection";
 import { formatCurrency } from "@/lib/i18n/format";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import type { SplitPaymentProps } from "@/lib/types/model/payment";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ export default function SplitPayment({
   onSelectMethod,
   onCompleteSale,
 }: SplitPaymentProps) {
+  const { t } = useTranslation();
   const [paymentLines, setPaymentLines] = useState<PaymentLine[]>([]);
   const [activeTender, setActiveTender] = useState<TenderMethod | null>(null);
   const [cashInput, setCashInput] = useState("");
@@ -63,14 +65,15 @@ export default function SplitPayment({
             className="-ml-2 size-11 p-0 text-slate-600 hover:bg-rose-50"
           />
           <p className="mt-3 text-sm text-slate-500">
-            Customer: <strong className="text-slate-900">Walk-in</strong>
+            {t("payment.customerPrefix")}{" "}
+            <strong className="text-slate-900">{t("sell.walkIn")}</strong>
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            Choose a payment method below
+            {t("payment.choosePaymentMethod")}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-sm text-slate-500">Total due</p>
+          <p className="text-sm text-slate-500">{t("payment.totalDue")}</p>
           <p className="text-3xl font-bold text-rose-900">
             {formatCurrency(totalDue, locale)}
           </p>
@@ -80,19 +83,19 @@ export default function SplitPayment({
       <div className="mt-5 grid grid-cols-3 gap-3">
         <PaymentMethodButton
           icon={Banknote}
-          label="Cash"
+          label={t("payment.cash")}
           onClick={() => onSelectMethod("cash")}
           className="border-slate-200"
         />
         <PaymentMethodButton
           icon={QrCode}
-          label="QR Code"
+          label={t("payment.qrCode")}
           onClick={() => onSelectMethod("qr")}
           className="border-slate-200"
         />
         <PaymentMethodButton
           icon={Layers3}
-          label="Split"
+          label={t("payment.split")}
           onClick={() => onSelectMethod("split")}
           className="border-rose-500 bg-rose-50 text-rose-700"
         />
@@ -106,7 +109,7 @@ export default function SplitPayment({
             : "border-rose-200 bg-rose-50 text-slate-700",
         )}
       >
-        <span>Amount remaining</span>
+        <span>{t("payment.amountRemaining")}</span>
         <span>{formatCurrency(remainingAmount, locale)}</span>
       </div>
 
@@ -121,7 +124,7 @@ export default function SplitPayment({
             ) : (
               <QrCode className="size-4" />
             )}
-            {line.method === "cash" ? "Cash" : "QR Code"}
+            {line.method === "cash" ? t("payment.cash") : t("payment.qrCode")}
           </span>
           <span>{formatCurrency(line.amount, locale)}</span>
         </div>
@@ -130,12 +133,12 @@ export default function SplitPayment({
       {remainingAmount > 0 && (
         <>
           <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Next tender
+            {t("payment.nextTender")}
           </p>
           <div className="mt-2 grid grid-cols-2 gap-3">
             <PaymentMethodButton
               icon={Banknote}
-              label="Cash"
+              label={t("payment.cash")}
               onClick={() => selectTender("cash")}
               className={cn(
                 "min-h-14 flex-row",
@@ -144,7 +147,7 @@ export default function SplitPayment({
             />
             <PaymentMethodButton
               icon={QrCode}
-              label="QR Code"
+              label={t("payment.qrCode")}
               onClick={() => selectTender("qr")}
               className={cn(
                 "min-h-14 flex-row",
@@ -173,11 +176,16 @@ export default function SplitPayment({
               <QrCode className="size-14 text-slate-500" />
             </div>
             <p className="mt-3 text-sm text-slate-500">
-              QR payment for remaining {formatCurrency(remainingAmount, locale)}
+              {t("payment.qrPaymentForRemainingPrefix")}{" "}
+              {formatCurrency(remainingAmount, locale)}
             </p>
           </div>
           <CustomButton
-            label={isQrConfirmed ? "QR confirmed" : "Confirm QR payment"}
+            label={
+              isQrConfirmed
+                ? t("payment.qrConfirmed")
+                : t("payment.confirmQrPayment")
+            }
             icon={Check}
             onClick={() => setIsQrConfirmed(true)}
             disabled={isQrConfirmed}
@@ -188,7 +196,7 @@ export default function SplitPayment({
 
       {remainingAmount > 0 && (
         <CustomButton
-          label="+ Add payment line"
+          label={t("payment.addPaymentLine")}
           onClick={addPaymentLine}
           disabled={!canAddLine}
           className="mt-3 min-h-12 w-full bg-slate-800 font-semibold text-white disabled:bg-slate-300"
@@ -196,7 +204,7 @@ export default function SplitPayment({
       )}
 
       <CustomButton
-        label="Complete Sale"
+        label={t("payment.completeSale")}
         onClick={onCompleteSale}
         disabled={!isComplete}
         className="mt-5 min-h-14 w-full bg-brand text-lg font-bold text-white disabled:bg-rose-200"

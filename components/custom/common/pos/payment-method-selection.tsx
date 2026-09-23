@@ -5,6 +5,7 @@ import { ArrowRight, Banknote, Layers3, QrCode } from "lucide-react";
 import BackButton from "@/components/custom/common/back-button";
 import CustomButton from "@/components/custom/common/custom-button";
 import { formatCurrency } from "@/lib/i18n/format";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import { cn } from "@/lib/utils";
 import type {
   PaymentMethodButtonProps,
@@ -16,6 +17,8 @@ export default function PaymentMethodSelection({
   locale,
   onSelect,
 }: PaymentMethodSelectionProps) {
+  const { t } = useTranslation();
+
   return (
     <>
       <div className="flex items-start justify-between border-b p-5 sm:p-6">
@@ -25,14 +28,15 @@ export default function PaymentMethodSelection({
             className="-ml-2 size-11 p-0 text-slate-600 hover:bg-rose-50"
           />
           <p className="mt-3 text-sm text-slate-500">
-            Customer: <strong className="text-slate-900">Walk-in</strong>
+            {t("payment.customerPrefix")}{" "}
+            <strong className="text-slate-900">{t("sell.walkIn")}</strong>
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            Choose a payment method below
+            {t("payment.choosePaymentMethod")}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-sm text-slate-500">Total due</p>
+          <p className="text-sm text-slate-500">{t("payment.totalDue")}</p>
           <p className="text-3xl font-bold text-rose-900">
             {formatCurrency(totalDue, locale)}
           </p>
@@ -42,24 +46,24 @@ export default function PaymentMethodSelection({
       <div className="grid gap-3 p-5 sm:grid-cols-3 sm:p-6">
         <PaymentMethodButton
           icon={Banknote}
-          label="Cash"
+          label={t("payment.cash")}
           onClick={() => onSelect("cash")}
         />
         <PaymentMethodButton
           icon={QrCode}
-          label="QR Code"
+          label={t("payment.qrCode")}
           onClick={() => onSelect("qr")}
         />
         <PaymentMethodButton
           icon={Layers3}
-          label="Split"
+          label={t("payment.split")}
           onClick={() => onSelect("split")}
         />
       </div>
 
       <div className="px-5 pb-6 sm:px-6">
         <CustomButton
-          label="Complete Sale"
+          label={t("payment.completeSale")}
           icon={ArrowRight}
           disabled
           className="min-h-14 w-full bg-rose-200 text-lg font-bold text-white"
