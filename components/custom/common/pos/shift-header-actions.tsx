@@ -1,10 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Globe, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useClickOutside } from "@/lib/hooks/use-click-outside";
-import LanguageMenu from "./language-menu";
+import LanguageSwitcherButton from "@/components/custom/common/language-switcher-button";
 import MoreMenu from "./more-menu";
 import SettingsDialog from "./settings-dialog";
 import CloseShiftDialog from "./close-shift-dialog";
@@ -17,34 +17,18 @@ type ShiftHeaderActionsProps = {
 export default function ShiftHeaderActions({ hasAlert = false }: ShiftHeaderActionsProps) {
   const router = useRouter();
   const { t } = useTranslation();
-  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCloseShiftOpen, setIsCloseShiftOpen] = useState(false);
 
-  const languageRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
 
-  useClickOutside(languageRef, () => setIsLanguageOpen(false));
   useClickOutside(moreRef, () => setIsMoreOpen(false));
 
   return (
     <>
       <div className="flex items-center gap-2">
-        <div ref={languageRef} className="relative">
-          <button
-            type="button"
-            onClick={() => setIsLanguageOpen((open) => !open)}
-            aria-label={t("language.switchLabel")}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-white transition hover:bg-white/25"
-          >
-            <Globe className="h-4 w-4" />
-          </button>
-
-          {isLanguageOpen && (
-            <LanguageMenu onSelect={() => setIsLanguageOpen(false)} />
-          )}
-        </div>
+        <LanguageSwitcherButton className="bg-white/15 text-white hover:bg-white/25" />
 
         <div ref={moreRef} className="relative">
           <button

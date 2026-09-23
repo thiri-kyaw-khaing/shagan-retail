@@ -6,10 +6,6 @@ const mm: typeof en = {
   "nav.salesHistory": "ရောင်းချမှတ်တမ်း",
   "language.switchLabel": "ဘာသာစကားပြောင်းရန်",
 
-  "changeLang.title": "သင့်ဘာသာစကားကို ရွေးချယ်ပါ",
-  "changeLang.subtitle": "ဆက်လက်ရန် ဘာသာစကားတစ်ခု ရွေးချယ်ပါ",
-  "changeLang.continue": "ရှေ့ဆက်ရန်",
-
   "login.title": "Shagan Retail",
   "login.subtitle": "အကောင့်ဝင်ရန် သင့်အီးမေးလ်ကို ထည့်သွင်းပါ",
   "login.emailLabel": "အီးမေးလ်",
