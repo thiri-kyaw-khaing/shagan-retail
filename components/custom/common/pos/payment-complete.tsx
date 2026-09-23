@@ -5,6 +5,7 @@ import { ArrowRight, WalletCards } from "lucide-react";
 import BackButton from "@/components/custom/common/back-button";
 import CustomButton from "@/components/custom/common/custom-button";
 import { formatCurrency } from "@/lib/i18n/format";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import type { PaymentCompleteProps } from "@/lib/types/model/payment";
 
 export default function PaymentComplete({
@@ -15,6 +16,8 @@ export default function PaymentComplete({
   onBack,
   onComplete,
 }: PaymentCompleteProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="p-5 sm:p-6">
       <div className="flex items-start justify-between border-b pb-5">
@@ -24,12 +27,15 @@ export default function PaymentComplete({
             className="-ml-2 size-11 bg-transparent p-0 text-slate-600 shadow-none hover:bg-slate-50"
           />
           <p className="mt-2 text-sm text-slate-500">
-            Customer: <strong className="text-slate-900">Walk-in</strong>
+            {t("payment.customerPrefix")}{" "}
+            <strong className="text-slate-900">{t("sell.walkIn")}</strong>
           </p>
-          <p className="mt-1 text-sm text-slate-500">Give change to customer</p>
+          <p className="mt-1 text-sm text-slate-500">
+            {t("payment.giveChangeToCustomer")}
+          </p>
         </div>
         <div className="text-right">
-          <p className="text-sm text-slate-500">Total due</p>
+          <p className="text-sm text-slate-500">{t("payment.totalDue")}</p>
           <p className="text-3xl font-bold text-rose-900">
             {formatCurrency(totalDue, locale)}
           </p>
@@ -37,12 +43,13 @@ export default function PaymentComplete({
       </div>
 
       <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
-        <WalletCards className="mr-2 inline size-4" /> Cash drawer opened
+        <WalletCards className="mr-2 inline size-4" />{" "}
+        {t("payment.cashDrawerOpened")}
       </div>
 
       <div className="py-7 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-          Change to customer
+          {t("payment.changeToCustomer")}
         </p>
         <p className="mt-2 text-5xl font-bold text-emerald-600">
           {formatCurrency(change, locale)}
@@ -51,17 +58,17 @@ export default function PaymentComplete({
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
         <div className="flex justify-between text-slate-600">
-          <span>Customer Gave</span>
+          <span>{t("payment.customerGave")}</span>
           <strong>{formatCurrency(customerGives, locale)}</strong>
         </div>
         <div className="mt-3 flex justify-between border-t border-slate-200 pt-3 text-slate-600">
-          <span>Purchase Total</span>
+          <span>{t("payment.purchaseTotal")}</span>
           <strong>{formatCurrency(totalDue, locale)}</strong>
         </div>
       </div>
 
       <CustomButton
-        label="Complete Payment"
+        label={t("payment.completePayment")}
         icon={ArrowRight}
         onClick={onComplete}
         className="mt-5 min-h-14 w-full bg-brand text-lg font-bold text-white"
@@ -71,7 +78,7 @@ export default function PaymentComplete({
         onClick={onBack}
         className="mt-5 min-h-11 w-full text-sm font-semibold text-amber-700"
       >
-        Change Not Available?
+        {t("payment.changeNotAvailable")}
       </button>
     </div>
   );
