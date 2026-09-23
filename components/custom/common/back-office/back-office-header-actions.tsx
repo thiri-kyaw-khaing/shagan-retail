@@ -1,12 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Globe, Home, LogOut } from "lucide-react";
+import { Home, LogOut } from "lucide-react";
 
 import CustomButton from "@/components/custom/common/custom-button";
-import LanguageMenu from "@/components/custom/common/pos/language-menu";
-import { useClickOutside } from "@/lib/hooks/use-click-outside";
+import LanguageSwitcherButton from "@/components/custom/common/language-switcher-button";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
 type BackOfficeHeaderActionsProps = {
@@ -22,10 +20,6 @@ export default function BackOfficeHeaderActions({
 }: BackOfficeHeaderActionsProps) {
   const router = useRouter();
   const { t } = useTranslation();
-  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
-  const languageRef = useRef<HTMLDivElement>(null);
-
-  useClickOutside(languageRef, () => setIsLanguageOpen(false));
 
   return (
     <div className="flex items-center gap-3">
@@ -36,20 +30,7 @@ export default function BackOfficeHeaderActions({
         </p>
       </div>
 
-      <div ref={languageRef} className="relative">
-        <button
-          type="button"
-          onClick={() => setIsLanguageOpen((open) => !open)}
-          aria-label={t("language.switchLabel")}
-          className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-white transition hover:bg-white/25"
-        >
-          <Globe className="h-4 w-4" />
-        </button>
-
-        {isLanguageOpen && (
-          <LanguageMenu onSelect={() => setIsLanguageOpen(false)} />
-        )}
-      </div>
+      <LanguageSwitcherButton className="bg-white/15 text-white hover:bg-white/25" />
 
       <span className="h-6 w-px bg-white/30" />
 

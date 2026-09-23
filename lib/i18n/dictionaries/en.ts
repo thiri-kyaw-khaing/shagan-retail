@@ -4,10 +4,6 @@ const en = {
   "nav.salesHistory": "Sales History",
   "language.switchLabel": "Switch language",
 
-  "changeLang.title": "Choose your language",
-  "changeLang.subtitle": "Select a language to continue",
-  "changeLang.continue": "Continue",
-
   "login.title": "Shagan Retail",
   "login.subtitle": "Enter your email below to login to your account",
   "login.emailLabel": "Email",

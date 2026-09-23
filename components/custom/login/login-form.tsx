@@ -19,6 +19,7 @@ import { Form } from "@/components/ui/form";
 import Logo from "../logo/logo";
 import FormInput from "../common/forms/form-input";
 import CustomButton from "../common/custom-button";
+import LanguageSwitcherButton from "@/components/custom/common/language-switcher-button";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
 const LoginSchema = z.object({
@@ -47,7 +48,9 @@ function LoginForm() {
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center px-4 py-8 sm:px-6">
-      <Card className="w-full max-w-sm">
+      <Card className="relative w-full max-w-sm">
+        <LanguageSwitcherButton className="absolute top-4 right-4 z-10 bg-slate-100 text-slate-600 hover:bg-slate-200" />
+
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}

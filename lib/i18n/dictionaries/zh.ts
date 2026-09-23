@@ -6,10 +6,6 @@ const zh: typeof en = {
   "nav.salesHistory": "销售记录",
   "language.switchLabel": "切换语言",
 
-  "changeLang.title": "选择您的语言",
-  "changeLang.subtitle": "请选择一种语言以继续",
-  "changeLang.continue": "继续",
-
   "login.title": "Shagan Retail",
   "login.subtitle": "请输入您的电子邮箱以登录您的账户",
   "login.emailLabel": "电子邮箱",
