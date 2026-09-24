@@ -71,7 +71,7 @@ export default function PaymentComplete({
         label={t("payment.completePayment")}
         icon={ArrowRight}
         onClick={onComplete}
-        className="mt-5 min-h-14 w-full bg-brand text-lg font-bold text-white"
+        className="mt-5 min-h-14 w-full bg-brand text-lg font-bold text-white hover:bg-brand/90"
       />
       <button
         type="button"

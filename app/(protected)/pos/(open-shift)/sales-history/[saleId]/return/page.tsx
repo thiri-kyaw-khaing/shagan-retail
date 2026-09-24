@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useMemo, useState } from "react";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Banknote, WalletCards } from "lucide-react";
 import { notFound, useRouter } from "next/navigation";
 
 import BackButton from "@/components/custom/common/back-button";
@@ -15,18 +15,20 @@ import ReturnConfirmStep, {
   type RefundMethod,
 } from "@/components/custom/common/pos/return-confirm-step";
 import ManagerApprovalStep from "@/components/custom/common/pos/manager-approval-step";
-import ReturnDoneStep from "@/components/custom/common/pos/return-done-step";
+import AmountConfirmStep from "@/components/custom/common/pos/amount-confirm-step";
+import TransactionDoneStep from "@/components/custom/common/pos/transaction-done-step";
 import { sales } from "@/lib/types/model/sales";
 import { saleItems } from "@/lib/types/model/sale-items";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
-type Step = "select" | "reason" | "confirm" | "approval" | "done";
+type Step = "select" | "reason" | "confirm" | "approval" | "payout" | "done";
 
 const PREVIOUS_STEP: Record<Step, Step | null> = {
   select: null,
   reason: "select",
   confirm: "reason",
   approval: "confirm",
+  payout: "approval",
   done: null,
 };
 
@@ -44,6 +46,7 @@ export default function ReturnItemsPage({ params }: ReturnItemsPageProps) {
     reason: t("return.title"),
     confirm: t("return.title"),
     approval: t("return.managerApprovalTitle"),
+    payout: t("return.refundPayoutTitle"),
     done: "",
   };
 
@@ -115,6 +118,11 @@ export default function ReturnItemsPage({ params }: ReturnItemsPageProps) {
   const handleApprove = () => {
     console.log("Return - manager PIN entered:", managerPin);
     // No approval/returns backend yet — the mock `returns` array isn't updated here.
+    setStep(refundMethod === "cash" ? "payout" : "done");
+  };
+
+  const handleCompleteRefund = () => {
+    console.log("Return - refund payout completed:", refundTotal);
     setStep("done");
   };
 
@@ -198,11 +206,24 @@ export default function ReturnItemsPage({ params }: ReturnItemsPageProps) {
         />
       )}
 
+      {step === "payout" && (
+        <AmountConfirmStep
+          icon={Banknote}
+          bannerIcon={WalletCards}
+          title={t("return.refundDue")}
+          amount={refundTotal}
+          bannerText={t("return.cashDrawerOpened")}
+          buttonLabel={t("return.completeRefund")}
+          onComplete={handleCompleteRefund}
+        />
+      )}
+
       {step === "done" && refundMethod && (
-        <ReturnDoneStep
-          itemCount={selectedCount}
-          refundMethod={refundMethod}
-          onBackToSalesHistory={() => router.push("/pos/sales-history")}
+        <TransactionDoneStep
+          title={t("return.done")}
+          message={`${t("return.processedPrefix")} ${selectedCount} ${selectedCount === 1 ? t("return.item") : t("return.items")} ${t("return.refundedViaSuffix")} ${refundMethod}`}
+          buttonLabel={t("return.backToSalesHistory")}
+          onBack={() => router.push("/pos/sales-history")}
         />
       )}
     </>

@@ -207,7 +207,7 @@ export default function SplitPayment({
         label={t("payment.completeSale")}
         onClick={onCompleteSale}
         disabled={!isComplete}
-        className="mt-5 min-h-14 w-full bg-brand text-lg font-bold text-white disabled:bg-rose-200"
+        className="mt-5 min-h-14 w-full bg-brand text-lg font-bold text-white hover:bg-brand/90 disabled:bg-rose-200"
       />
     </div>
   );

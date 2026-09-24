@@ -20,7 +20,7 @@ export default function SectionCardGrid() {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <SectionCard
-        href="/manager/staff"
+        href="/manager/staff-management"
         icon={Users}
         title={t("sections.staff.title")}
         subtitle={t("sections.staff.subtitle")}
