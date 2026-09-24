@@ -229,6 +229,21 @@ const en = {
   "exchange.reviewExchange": "Review Exchange",
   "exchange.removeItem": "Remove item",
 
+  "void.title": "Void Sale",
+  "void.warningTitle": "This action will cancel the entire sale.",
+  "void.warningDescription":
+    "The transaction will be marked as Voided. This cannot be undone.",
+  "void.reasonLabel": "Void reason",
+  "void.reasonDuplicateTransaction": "Duplicate transaction",
+  "void.reasonWrongOrder": "Wrong order",
+  "void.reasonIncorrectPayment": "Incorrect payment",
+  "void.reasonCashierMistake": "Cashier mistake",
+  "void.reasonOther": "Other",
+  "void.keepSale": "Keep Sale",
+  "void.confirmVoid": "Confirm Void",
+  "void.approvingVoidPrefix": "Approving void of",
+  "void.processedPrefix": "Sale voided —",
+
   "managerPin.title": "Manager access",
   "managerPin.subtitle": "Enter manager PIN to open Back Office",
 

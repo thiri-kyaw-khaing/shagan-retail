@@ -239,6 +239,21 @@ const mm: typeof en = {
   "exchange.reviewExchange": "လဲလှယ်မှု ပြန်လည်စစ်ဆေးရန်",
   "exchange.removeItem": "ပစ္စည်းဖယ်ရှားရန်",
 
+  "void.title": "ရောင်းချမှု ပယ်ဖျက်ရန်",
+  "void.warningTitle": "ဤလုပ်ဆောင်ချက်သည် ရောင်းချမှုတစ်ခုလုံးကို ပယ်ဖျက်ပါမည်။",
+  "void.warningDescription":
+    "ငွေပေးငွေယူကို ပယ်ဖျက်ပြီးဟု မှတ်သားပါမည်။ ၎င်းကို နောက်ပြန်လှည့်၍ မရပါ။",
+  "void.reasonLabel": "ပယ်ဖျက်ရသည့် အကြောင်းရင်း",
+  "void.reasonDuplicateTransaction": "ထပ်နေသော ငွေပေးငွေယူ",
+  "void.reasonWrongOrder": "အမှားအမှန် အမှာစာ",
+  "void.reasonIncorrectPayment": "မှားယွင်းသော ငွေပေးချေမှု",
+  "void.reasonCashierMistake": "ငွေကိုင် အမှား",
+  "void.reasonOther": "အခြား",
+  "void.keepSale": "ရောင်းချမှု ဆက်ထားရန်",
+  "void.confirmVoid": "ပယ်ဖျက်ခြင်း အတည်ပြုရန်",
+  "void.approvingVoidPrefix": "ပယ်ဖျက်ခြင်း အတည်ပြုနေသည်",
+  "void.processedPrefix": "ရောင်းချမှု ပယ်ဖျက်ပြီးပါပြီ —",
+
   "managerPin.title": "မန်နေဂျာ အသုံးပြုခွင့်",
   "managerPin.subtitle": "Back Office ကို ဖွင့်ရန် မန်နေဂျာ PIN ရိုက်ထည့်ပါ",
 

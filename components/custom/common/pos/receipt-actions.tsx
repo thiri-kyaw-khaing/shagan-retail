@@ -35,6 +35,7 @@ export default function ReceiptActions({ saleId }: { saleId: SaleId }) {
 
       <CustomButton
         label={t("receiptDetail.voidSale")}
+        onClick={() => router.push(`/pos/sales-history/${saleId}/void`)}
         className="w-full rounded-xl border-2 border-rose-300 bg-white py-3 text-sm text-rose-600 hover:bg-rose-50"
       />
     </div>

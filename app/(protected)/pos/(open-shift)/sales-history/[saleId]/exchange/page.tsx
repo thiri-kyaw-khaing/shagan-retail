@@ -1,12 +1,10 @@
 "use client";
 
 import { use, useMemo, useState } from "react";
-import { ChevronLeft, Banknote, WalletCards } from "lucide-react";
+import { Banknote, WalletCards } from "lucide-react";
 import { notFound, useRouter } from "next/navigation";
 
-import BackButton from "@/components/custom/common/back-button";
-import CustomButton from "@/components/custom/common/custom-button";
-import Header from "@/components/custom/common/pos/header";
+import TransactionStepHeader from "@/components/custom/common/pos/transaction-step-header";
 import ExchangeSelectStep from "@/components/custom/common/pos/exchange-select-step";
 import ExchangeReplacementStep from "@/components/custom/common/pos/exchange-replacement-step";
 import ExchangeConfirmStep from "@/components/custom/common/pos/exchange-confirm-step";
@@ -19,8 +17,7 @@ import QrCollectStep from "@/components/custom/common/pos/qr-collect-step";
 import TransactionDoneStep from "@/components/custom/common/pos/transaction-done-step";
 import { sales } from "@/lib/types/model/sales";
 import { saleItems } from "@/lib/types/model/sale-items";
-import type { CartItemData } from "@/lib/types/model/cart";
-import type { Product } from "@/lib/types/model/product";
+import { useReplacementCart } from "@/lib/hooks/use-replacement-cart";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
 type Step =
@@ -60,15 +57,13 @@ export default function ExchangeItemsPage({ params }: ExchangeItemsPageProps) {
     Record<number, number>
   >({});
   const [condition, setCondition] = useState<ItemCondition | null>(null);
-  const [replacementCart, setReplacementCart] = useState<CartItemData[]>([]);
+  const replacement = useReplacementCart();
   const [method, setMethod] = useState<RefundMethod | null>(null);
   const [managerPin, setManagerPin] = useState("");
   const [cashInput, setCashInput] = useState("");
   const [isQrConfirmed, setIsQrConfirmed] = useState(false);
 
-  if (!sale) {
-    notFound();
-  }
+  if (!sale) notFound();
 
   const customerLabel =
     sale.customerId === null
@@ -78,81 +73,29 @@ export default function ExchangeItemsPage({ params }: ExchangeItemsPageProps) {
   const selectedLines = items
     .map((item) => ({ item, qty: returnQtyByItemId[item.id] ?? 0 }))
     .filter((line) => line.qty > 0);
-
   const returnedCount = selectedLines.reduce((sum, line) => sum + line.qty, 0);
   const returnedValue = selectedLines.reduce(
     (sum, line) => sum + line.item.unitPrice * line.qty,
     0,
   );
-  const replacementValue = replacementCart.reduce(
+  const replacementValue = replacement.cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
   const netDifference = replacementValue - returnedValue;
 
-  const addReplacement = (product: Product) => {
-    setReplacementCart((current) => {
-      const existing = current.find((item) => item.productId === product.id);
-      if (existing) {
-        return current.map((item) =>
-          item.productId === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
-        );
-      }
-      return [
-        ...current,
-        {
-          productId: product.id,
-          name: product.name,
-          price: product.price,
-          imageUrl: product.imageUrl,
-          quantity: 1,
-        },
-      ];
-    });
-  };
-
-  const setReplacementQty = (productId: number, qty: number) => {
-    setReplacementCart((current) =>
-      current.map((item) =>
-        item.productId === productId ? { ...item, quantity: qty } : item,
-      ),
-    );
-  };
-
-  const removeReplacement = (productId: number) => {
-    setReplacementCart((current) =>
-      current.filter((item) => item.productId !== productId),
-    );
-  };
-
   const handleSelectContinue = () => {
-    console.log(
-      "Exchange - items handed back:",
-      selectedLines.map(({ item, qty }) => ({
-        productId: item.productId,
-        name: item.name,
-        qty,
-      })),
-      "condition:",
-      condition,
-    );
+    console.log("Exchange - items handed back:", selectedLines, "condition:", condition);
     setStep("replacement");
   };
 
   const handleReplacementContinue = () => {
-    console.log("Exchange - replacement items:", replacementCart);
+    console.log("Exchange - replacement items:", replacement.cart);
     setStep("confirm");
   };
 
   const handleConfirmSubmit = () => {
-    console.log(
-      "Exchange - net difference:",
-      netDifference,
-      "method:",
-      method,
-    );
+    console.log("Exchange - net difference:", netDifference, "method:", method);
     setStep("approval");
   };
 
@@ -193,32 +136,13 @@ export default function ExchangeItemsPage({ params }: ExchangeItemsPageProps) {
   return (
     <>
       {step !== "done" && (
-        <Header
+        <TransactionStepHeader
           title={headerTitle}
-          right={
-            <div className="text-right">
-              <p className="text-sm font-medium text-white/90">
-                {customerLabel}
-              </p>
-              <p className="text-lg font-bold">
-                K {sale.total.toLocaleString()}
-              </p>
-            </div>
-          }
-        >
-          {previousStep ? (
-            <CustomButton
-              icon={ChevronLeft}
-              onClick={() => setStep(previousStep)}
-              className="bg-transparent p-2 text-white hover:bg-transparent hover:opacity-70"
-            />
-          ) : (
-            <BackButton
-              href={`/pos/sales-history/${sale.id}`}
-              className="text-white"
-            />
-          )}
-        </Header>
+          customerLabel={customerLabel}
+          total={sale.total}
+          backHref={`/pos/sales-history/${sale.id}`}
+          onBackStep={previousStep ? () => setStep(previousStep) : undefined}
+        />
       )}
 
       {step === "select" && (
@@ -238,11 +162,11 @@ export default function ExchangeItemsPage({ params }: ExchangeItemsPageProps) {
       {step === "replacement" && (
         <ExchangeReplacementStep
           returnedValue={returnedValue}
-          cart={replacementCart}
-          onAdd={addReplacement}
-          onQtyChange={setReplacementQty}
-          onRemove={removeReplacement}
-          canContinue={replacementCart.length > 0}
+          cart={replacement.cart}
+          onAdd={replacement.add}
+          onQtyChange={replacement.setQty}
+          onRemove={replacement.remove}
+          canContinue={replacement.cart.length > 0}
           onContinue={handleReplacementContinue}
         />
       )}
