@@ -9,6 +9,7 @@ type CustomButtonProps = {
   className?: string;
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
+  "aria-label"?: string;
 };
 
 export default function CustomButton({
@@ -18,12 +19,14 @@ export default function CustomButton({
   className,
   type = "button",
   disabled,
+  "aria-label": ariaLabel,
 }: CustomButtonProps) {
   return (
     <Button
       type={type}
       onClick={onClick}
       disabled={disabled}
+      aria-label={ariaLabel}
       className={cn(
         "flex items-center justify-center text-white transition hover:brightness-110",
         className,
