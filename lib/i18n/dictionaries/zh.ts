@@ -226,6 +226,20 @@ const zh: typeof en = {
   "exchange.reviewExchange": "查看换货详情",
   "exchange.removeItem": "移除商品",
 
+  "void.title": "作废销售",
+  "void.warningTitle": "此操作将取消整笔销售。",
+  "void.warningDescription": "该交易将被标记为已作废，此操作无法撤销。",
+  "void.reasonLabel": "作废原因",
+  "void.reasonDuplicateTransaction": "重复交易",
+  "void.reasonWrongOrder": "订单错误",
+  "void.reasonIncorrectPayment": "付款错误",
+  "void.reasonCashierMistake": "收银员失误",
+  "void.reasonOther": "其他",
+  "void.keepSale": "保留销售",
+  "void.confirmVoid": "确认作废",
+  "void.approvingVoidPrefix": "正在批准作废",
+  "void.processedPrefix": "销售已作废 —",
+
   "managerPin.title": "经理权限",
   "managerPin.subtitle": "输入经理密码以打开后台管理",
 

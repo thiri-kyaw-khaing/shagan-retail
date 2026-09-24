@@ -1,12 +1,10 @@
 "use client";
 
 import { use, useMemo, useState } from "react";
-import { ChevronLeft, Banknote, WalletCards } from "lucide-react";
+import { Banknote, WalletCards } from "lucide-react";
 import { notFound, useRouter } from "next/navigation";
 
-import BackButton from "@/components/custom/common/back-button";
-import CustomButton from "@/components/custom/common/custom-button";
-import Header from "@/components/custom/common/pos/header";
+import TransactionStepHeader from "@/components/custom/common/pos/transaction-step-header";
 import ReturnSelectStep from "@/components/custom/common/pos/return-select-step";
 import ReturnReasonStep, {
   type ItemCondition,
@@ -65,9 +63,7 @@ export default function ReturnItemsPage({ params }: ReturnItemsPageProps) {
   const [refundMethod, setRefundMethod] = useState<RefundMethod | null>(null);
   const [managerPin, setManagerPin] = useState("");
 
-  if (!sale) {
-    notFound();
-  }
+  if (!sale) notFound();
 
   const customerLabel =
     sale.customerId === null
@@ -77,7 +73,6 @@ export default function ReturnItemsPage({ params }: ReturnItemsPageProps) {
   const selectedLines = items
     .map((item) => ({ item, qty: returnQtyByItemId[item.id] ?? 0 }))
     .filter((line) => line.qty > 0);
-
   const selectedCount = selectedLines.reduce((sum, line) => sum + line.qty, 0);
   const refundTotal = selectedLines.reduce(
     (sum, line) => sum + line.item.unitPrice * line.qty,
@@ -85,17 +80,7 @@ export default function ReturnItemsPage({ params }: ReturnItemsPageProps) {
   );
 
   const handleSelectContinue = () => {
-    console.log(
-      "Return - selected items:",
-      selectedLines.map(({ item, qty }) => ({
-        productId: item.productId,
-        name: item.name,
-        qty,
-        lineTotal: item.unitPrice * qty,
-      })),
-      "refundTotal:",
-      refundTotal,
-    );
+    console.log("Return - selected items:", selectedLines, "refundTotal:", refundTotal);
     setStep("reason");
   };
 
@@ -106,12 +91,7 @@ export default function ReturnItemsPage({ params }: ReturnItemsPageProps) {
 
   const handleRequestReturn = () => {
     if (!refundMethod) return;
-    console.log(
-      "Return - refund method:",
-      refundMethod,
-      "refundTotal:",
-      refundTotal,
-    );
+    console.log("Return - refund method:", refundMethod, "refundTotal:", refundTotal);
     setStep("approval");
   };
 
@@ -131,32 +111,13 @@ export default function ReturnItemsPage({ params }: ReturnItemsPageProps) {
   return (
     <>
       {step !== "done" && (
-        <Header
+        <TransactionStepHeader
           title={STEP_TITLE[step]}
-          right={
-            <div className="text-right">
-              <p className="text-sm font-medium text-white/90">
-                {customerLabel}
-              </p>
-              <p className="text-lg font-bold">
-                K {sale.total.toLocaleString()}
-              </p>
-            </div>
-          }
-        >
-          {previousStep ? (
-            <CustomButton
-              icon={ChevronLeft}
-              onClick={() => setStep(previousStep)}
-              className="bg-transparent p-2 text-white hover:bg-transparent hover:opacity-70"
-            />
-          ) : (
-            <BackButton
-              href={`/pos/sales-history/${sale.id}`}
-              className="text-white"
-            />
-          )}
-        </Header>
+          customerLabel={customerLabel}
+          total={sale.total}
+          backHref={`/pos/sales-history/${sale.id}`}
+          onBackStep={previousStep ? () => setStep(previousStep) : undefined}
+        />
       )}
 
       {step === "select" && (
