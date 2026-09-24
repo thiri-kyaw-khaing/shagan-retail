@@ -49,7 +49,17 @@ export default function CloseShiftPage() {
   const handleCloseShift = () => {
     if (!canClose) return;
 
-    router.push("/pos/shift-closed");
+    const params = new URLSearchParams({
+      sales: String(shiftSummary.salesCompleted),
+      total: String(totalSales),
+      cash: String(shiftSummary.cashSales),
+      qr: String(shiftSummary.qrSales),
+      staff: shiftSummary.staffName,
+      branch: shiftSummary.branchName,
+      closedAt: new Date().toISOString(),
+    });
+
+    router.push(`/pos/shift-closed?${params.toString()}`);
   };
 
   const receiptsSuffix = t("closeShift.receiptsSuffix");
@@ -67,7 +77,10 @@ export default function CloseShiftPage() {
           <div className="grid items-stretch gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
             <ShiftSummaryList
               rows={[
-                { label: t("closeShift.shiftStarted"), value: shiftSummary.startedAt },
+                {
+                  label: t("closeShift.shiftStarted"),
+                  value: shiftSummary.startedAt,
+                },
                 {
                   label: t("closeShift.salesCompleted"),
                   value: String(shiftSummary.salesCompleted),

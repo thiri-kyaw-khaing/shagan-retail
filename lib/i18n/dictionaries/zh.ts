@@ -36,6 +36,7 @@ const zh: typeof en = {
   "shiftClosed.title": "班次已结束",
   "shiftClosed.greeting": "下次再见，Ma Thida！",
   "shiftClosed.summarySaved": "您的班次汇总已保存。",
+  "shiftClosed.closedAt": "关闭时间",
   "shiftClosed.signInNext": "登录下一班次",
 
   "closeShift.title": "结束班次",

@@ -34,6 +34,7 @@ const en = {
   "shiftClosed.title": "Shift closed",
   "shiftClosed.greeting": "See you next time, Ma Thida!",
   "shiftClosed.summarySaved": "Your shift summary has been saved.",
+  "shiftClosed.closedAt": "Closed",
   "shiftClosed.signInNext": "Sign in for next shift",
 
   "closeShift.title": "Close Shift",

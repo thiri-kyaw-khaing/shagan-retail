@@ -36,6 +36,7 @@ const mm: typeof en = {
   "shiftClosed.title": "အလုပ်ချိန် ပိတ်ပြီးပါပြီ",
   "shiftClosed.greeting": "နောက်တစ်ကြိမ် တွေ့ကြရအောင်၊ Ma Thida!",
   "shiftClosed.summarySaved": "သင့်အလုပ်ချိန် အကျဉ်းချုပ်ကို သိမ်းဆည်းပြီးပါပြီ။",
+  "shiftClosed.closedAt": "ပိတ်ချိန်",
   "shiftClosed.signInNext": "နောက်အလုပ်ချိန်အတွက် ဝင်ရောက်ရန်",
 
   "closeShift.title": "အလုပ်ချိန်ပိတ်ရန်",
