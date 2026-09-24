@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import QuantityStepper from "@/components/custom/common/quantity-stepper";
 import type { Product } from "@/lib/types/model/product";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
@@ -63,24 +64,14 @@ export default function ProductCard({
         {productInfo}
 
         {quantity > 0 ? (
-          <div className="mt-3 flex items-center gap-3">
-            <button
-              type="button"
-              aria-label={t("product.decreaseQuantity")}
-              onClick={() => onDecrease(product.id)}
-              className="flex size-11 items-center justify-center rounded-lg bg-brand text-xl font-bold text-white hover:bg-brand/90"
-            >
-              −
-            </button>
-            <span className="min-w-5 font-bold text-slate-900">{quantity}</span>
-            <button
-              type="button"
-              aria-label={t("product.increaseQuantity")}
-              onClick={() => onIncrease(product.id)}
-              className="flex size-11 items-center justify-center rounded-lg bg-brand text-xl font-bold text-white hover:bg-brand/90"
-            >
-              +
-            </button>
+          <div className="mt-3">
+            <QuantityStepper
+              value={quantity}
+              min={0}
+              onChange={(next) =>
+                next > quantity ? onIncrease(product.id) : onDecrease(product.id)
+              }
+            />
           </div>
         ) : (
           <button

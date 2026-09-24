@@ -32,7 +32,7 @@ export default function MobileCartBar({
         icon={ArrowRight}
         onClick={onViewCart}
         disabled={disabled}
-        className="min-h-14 min-w-36 bg-brand px-5 font-bold text-white disabled:bg-rose-200"
+        className="min-h-14 min-w-36 bg-brand px-5 font-bold text-white hover:bg-brand/90 disabled:bg-rose-200"
       />
     </div>
   );

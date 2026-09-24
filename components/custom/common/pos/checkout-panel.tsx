@@ -137,7 +137,7 @@ export default function CheckoutPanel({
             <CustomButton
               label={t("sell.apply")}
               onClick={onApplyDiscount}
-              className="min-h-11 shrink-0 bg-brand px-6 font-semibold text-white"
+              className="min-h-11 shrink-0 bg-brand px-6 font-semibold text-white hover:bg-brand/90"
             />
           </div>
         )}
@@ -149,7 +149,7 @@ export default function CheckoutPanel({
             className={cn(
               "min-h-11 px-6 font-semibold",
               isDiscountPanelOpen
-                ? "bg-brand text-white"
+                ? "bg-brand text-white hover:bg-brand/90"
                 : "border-2 border-slate-300 bg-slate-100 text-slate-900 hover:bg-brand/50",
             )}
           />
@@ -175,7 +175,7 @@ export default function CheckoutPanel({
             icon={ArrowRight}
             onClick={onPayment}
             disabled={cart.length === 0}
-            className="min-h-12 bg-brand font-semibold text-white disabled:bg-rose-200"
+            className="min-h-12 bg-brand font-semibold text-white hover:bg-brand/90 disabled:bg-rose-200"
           />
         </div>
       </div>

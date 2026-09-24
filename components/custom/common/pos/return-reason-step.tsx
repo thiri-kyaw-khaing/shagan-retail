@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 export type ItemCondition = "sellable" | "damaged" | "expired" | "other";
 
-const CONDITION_LABEL_KEYS: Record<
+export const CONDITION_LABEL_KEYS: Record<
   ItemCondition,
   "return.conditionSellable" | "return.conditionDamaged" | "return.conditionExpired" | "return.conditionOther"
 > = {

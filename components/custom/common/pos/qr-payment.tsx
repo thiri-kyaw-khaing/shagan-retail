@@ -89,7 +89,7 @@ export default function QrPayment({
         icon={ArrowRight}
         onClick={onCompleteSale}
         disabled={!isConfirmed}
-        className="mt-5 min-h-14 w-full bg-brand text-lg font-bold text-white disabled:bg-rose-200"
+        className="mt-5 min-h-14 w-full bg-brand text-lg font-bold text-white hover:bg-brand/90 disabled:bg-rose-200"
       />
     </div>
   );
