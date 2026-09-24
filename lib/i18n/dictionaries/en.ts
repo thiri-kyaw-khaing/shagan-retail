@@ -34,6 +34,7 @@ const en = {
   "shiftClosed.title": "Shift closed",
   "shiftClosed.greeting": "See you next time, Ma Thida!",
   "shiftClosed.summarySaved": "Your shift summary has been saved.",
+  "shiftClosed.closedAt": "Closed",
   "shiftClosed.signInNext": "Sign in for next shift",
 
   "closeShift.title": "Close Shift",
@@ -218,7 +219,8 @@ const en = {
   "helpCenterDialog.close": "Close",
 
   "dashboardPreview.title": "Dashboard",
-  "dashboardPreview.subtitle": "Today's shop overview and key performance metrics",
+  "dashboardPreview.subtitle":
+    "Today's shop overview and key performance metrics",
   "dashboardPreview.salesToday": "Sales Today",
   "dashboardPreview.revenue": "Revenue",
   "dashboardPreview.lowStock": "Low Stock",
@@ -235,7 +237,8 @@ const en = {
   "sections.customers.title": "Customer",
   "sections.customers.subtitle": "Customer profiles and spend",
   "sections.salesHistory.title": "Sales History",
-  "sections.salesHistory.subtitle": "Browse, return, exchange and void receipts",
+  "sections.salesHistory.subtitle":
+    "Browse, return, exchange and void receipts",
   "sections.auditLog.title": "Audit Log",
   "sections.auditLog.subtitle": "System activity across all users",
   "sections.reports.title": "Reports",

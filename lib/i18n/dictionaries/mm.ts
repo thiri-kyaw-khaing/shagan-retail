@@ -35,7 +35,9 @@ const mm: typeof en = {
 
   "shiftClosed.title": "အလုပ်ချိန် ပိတ်ပြီးပါပြီ",
   "shiftClosed.greeting": "နောက်တစ်ကြိမ် တွေ့ကြရအောင်၊ Ma Thida!",
-  "shiftClosed.summarySaved": "သင့်အလုပ်ချိန် အကျဉ်းချုပ်ကို သိမ်းဆည်းပြီးပါပြီ။",
+  "shiftClosed.summarySaved":
+    "သင့်အလုပ်ချိန် အကျဉ်းချုပ်ကို သိမ်းဆည်းပြီးပါပြီ။",
+  "shiftClosed.closedAt": "ပိတ်ချိန်",
   "shiftClosed.signInNext": "နောက်အလုပ်ချိန်အတွက် ဝင်ရောက်ရန်",
 
   "closeShift.title": "အလုပ်ချိန်ပိတ်ရန်",
@@ -92,7 +94,8 @@ const mm: typeof en = {
   "sell.itemsSuffix": "ပစ္စည်းများ",
 
   "customerDialog.title": "ဖောက်သည် ရွေးချယ်ရန်",
-  "customerDialog.searchPlaceholder": "အမည် သို့မဟုတ် ဖုန်းနံပါတ်ဖြင့် ရှာပါ...",
+  "customerDialog.searchPlaceholder":
+    "အမည် သို့မဟုတ် ဖုန်းနံပါတ်ဖြင့် ရှာပါ...",
   "customerDialog.createNew": "+ ဖောက်သည်အသစ် ဖန်တီးရန်",
   "customerDialog.continueAsWalkIn": "အလွတ်ဝင်ဝယ်သူအဖြစ် ဆက်လက်လုပ်ဆောင်ရန်",
   "customerDialog.fullNamePlaceholder": "အမည်အပြည့်အစုံ",
@@ -118,7 +121,8 @@ const mm: typeof en = {
   "moreMenu.closeShiftSubtitle": "ငွေရေတွက်ပြီး လက်ရှိအလုပ်ချိန်ကို ပိတ်ရန်",
 
   "settingsDialog.title": "ဆက်တင်များ",
-  "settingsDialog.description": "ထပ်တူညီမှု နှင့် ချိတ်ဆက်ထားသော စက်များကို စစ်ဆေးပါ။",
+  "settingsDialog.description":
+    "ထပ်တူညီမှု နှင့် ချိတ်ဆက်ထားသော စက်များကို စစ်ဆေးပါ။",
   "settingsDialog.deviceHealthTitle": "စက်ကိရိယာ ကျန်းမာရေးစစ်ဆေးမှု",
   "settingsDialog.deviceHealthSubtitle":
     "သင့် POS စက်များ အသင့်ဖြစ်မဖြစ် စစ်ဆေးပါ။",
@@ -131,7 +135,8 @@ const mm: typeof en = {
   "syncStatus.sales": "ရောင်းချမှုများ",
   "syncStatus.lastSynced": "နောက်ဆုံးထပ်တူညီချိန်",
   "syncStatus.upToDate": "အားလုံး နောက်ဆုံးအခြေအနေဖြစ်နေပါသည်။",
-  "syncStatus.waitingMessageSuffix": "ရောင်းချမှုများ ထပ်တူညီရန် စောင့်ဆိုင်းနေသည်။",
+  "syncStatus.waitingMessageSuffix":
+    "ရောင်းချမှုများ ထပ်တူညီရန် စောင့်ဆိုင်းနေသည်။",
   "syncStatus.offlineMessage":
     "အော့ဖ်လိုင်းဖြစ်နေသည်။ ချိတ်ဆက်ပြီးသောအခါ ရောင်းချမှုများ ထပ်တူညီပါမည်။",
 
@@ -156,7 +161,8 @@ const mm: typeof en = {
   "salesHistory.title": "ရောင်းချမှတ်တမ်း",
   "salesHistory.description":
     "ရောင်းချမှုတစ်ခုကို ရှာပါ၊ အသေးစိတ်ကြည့်ပါ သို့မဟုတ် ဘောက်ချာကို စီမံပါ",
-  "salesHistory.searchPlaceholder": "ဘောက်ချာနံပါတ် သို့မဟုတ် ဖောက်သည်အမည်ဖြင့် ရှာပါ...",
+  "salesHistory.searchPlaceholder":
+    "ဘောက်ချာနံပါတ် သို့မဟုတ် ဖောက်သည်အမည်ဖြင့် ရှာပါ...",
   "salesHistory.noReceipts": "ဘောက်ချာများ မတွေ့ပါ",
   "salesHistory.tabs.all": "အားလုံး",
   "salesHistory.tabs.completed": "ပြီးစီးပြီး",
@@ -191,7 +197,8 @@ const mm: typeof en = {
   "return.conditionOther": "အခြား",
   "return.restockNote": "ပစ္စည်းများသည် စတော့သို့ ပြန်မဝင်ပါ",
   "return.reasonLabel": "ပြန်ပေးရသည့် အကြောင်းရင်း",
-  "return.reasonPlaceholder": "ဥပမာ - ရောက်ရှိချိန်တွင် ပျက်စီးနေသည်၊ ဖောက်သည်စိတ်ပြောင်းသည်...",
+  "return.reasonPlaceholder":
+    "ဥပမာ - ရောက်ရှိချိန်တွင် ပျက်စီးနေသည်၊ ဖောက်သည်စိတ်ပြောင်းသည်...",
   "return.item": "ပစ္စည်း",
   "return.items": "ပစ္စည်းများ",
   "return.refundMethod": "ငွေပြန်အမ်းနည်းလမ်း",
@@ -222,7 +229,8 @@ const mm: typeof en = {
   "helpCenterDialog.close": "ပိတ်ရန်",
 
   "dashboardPreview.title": "ဒက်ရှ်ဘုတ်",
-  "dashboardPreview.subtitle": "ယနေ့ ဆိုင်ခြုံငုံသုံးသပ်ချက်နှင့် အဓိက စွမ်းဆောင်ရည်ကိန်းများ",
+  "dashboardPreview.subtitle":
+    "ယနေ့ ဆိုင်ခြုံငုံသုံးသပ်ချက်နှင့် အဓိက စွမ်းဆောင်ရည်ကိန်းများ",
   "dashboardPreview.salesToday": "ယနေ့ ရောင်းချမှု",
   "dashboardPreview.revenue": "ဝင်ငွေ",
   "dashboardPreview.lowStock": "ပစ္စည်း နည်းနေသည်",
@@ -233,13 +241,15 @@ const mm: typeof en = {
   "sections.products.title": "ကုန်ပစ္စည်းစာရင်း",
   "sections.products.subtitle": "ကုန်ပစ္စည်း၊ ဈေးနှုန်းနှင့် ပက်ကေ့ဂျ်များ",
   "sections.inventoryLedger.title": "ပစ္စည်းစာရင်း မှတ်တမ်း",
-  "sections.inventoryLedger.subtitle": "ဌာနခွဲများအကြား ပစ္စည်းရွှေ့ပြောင်းမှုများ",
+  "sections.inventoryLedger.subtitle":
+    "ဌာနခွဲများအကြား ပစ္စည်းရွှေ့ပြောင်းမှုများ",
   "sections.suppliers.title": "ပေးသွင်းသူ",
   "sections.suppliers.subtitle": "ပေးသွင်းသူများနှင့် ဝယ်ယူမှု အမှာစာများ",
   "sections.customers.title": "ဖောက်သည်",
   "sections.customers.subtitle": "ဖောက်သည် အချက်အလက်နှင့် ကုန်ကျစရိတ်",
   "sections.salesHistory.title": "ရောင်းချမှတ်တမ်း",
-  "sections.salesHistory.subtitle": "ဘောက်ချာများ ကြည့်ရှု၊ ပြန်ပေး၊ လဲလှယ်နှင့် ပယ်ဖျက်ရန်",
+  "sections.salesHistory.subtitle":
+    "ဘောက်ချာများ ကြည့်ရှု၊ ပြန်ပေး၊ လဲလှယ်နှင့် ပယ်ဖျက်ရန်",
   "sections.auditLog.title": "စစ်ဆေးမှု မှတ်တမ်း",
   "sections.auditLog.subtitle": "အသုံးပြုသူ အားလုံး၏ စနစ်လှုပ်ရှားမှုများ",
   "sections.reports.title": "အစီရင်ခံစာများ",
