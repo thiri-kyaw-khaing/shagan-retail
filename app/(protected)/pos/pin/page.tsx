@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { Suspense, useState } from "react";
+import { notFound, useRouter, useSearchParams } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 
 import NumPad, { PinDots } from "@/components/custom/common/numpad";
 
@@ -10,12 +10,28 @@ import { DeviceStatusCard } from "@/components/custom/common/device-status-card"
 import { StockAlertsCard } from "@/components/custom/common/stock-alerts-card";
 import CustomButton from "@/components/custom/common/custom-button";
 import BackButton from "@/components/custom/common/back-button";
+import AvatarInitials from "@/components/custom/common/avatar-initials";
+import { staffs } from "@/lib/types/model/staffs";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
-export default function StaffPin() {
+export default function StaffPinPage() {
+  return (
+    <Suspense>
+      <StaffPin />
+    </Suspense>
+  );
+}
+
+function StaffPin() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useTranslation();
   const [pin, setPin] = useState("");
+
+  const staffId = Number(searchParams.get("staffId"));
+  const staff = staffs.find((item) => item.id === staffId);
+
+  if (!staff) notFound();
 
   const handlePinChange = (nextPin: string) => {
     const sixDigitPin = nextPin.slice(0, 6);
@@ -23,7 +39,7 @@ export default function StaffPin() {
 
     if (sixDigitPin.length === 6) {
       // Later, verify the PIN here.
-      console.log("Entered PIN:", sixDigitPin);
+      console.log("Entered PIN:", { staffId: staff.id, pin: sixDigitPin });
     }
   };
   const handleContinue = () => {
@@ -46,10 +62,10 @@ export default function StaffPin() {
 
           {/* PIN content */}
           <div className="mx-auto flex max-w-2xl flex-col items-center pt-8 sm:pt-10">
-            {/* Staff avatar */}
-            <div className="flex size-28 items-center justify-center rounded-full bg-rose-700 text-4xl font-bold text-white sm:size-32">
-              MT
-            </div>
+            <AvatarInitials
+              name={staff.name}
+              className="size-28 text-4xl sm:size-32"
+            />
 
             <h1 className="mt-8 text-center text-2xl font-medium text-slate-600">
               {t("pin.title")}
