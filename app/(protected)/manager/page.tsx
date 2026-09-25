@@ -1,5 +1,5 @@
-function OwnerPage() {
-  return <div>Owner Dashboard Page</div>;
+function ManagerPage() {
+  return <div>Manager Dashboard Page</div>;
 }
 
-export default OwnerPage;
+export default ManagerPage;

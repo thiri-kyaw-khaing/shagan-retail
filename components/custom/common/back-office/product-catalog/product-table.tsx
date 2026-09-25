@@ -6,11 +6,11 @@ import DataTable, {
   type DataTableColumn,
 } from "@/components/custom/common/back-office/data-table";
 import CustomButton from "@/components/custom/common/custom-button";
-import { categories } from "@/lib/types/model/categories";
+import type { Category } from "@/lib/types/model/categories";
 import type { Product } from "@/lib/types/model/product";
 import { cn } from "@/lib/utils";
 
-function categoryLabel(categoryId: number) {
+function categoryLabel(categories: Category[], categoryId: number) {
   return categories.find((category) => category.id === categoryId)?.label ?? "—";
 }
 
@@ -60,12 +60,14 @@ function ProductThumbnail({ product }: { product: Product }) {
 
 type ProductTableProps = {
   products: Product[];
+  categories: Category[];
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
 };
 
 export default function ProductTable({
   products,
+  categories,
   onEdit,
   onDelete,
 }: ProductTableProps) {
@@ -83,7 +85,7 @@ export default function ProductTable({
     {
       key: "category",
       header: "Category",
-      render: (row) => categoryLabel(row.categoryId),
+      render: (row) => categoryLabel(categories, row.categoryId),
     },
     {
       key: "price",
@@ -131,7 +133,7 @@ export default function ProductTable({
             <div>
               <p className="font-semibold text-ink">{row.name}</p>
               <p className="text-sm text-ink-muted">
-                {categoryLabel(row.categoryId)} · {row.barcode}
+                {categoryLabel(categories, row.categoryId)} · {row.barcode}
               </p>
               <p className="mt-1 font-semibold text-ink">
                 K {row.price.toLocaleString()}

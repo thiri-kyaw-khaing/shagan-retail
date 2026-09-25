@@ -50,6 +50,7 @@ function LoginForm() {
     const user = authUsers.find((authUser) => authUser.email === data.email);
 
     if (user?.type === "owner") router.push("/owner");
+    else if (user?.type === "manager") router.push("/manager");
     else if (user?.type === "service_center") router.push("/service-center");
     else router.push("/portal");
   };

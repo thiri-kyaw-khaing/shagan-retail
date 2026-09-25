@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { categories } from "@/lib/types/model/categories";
+import type { Category } from "@/lib/types/model/categories";
 import { cn } from "@/lib/utils";
 
 export type ProductFormValues = {
@@ -35,13 +35,10 @@ type ProductFormDialogProps = {
   mode: "add" | "edit";
   isOpen: boolean;
   values: ProductFormValues;
+  categories: Category[];
   onClose: () => void;
   onSave: (values: ProductFormValues) => void;
 };
-
-const CATEGORY_OPTIONS = categories
-  .filter((category) => category.id !== null && category.id !== 4)
-  .map((category) => ({ value: String(category.id), label: category.label }));
 
 const LABEL_CLASS = "text-sm font-semibold uppercase tracking-wide text-slate-500";
 const INPUT_CLASS =
@@ -140,6 +137,7 @@ export default function ProductFormDialog({
   mode,
   isOpen,
   values,
+  categories,
   onClose,
   onSave,
 }: ProductFormDialogProps) {
@@ -147,6 +145,9 @@ export default function ProductFormDialog({
   const canSubmit =
     mode === "edit" ||
     (form.watch("name").trim().length > 0 && form.watch("barcode").trim().length > 0);
+  const categoryOptions = categories
+    .filter((category) => category.id !== null && category.id !== 4)
+    .map((category) => ({ value: String(category.id), label: category.label }));
 
   useEffect(() => {
     if (isOpen) form.reset(values);
@@ -199,7 +200,7 @@ export default function ProductFormDialog({
                 control={form.control}
                 path="categoryId"
                 label="Category"
-                options={CATEGORY_OPTIONS}
+                options={categoryOptions}
                 className={LABEL_CLASS}
                 selectClassName="mt-2 h-11"
               />
