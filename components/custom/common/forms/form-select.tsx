@@ -1,3 +1,5 @@
+import { ChevronDown } from "lucide-react";
+
 import {
   FormControl,
   FormField,
@@ -36,19 +38,22 @@ export default function FormSelect<T extends FieldValues>({
           {label && <FormLabel className="text-sm">{label}</FormLabel>}
 
           <FormControl>
-            <select
-              {...field}
-              className={cn(
-                "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm",
-                selectClassName,
-              )}
-            >
-              {options.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                {...field}
+                className={cn(
+                  "h-8 w-full min-w-0 appearance-none rounded-lg border border-input bg-white px-2.5 py-1 pr-8 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm",
+                  selectClassName,
+                )}
+              >
+                {options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-slate-400" />
+            </div>
           </FormControl>
 
           <FormMessage />
