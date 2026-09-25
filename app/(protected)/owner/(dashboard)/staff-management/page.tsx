@@ -6,8 +6,8 @@ import { Plus } from "lucide-react";
 import PageHeader from "@/components/custom/common/back-office/page-header";
 import StaffFormDialog, {
   type StaffFormValues,
-} from "@/components/custom/common/back-office/staff-form-dialog";
-import StaffTable from "@/components/custom/common/back-office/staff-table";
+} from "@/components/custom/common/back-office/staff-management/staff-form-dialog";
+import StaffTable from "@/components/custom/common/back-office/staff-management/staff-table";
 import SearchBar from "@/components/custom/common/pos/search-bar";
 import CustomButton from "@/components/custom/common/custom-button";
 import { staffs as initialStaffs, type Staff } from "@/lib/types/model/staffs";

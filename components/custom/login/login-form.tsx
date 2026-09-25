@@ -21,6 +21,7 @@ import FormInput from "../common/forms/form-input";
 import CustomButton from "../common/custom-button";
 import LanguageSwitcherButton from "@/components/custom/common/language-switcher-button";
 import { useTranslation } from "@/lib/i18n/use-translation";
+import { authUsers } from "@/lib/types/model/auth-users";
 
 const LoginSchema = z.object({
   email: z
@@ -43,7 +44,14 @@ function LoginForm() {
 
   const onSubmit = (data: LoginFormData) => {
     console.log(data);
-    router.push("/portal");
+
+    // Mocked in place of a real login API call — looks up the account by email and
+    // routes by its type. Real check will compare data.password too once there's a backend.
+    const user = authUsers.find((authUser) => authUser.email === data.email);
+
+    if (user?.type === "owner") router.push("/owner");
+    else if (user?.type === "service_center") router.push("/service-center");
+    else router.push("/portal");
   };
 
   return (
