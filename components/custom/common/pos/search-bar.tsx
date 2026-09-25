@@ -11,7 +11,7 @@ type ProductSearchBarProps = {
   className?: string;
 };
 
-export default function ProductSearchBar({
+export default function SearchBar({
   value,
   onChange,
   placeholder,
@@ -20,7 +20,7 @@ export default function ProductSearchBar({
   return (
     <div className={cn("px-4 pt-4", className)}>
       <div className="relative">
-        <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <Search className="pointer-events-none absolute top-1/2 left-3 h-4  -translate-y-1/2 text-slate-400" />
         <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}

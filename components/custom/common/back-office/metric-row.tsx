@@ -19,17 +19,17 @@ export default function MetricRow({
   return (
     <div
       className={cn(
-        "flex items-center justify-between rounded-2xl border p-4",
+        "flex items-center justify-between gap-2 rounded-2xl border p-3 sm:p-4",
         isWarning ? "border-amber-300 bg-amber-50/40" : "border-rose-100",
       )}
     >
-      <div>
-        <p className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+      <div className="min-w-0">
+        <p className="text-xs leading-tight font-semibold tracking-wide text-ink-muted uppercase">
           {label}
         </p>
         <p
           className={cn(
-            "mt-1 text-2xl font-bold",
+            "mt-1 truncate text-lg font-bold sm:text-2xl",
             isWarning ? "text-amber-600" : "text-ink",
           )}
         >
@@ -39,11 +39,11 @@ export default function MetricRow({
 
       <div
         className={cn(
-          "flex size-10 shrink-0 items-center justify-center rounded-xl",
+          "flex size-8 shrink-0 items-center justify-center rounded-xl sm:size-10",
           isWarning ? "bg-amber-100 text-amber-600" : "bg-rose-50 text-rose-600",
         )}
       >
-        <Icon className="size-5" />
+        <Icon className="size-4 sm:size-5" />
       </div>
     </div>
   );
