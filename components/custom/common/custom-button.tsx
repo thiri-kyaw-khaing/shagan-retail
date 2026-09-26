@@ -28,7 +28,7 @@ export default function CustomButton({
       disabled={disabled}
       aria-label={ariaLabel}
       className={cn(
-        "flex items-center justify-center text-white transition hover:brightness-110",
+        "flex items-center justify-center text-white transition",
         className,
       )}
     >

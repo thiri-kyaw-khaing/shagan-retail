@@ -8,6 +8,8 @@ export type DataTableColumn<T> = {
   key: string;
   header: string;
   className?: string;
+  /** Grid track size for this column's desktop width, e.g. "2fr". Defaults to an equal share. */
+  width?: string;
   render?: (row: T) => ReactNode;
 };
 
@@ -39,7 +41,9 @@ export default function DataTable<T>({
       <div
         className="hidden items-center gap-4 border-b border-rose-200 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 md:grid"
         style={{
-          gridTemplateColumns: columns.map(() => "minmax(0, 1fr)").join(" "),
+          gridTemplateColumns: columns
+            .map((column) => column.width ?? "minmax(0, 1fr)")
+            .join(" "),
         }}
       >
         {columns.map((column) => (
@@ -55,7 +59,7 @@ export default function DataTable<T>({
             className="hidden items-center gap-4 border-b border-slate-100 px-4 py-4 last:border-b-0 md:grid"
             style={{
               gridTemplateColumns: columns
-                .map(() => "minmax(0, 1fr)")
+                .map((column) => column.width ?? "minmax(0, 1fr)")
                 .join(" "),
             }}
           >

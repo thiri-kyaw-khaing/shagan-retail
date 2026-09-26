@@ -119,13 +119,13 @@ export default function SuppliersPage() {
       <PageHeader
         title="Supplier"
         subtitle={`${supplierRows.length} suppliers · ${purchaseOrders.length} purchase orders`}
-        backHref="/manager"
+        backHref="/owner"
         action={
           <CustomButton
             label={activeTab === "suppliers" ? "Add supplier" : "New PO"}
             icon={Plus}
             onClick={() => openSupplierDialog({ type: "add" })}
-            className="min-h-11 bg-brand px-4 font-semibold text-white"
+            className="min-h-11 bg-brand px-4 font-semibold text-white hover:bg-brand/90"
           />
         }
       />

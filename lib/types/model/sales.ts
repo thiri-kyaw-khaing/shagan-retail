@@ -1,3 +1,5 @@
+import type { PaymentMethod } from "@/lib/types/model/payment";
+
 export type SaleId = string; // uuid, client-generated
 
 export type SaleStatus = "pending" | "completed" | "voided";
@@ -32,6 +34,7 @@ export type Sale = {
   discount: number;
   tax: number;
   total: number;
+  paymentMethod: PaymentMethod;
   status: SaleStatus;
   completedAt: string | null;
   syncedAt: string | null;
@@ -50,6 +53,7 @@ export const sales: Sale[] = [
     discount: 0,
     tax: 0,
     total: 4100,
+    paymentMethod: "qr",
     status: "completed",
     completedAt: "2026-09-17T20:15:00.000Z",
     syncedAt: "2026-09-17T20:15:05.000Z",
@@ -66,6 +70,7 @@ export const sales: Sale[] = [
     discount: 0,
     tax: 0,
     total: 40700,
+    paymentMethod: "cash",
     status: "completed",
     completedAt: "2026-09-17T19:30:00.000Z",
     syncedAt: "2026-09-17T19:30:04.000Z",
@@ -82,6 +87,7 @@ export const sales: Sale[] = [
     discount: 500,
     tax: 0,
     total: 9300,
+    paymentMethod: "cash",
     status: "completed",
     completedAt: "2026-09-17T20:40:00.000Z",
     syncedAt: "2026-09-17T20:40:03.000Z",
@@ -98,6 +104,7 @@ export const sales: Sale[] = [
     discount: 0,
     tax: 0,
     total: 2800,
+    paymentMethod: "cash",
     status: "voided",
     completedAt: null,
     syncedAt: null,
@@ -114,6 +121,7 @@ export const sales: Sale[] = [
     discount: 0,
     tax: 0,
     total: 18500,
+    paymentMethod: "cash",
     status: "completed",
     completedAt: "2026-09-17T18:02:00.000Z",
     syncedAt: "2026-09-17T18:02:02.000Z",

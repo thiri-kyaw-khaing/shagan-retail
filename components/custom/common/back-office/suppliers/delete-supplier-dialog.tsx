@@ -38,12 +38,12 @@ export default function DeleteSupplierDialog({
           <CustomButton
             label="Cancel"
             onClick={onClose}
-            className="border border-slate-200 bg-white text-slate-600 shadow-none"
+            className="border border-slate-200 bg-white text-slate-600 shadow-none hover:bg-slate-50"
           />
           <CustomButton
             label="Delete"
             onClick={onConfirm}
-            className="bg-brand text-white"
+            className="bg-brand text-white hover:bg-brand/90"
           />
         </DialogFooter>
       </DialogContent>

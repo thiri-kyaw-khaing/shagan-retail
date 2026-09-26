@@ -72,7 +72,7 @@ export default function StaffManagementPage() {
       <PageHeader
         title="Staff Management"
         subtitle={`${filteredStaffs.length} of ${staffRows.length} staff members · ${restrictedCount} drawer restricted`}
-        backHref="/manager"
+        backHref="/owner"
         action={
           <CustomButton
             label="Add staff"
