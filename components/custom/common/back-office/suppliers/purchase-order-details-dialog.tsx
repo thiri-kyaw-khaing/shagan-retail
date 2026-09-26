@@ -36,7 +36,7 @@ export default function PurchaseOrderDetailsDialog({
           <CustomButton
             label="Close"
             onClick={onClose}
-            className="bg-brand text-white"
+            className="bg-brand text-white hover:bg-brand/90"
           />
         </DialogFooter>
       </DialogContent>

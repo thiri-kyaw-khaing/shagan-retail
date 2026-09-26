@@ -2,11 +2,9 @@
 
 import { Pencil, Trash2 } from "lucide-react";
 
-import DataTable, {
-  type DataTableColumn,
-} from "@/components/custom/common/back-office/data-table";
 import CustomButton from "@/components/custom/common/custom-button";
 import type { Combo } from "@/lib/types/model/combos";
+import type { Product } from "@/lib/types/model/product";
 import { cn } from "@/lib/utils";
 
 export function isExpired(combo: Combo) {
@@ -14,11 +12,26 @@ export function isExpired(combo: Combo) {
 }
 
 function formatExpiry(expiresAt: string) {
+  if (!expiresAt) return "No expiry set";
+
   return new Date(expiresAt).toLocaleDateString("en-US", {
     day: "numeric",
     month: "short",
     year: "numeric",
   });
+}
+
+function itemSummary(combo: Combo, products: Product[]) {
+  return combo.items
+    .map((item) => {
+      const product = products.find((p) => p.id === item.productId);
+      if (!product) return null;
+      return item.quantity > 1
+        ? `${item.quantity}x ${product.name}`
+        : product.name;
+    })
+    .filter(Boolean)
+    .join(" + ");
 }
 
 function ExpiryBadge({ combo }: { combo: Combo }) {
@@ -38,88 +51,66 @@ function ExpiryBadge({ combo }: { combo: Combo }) {
 
 type ComboTableProps = {
   combos: Combo[];
+  products: Product[];
   onEdit: (combo: Combo) => void;
   onDelete: (combo: Combo) => void;
 };
 
-export default function ComboTable({ combos, onEdit, onDelete }: ComboTableProps) {
-  const columns: DataTableColumn<Combo>[] = [
-    {
-      key: "name",
-      header: "Combo",
-      render: (row) => <span className="font-semibold text-ink">{row.name}</span>,
-    },
-    {
-      key: "price",
-      header: "Price",
-      render: (row) => `K ${row.price.toLocaleString()}`,
-    },
-    {
-      key: "expiresAt",
-      header: "Expires",
-      render: (row) => formatExpiry(row.expiresAt),
-    },
-    {
-      key: "status",
-      header: "Status",
-      render: (row) => <ExpiryBadge combo={row} />,
-    },
-    {
-      key: "actions",
-      header: "Actions",
-      className: "flex justify-end",
-      render: (row) => (
-        <div className="flex justify-end gap-1">
-          <CustomButton
-            icon={Pencil}
-            aria-label={`Edit ${row.name}`}
-            onClick={() => onEdit(row)}
-            className="size-10 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
-          />
-          <CustomButton
-            icon={Trash2}
-            aria-label={`Delete ${row.name}`}
-            onClick={() => onDelete(row)}
-            className="size-10 bg-transparent p-0 text-brand shadow-none hover:bg-rose-50"
-          />
-        </div>
-      ),
-    },
-  ];
+export default function ComboTable({
+  combos,
+  products,
+  onEdit,
+  onDelete,
+}: ComboTableProps) {
+  if (combos.length === 0) {
+    return (
+      <div className="rounded-xl border border-rose-200 bg-white p-8 text-center text-sm text-slate-500">
+        No combos found.
+      </div>
+    );
+  }
 
   return (
-    <DataTable
-      columns={columns}
-      data={combos}
-      getRowKey={(row) => row.id}
-      emptyMessage="No combos found."
-      mobileCard={(row) => (
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="font-semibold text-ink">{row.name}</p>
-            <p className="text-sm text-ink-muted">Expires {formatExpiry(row.expiresAt)}</p>
-            <p className="mt-1 font-semibold text-ink">K {row.price.toLocaleString()}</p>
-            <div className="mt-2">
-              <ExpiryBadge combo={row} />
+    <div className="overflow-hidden rounded-2xl border border-rose-100 bg-white">
+      {combos.map((combo) => (
+        <div
+          key={combo.id}
+          className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 last:border-b-0"
+        >
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-semibold text-ink">{combo.name}</span>
+              <ExpiryBadge combo={combo} />
             </div>
+            <p className="mt-1 text-sm text-ink-muted">
+              {itemSummary(combo, products) || "No items"}
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              Expires {formatExpiry(combo.expiresAt)}
+            </p>
           </div>
 
-          <div className="flex shrink-0 flex-col gap-1">
-            <CustomButton
-              icon={Pencil}
-              aria-label={`Edit ${row.name}`}
-              onClick={() => onEdit(row)}
-              className="size-9 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
-            />
-            <CustomButton
-              icon={Trash2}
-              aria-label={`Delete ${row.name}`}
-              onClick={() => onDelete(row)}
-              className="size-9 bg-transparent p-0 text-brand shadow-none hover:bg-rose-50"
-            />
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <span className="font-bold text-black">
+              K {combo.price.toLocaleString()}
+            </span>
+            <div className="flex gap-1">
+              <CustomButton
+                icon={Pencil}
+                aria-label={`Edit ${combo.name}`}
+                onClick={() => onEdit(combo)}
+                className="size-9 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
+              />
+              <CustomButton
+                icon={Trash2}
+                aria-label={`Delete ${combo.name}`}
+                onClick={() => onDelete(combo)}
+                className="size-9 bg-transparent p-0 text-brand shadow-none hover:bg-rose-50"
+              />
+            </div>
           </div>
         </div>
-      )}
-    />
+      ))}
+    </div>
   );
 }

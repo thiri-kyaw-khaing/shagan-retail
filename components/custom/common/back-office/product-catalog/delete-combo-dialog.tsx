@@ -1,5 +1,7 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
+
 import CustomButton from "@/components/custom/common/custom-button";
 import {
   Dialog,
@@ -9,41 +11,38 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { Category } from "@/lib/types/model/categories";
+import type { Combo } from "@/lib/types/model/combos";
 
-type DeleteCategoryDialogProps = {
-  category: Category | null;
+type DeleteComboDialogProps = {
+  combo: Combo | null;
   onClose: () => void;
   onConfirm: () => void;
 };
 
-export default function DeleteCategoryDialog({
-  category,
+export default function DeleteComboDialog({
+  combo,
   onClose,
   onConfirm,
-}: DeleteCategoryDialogProps) {
-  const Icon = category?.icon;
-
+}: DeleteComboDialogProps) {
   return (
-    <Dialog open={category !== null} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={combo !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="rounded-2xl border-0 bg-white p-8 sm:max-w-md">
         <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-rose-50">
-          {Icon && <Icon className="size-8 text-brand" />}
+          <Trash2 className="size-8 text-brand" />
         </div>
 
         <DialogHeader className="items-center gap-2 text-center sm:text-center">
           <DialogTitle className="text-2xl font-bold text-ink">
-            Delete &quot;{category?.label ?? "this category"}&quot;?
+            Delete combo?
           </DialogTitle>
           <DialogDescription className="text-base text-ink-muted">
-            This will permanently remove the category. Products assigned to it
-            will not be deleted.
+            {combo?.name ?? "This combo"} will be permanently removed.
           </DialogDescription>
         </DialogHeader>
 
         <DialogFooter className="flex-row justify-center gap-3 sm:justify-center">
           <CustomButton
-            label="Keep"
+            label="Cancel"
             onClick={onClose}
             className="min-h-12 flex-1 border border-slate-200 bg-white px-5 font-semibold text-slate-600 shadow-none hover:bg-slate-50"
           />

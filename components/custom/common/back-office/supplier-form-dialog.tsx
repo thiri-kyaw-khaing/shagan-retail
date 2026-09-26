@@ -92,7 +92,7 @@ export default function SupplierFormDialog({
               <CustomButton
                 label="Save supplier"
                 type="submit"
-                className="min-h-12 bg-brand px-5 font-semibold text-white disabled:bg-rose-200"
+                className="min-h-12 bg-brand px-5 font-semibold text-white hover:bg-brand/90 disabled:bg-rose-200"
               />
             </DialogFooter>
           </form>

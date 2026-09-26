@@ -189,7 +189,7 @@ export default function SplitPayment({
             icon={Check}
             onClick={() => setIsQrConfirmed(true)}
             disabled={isQrConfirmed}
-            className="mt-3 min-h-12 w-full bg-emerald-500 font-semibold text-white disabled:bg-emerald-100 disabled:text-emerald-700"
+            className="mt-3 min-h-12 w-full bg-emerald-500 font-semibold text-white hover:bg-emerald-600 disabled:bg-emerald-100 disabled:text-emerald-700"
           />
         </>
       )}
@@ -199,7 +199,7 @@ export default function SplitPayment({
           label={t("payment.addPaymentLine")}
           onClick={addPaymentLine}
           disabled={!canAddLine}
-          className="mt-3 min-h-12 w-full bg-slate-800 font-semibold text-white disabled:bg-slate-300"
+          className="mt-3 min-h-12 w-full bg-slate-800 font-semibold text-white hover:bg-slate-900 disabled:bg-slate-300"
         />
       )}
 

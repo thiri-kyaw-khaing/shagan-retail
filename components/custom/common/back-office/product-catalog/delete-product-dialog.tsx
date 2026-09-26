@@ -44,12 +44,12 @@ export default function DeleteProductDialog({
           <CustomButton
             label="Cancel"
             onClick={onClose}
-            className="min-h-12 flex-1 border border-slate-200 bg-white px-5 font-semibold text-slate-600 shadow-none hover:bg-slate-50 sm:flex-none sm:w-32"
+            className="min-h-12 flex-1 border border-slate-200 bg-white px-5 font-semibold text-slate-600 shadow-none hover:bg-slate-50"
           />
           <CustomButton
             label="Delete"
             onClick={onConfirm}
-            className="min-h-12 flex-1 bg-brand px-5 font-semibold text-white hover:bg-brand/90 sm:flex-none sm:w-32"
+            className="min-h-12 flex-1 bg-brand px-5 font-semibold text-white hover:bg-brand/90"
           />
         </DialogFooter>
       </DialogContent>
