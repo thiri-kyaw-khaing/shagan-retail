@@ -27,7 +27,7 @@ export default function ChooseSectionActions() {
         <CustomButton
           label={t("chooseSection.customizeReceipt")}
           icon={FileText}
-          onClick={() => router.push("/manager/customize-receipt")}
+          onClick={() => router.push("/owner/customize-receipt")}
           className="h-10 border-2 border-rose-300 bg-white font-semibold text-rose-700 hover:bg-rose-50"
         />
         <CustomButton

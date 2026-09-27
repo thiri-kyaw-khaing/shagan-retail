@@ -244,8 +244,8 @@ const en = {
   "void.approvingVoidPrefix": "Approving void of",
   "void.processedPrefix": "Sale voided —",
 
-  "managerPin.title": "Manager access",
-  "managerPin.subtitle": "Enter manager PIN to open Back Office",
+  "ownerPin.title": "Owner access",
+  "ownerPin.subtitle": "Enter owner PIN to open Back Office",
 
   "backOffice.subtitle": "Back Office v0.1",
   "backOffice.exitToPortal": "Exit to Portal",
@@ -256,8 +256,22 @@ const en = {
   "chooseSection.openDrawer": "Open Drawer",
 
   "helpCenterDialog.title": "Help Center",
-  "helpCenterDialog.description": "Help documentation is coming soon.",
-  "helpCenterDialog.close": "Close",
+  "helpCenterDialog.subtitle": "Provider Onboarding Portal",
+  "helpCenterDialog.description":
+    "The POS provider can help set up and manage selected parts of your POS system when permission is provided.",
+  "helpCenterDialog.accessTitle": "Customer Service Access",
+  "helpCenterDialog.accessSubtitle": "Control what the provider can access",
+  "helpCenterDialog.statusNotSet": "NOT SET",
+  "helpCenterDialog.statusAllowed": "ALLOWED",
+  "helpCenterDialog.statusNotAllowed": "NOT ALLOWED",
+  "helpCenterDialog.allowed": "Allowed",
+  "helpCenterDialog.notAllowed": "Not Allowed",
+  "helpCenterDialog.helperText":
+    "Select a permission level for the customer service provider.",
+  "helpCenterDialog.contactSupportLabel": "CONTACT SUPPORT",
+  "helpCenterDialog.supportEmail": "support@shaganretail.com",
+  "helpCenterDialog.cancel": "Cancel",
+  "helpCenterDialog.savePermission": "Save Permission",
 
   "dashboardPreview.title": "Dashboard",
   "dashboardPreview.subtitle":

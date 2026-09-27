@@ -254,8 +254,8 @@ const mm: typeof en = {
   "void.approvingVoidPrefix": "ပယ်ဖျက်ခြင်း အတည်ပြုနေသည်",
   "void.processedPrefix": "ရောင်းချမှု ပယ်ဖျက်ပြီးပါပြီ —",
 
-  "managerPin.title": "မန်နေဂျာ အသုံးပြုခွင့်",
-  "managerPin.subtitle": "Back Office ကို ဖွင့်ရန် မန်နေဂျာ PIN ရိုက်ထည့်ပါ",
+  "ownerPin.title": "ပိုင်ရှင် အသုံးပြုခွင့်",
+  "ownerPin.subtitle": "Back Office ကို ဖွင့်ရန် ပိုင်ရှင် PIN ရိုက်ထည့်ပါ",
 
   "backOffice.subtitle": "Back Office v0.1",
   "backOffice.exitToPortal": "Portal သို့ ထွက်ရန်",
@@ -266,8 +266,23 @@ const mm: typeof en = {
   "chooseSection.openDrawer": "ငွေဒရာဝါဖွင့်ရန်",
 
   "helpCenterDialog.title": "အကူအညီစင်တာ",
-  "helpCenterDialog.description": "အကူအညီစာရွက်စာတမ်းများ မကြာမီ လာပါမည်။",
-  "helpCenterDialog.close": "ပိတ်ရန်",
+  "helpCenterDialog.subtitle": "ပံ့ပိုးပေးသူ မိတ်ဆက်စာမျက်နှာ",
+  "helpCenterDialog.description":
+    "POS ပံ့ပိုးပေးသူသည် ခွင့်ပြုချက်ရရှိပါက သင့် POS စနစ်၏ ရွေးချယ်ထားသော အစိတ်အပိုင်းများကို စီစဉ်ပေးနိုင်ပြီး စီမံခန့်ခွဲပေးနိုင်ပါသည်။",
+  "helpCenterDialog.accessTitle": "ဖောက်သည်ဝန်ဆောင်မှု ဝင်ရောက်ခွင့်",
+  "helpCenterDialog.accessSubtitle":
+    "ပံ့ပိုးပေးသူ ဝင်ရောက်နိုင်သည့်အရာများကို ထိန်းချုပ်ပါ",
+  "helpCenterDialog.statusNotSet": "မသတ်မှတ်ရသေး",
+  "helpCenterDialog.statusAllowed": "ခွင့်ပြုထား",
+  "helpCenterDialog.statusNotAllowed": "ခွင့်မပြု",
+  "helpCenterDialog.allowed": "ခွင့်ပြုသည်",
+  "helpCenterDialog.notAllowed": "ခွင့်မပြုပါ",
+  "helpCenterDialog.helperText":
+    "ဖောက်သည်ဝန်ဆောင်မှုပံ့ပိုးသူအတွက် ခွင့်ပြုချက်အဆင့်ကို ရွေးချယ်ပါ။",
+  "helpCenterDialog.contactSupportLabel": "အကူအညီဆက်သွယ်ရန်",
+  "helpCenterDialog.supportEmail": "support@shaganretail.com",
+  "helpCenterDialog.cancel": "မလုပ်တော့ပါ",
+  "helpCenterDialog.savePermission": "ခွင့်ပြုချက် သိမ်းမည်",
 
   "dashboardPreview.title": "ဒက်ရှ်ဘုတ်",
   "dashboardPreview.subtitle":
