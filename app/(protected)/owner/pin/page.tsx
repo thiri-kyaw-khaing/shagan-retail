@@ -7,15 +7,15 @@ import BackButton from "@/components/custom/common/back-button";
 import ManagerApprovalStep from "@/components/custom/common/pos/manager-approval-step";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
-export default function ManagerPinPage() {
+export default function OwnerPinPage() {
   const router = useRouter();
   const { t } = useTranslation();
   const [pin, setPin] = useState("");
 
   const handleSubmit = () => {
-    console.log("Manager PIN entered:", pin);
+    console.log("Owner PIN entered:", pin);
     // Verify the PIN here later.
-    router.push("/manager");
+    router.push("/owner");
   };
 
   return (
@@ -24,8 +24,8 @@ export default function ManagerPinPage() {
         <BackButton href="/portal" className="absolute left-6 top-6" />
 
         <ManagerApprovalStep
-          title={t("managerPin.title")}
-          subtitle={t("managerPin.subtitle")}
+          title={t("ownerPin.title")}
+          subtitle={t("ownerPin.subtitle")}
           pin={pin}
           onPinChange={setPin}
           onSubmit={handleSubmit}

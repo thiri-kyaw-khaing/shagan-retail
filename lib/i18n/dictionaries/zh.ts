@@ -240,8 +240,8 @@ const zh: typeof en = {
   "void.approvingVoidPrefix": "正在批准作废",
   "void.processedPrefix": "销售已作废 —",
 
-  "managerPin.title": "经理权限",
-  "managerPin.subtitle": "输入经理密码以打开后台管理",
+  "ownerPin.title": "店主权限",
+  "ownerPin.subtitle": "输入店主密码以打开后台管理",
 
   "backOffice.subtitle": "后台管理 v0.1",
   "backOffice.exitToPortal": "返回门户",
@@ -252,8 +252,21 @@ const zh: typeof en = {
   "chooseSection.openDrawer": "打开钱箱",
 
   "helpCenterDialog.title": "帮助中心",
-  "helpCenterDialog.description": "帮助文档即将推出。",
-  "helpCenterDialog.close": "关闭",
+  "helpCenterDialog.subtitle": "服务商入驻门户",
+  "helpCenterDialog.description":
+    "在获得授权后，POS 服务商可以协助设置和管理您 POS 系统的指定部分。",
+  "helpCenterDialog.accessTitle": "客服访问权限",
+  "helpCenterDialog.accessSubtitle": "控制服务商可以访问的内容",
+  "helpCenterDialog.statusNotSet": "未设置",
+  "helpCenterDialog.statusAllowed": "已允许",
+  "helpCenterDialog.statusNotAllowed": "不允许",
+  "helpCenterDialog.allowed": "允许",
+  "helpCenterDialog.notAllowed": "不允许",
+  "helpCenterDialog.helperText": "请为客服服务商选择权限级别。",
+  "helpCenterDialog.contactSupportLabel": "联系支持",
+  "helpCenterDialog.supportEmail": "support@shaganretail.com",
+  "helpCenterDialog.cancel": "取消",
+  "helpCenterDialog.savePermission": "保存权限",
 
   "dashboardPreview.title": "仪表板",
   "dashboardPreview.subtitle": "今日门店概览及关键绩效指标",

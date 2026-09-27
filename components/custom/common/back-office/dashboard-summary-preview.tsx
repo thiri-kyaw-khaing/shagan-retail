@@ -32,7 +32,7 @@ export default function DashboardSummaryPreview() {
 
   return (
     <DashboardPreviewCard
-      href="/manager/dashboard"
+      href="/owner/dashboard"
       icon={LayoutDashboard}
       title={t("dashboardPreview.title")}
       subtitle={t("dashboardPreview.subtitle")}
