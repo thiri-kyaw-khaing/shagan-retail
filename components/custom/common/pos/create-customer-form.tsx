@@ -31,6 +31,8 @@ export default function CreateCustomerForm({
       id: Date.now(),
       name: data.fullName.trim(),
       phone: data.phone.trim(),
+      visits: 0,
+      lifetimeSpend: 0,
     });
   };
 

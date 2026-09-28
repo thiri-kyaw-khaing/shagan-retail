@@ -20,3 +20,19 @@ export function formatNumber(value: number, locale: Locale): string {
 export function formatCurrency(amount: number, locale: Locale): string {
   return `K ${formatNumber(amount, locale)}`;
 }
+
+export function formatShortDate(date: Date, locale: Locale): string {
+  return new Intl.DateTimeFormat(toBcp47(locale), {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  }).format(date);
+}
+
+export function formatClockTime(date: Date, locale: Locale): string {
+  return new Intl.DateTimeFormat(toBcp47(locale), {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+}
