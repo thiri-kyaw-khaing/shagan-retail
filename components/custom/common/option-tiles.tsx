@@ -7,7 +7,7 @@ type OptionTilesProps<T extends string> = {
   options: Option<T>[];
   value: T | null;
   onChange: (value: T) => void;
-  columns?: 1 | 2;
+  columns?: 1 | 2 | 3;
 };
 
 export default function OptionTiles<T extends string>({
@@ -17,7 +17,14 @@ export default function OptionTiles<T extends string>({
   columns = 2,
 }: OptionTilesProps<T>) {
   return (
-    <div className={cn("grid gap-3", columns === 1 ? "grid-cols-1" : "grid-cols-2")}>
+    <div
+      className={cn(
+        "grid gap-3",
+        columns === 1 && "grid-cols-1",
+        columns === 2 && "grid-cols-2",
+        columns === 3 && "grid-cols-3",
+      )}
+    >
       {options.map((option) => {
         const active = value === option.id;
 

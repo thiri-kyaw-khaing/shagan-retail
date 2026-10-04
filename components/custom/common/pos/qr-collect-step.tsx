@@ -1,9 +1,12 @@
 "use client";
 
-import { Check, QrCode } from "lucide-react";
+import { useState } from "react";
+import { Check } from "lucide-react";
 
 import CustomButton from "@/components/custom/common/custom-button";
+import QrBankPanel from "@/components/custom/common/pos/qr-bank-panel";
 import { useTranslation } from "@/lib/i18n/use-translation";
+import { qrCodes, resolveSelectedQr } from "@/lib/types/model/qr-codes";
 
 type QrCollectStepProps = {
   isConfirmed: boolean;
@@ -17,17 +20,23 @@ export default function QrCollectStep({
   onContinue,
 }: QrCollectStepProps) {
   const { t } = useTranslation();
+  const [selectedQrId, setSelectedQrId] = useState<number | null>(null);
+  const selectedQr = resolveSelectedQr(qrCodes, selectedQrId);
+
+  const handleConfirm = () => {
+    console.log("Exchange - QR payment confirmed via:", selectedQr?.bankName);
+    onConfirmPayment();
+  };
 
   return (
     <div className="mx-auto max-w-md p-5 sm:p-6">
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
-        <div className="mx-auto flex size-24 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
-          <QrCode className="size-16 text-slate-500" />
-        </div>
-        <p className="mx-auto mt-4 max-w-md text-sm text-slate-500">
-          {t("payment.showQrInstruction")}
-        </p>
-      </div>
+      <QrBankPanel
+        qrCodes={qrCodes}
+        selected={selectedQr}
+        onSelect={(qr) => setSelectedQrId(qr.id)}
+        disabled={isConfirmed}
+        instruction={t("payment.showQrInstruction")}
+      />
 
       <CustomButton
         label={
@@ -36,8 +45,8 @@ export default function QrCollectStep({
             : t("payment.paymentReceivedConfirm")
         }
         icon={Check}
-        onClick={onConfirmPayment}
-        disabled={isConfirmed}
+        onClick={handleConfirm}
+        disabled={isConfirmed || !selectedQr}
         className="mt-5 min-h-14 w-full bg-emerald-500 text-base font-bold text-white hover:bg-emerald-600 disabled:bg-emerald-100 disabled:text-emerald-700"
       />
 

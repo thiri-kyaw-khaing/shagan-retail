@@ -328,6 +328,10 @@ const mm: typeof en = {
   "payment.showQrInstruction":
     "QR ကုဒ်ကို ဖောက်သည်အား ပြသပြီး သင့်စက်ပေါ်တွင် ငွေပေးချေမှုကို စောင့်ဆိုင်းပါ။",
   "payment.paymentConfirmed": "ငွေပေးချေမှု အတည်ပြုပြီး",
+  "payment.qrChooseBank": "ဖောက်သည်ပေးချေမည့် ဘဏ်ကို ရွေးပါ",
+  "payment.qrPayingWith": "ပေးချေမည့်ဘဏ်",
+  "payment.noQrCodesTitle": "QR ကုဒ် မထည့်ရသေးပါ",
+  "payment.noQrCodesHint": "Back Office → ပြေစာစိတ်ကြိုက်ပြင်ရန် → QR ငွေပေးချေမှု တွင် ဘဏ် QR ကုဒ် ထည့်ပါ၊ သို့မဟုတ် ငွေသားဖြင့် လက်ခံပါ။",
   "payment.paymentReceivedConfirm": "ငွေလက်ခံရရှိပြီး — အတည်ပြုပါ",
   "payment.amountRemaining": "ကျန်ရှိငွေပမာဏ",
   "payment.nextTender": "နောက်ထပ် ငွေပေးချေနည်း",

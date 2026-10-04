@@ -7,14 +7,17 @@ import BackButton from "@/components/custom/common/back-button";
 import CustomButton from "@/components/custom/common/custom-button";
 import NumPad from "@/components/custom/common/numpad";
 import { PaymentMethodButton } from "@/components/custom/common/pos/payment-method-selection";
+import QrBankPanel from "@/components/custom/common/pos/qr-bank-panel";
 import { formatCurrency } from "@/lib/i18n/format";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import type { SplitPaymentProps } from "@/lib/types/model/payment";
+import { qrCodes, resolveSelectedQr } from "@/lib/types/model/qr-codes";
 import { cn } from "@/lib/utils";
 
 type PaymentLine = {
   method: "cash" | "qr";
   amount: number;
+  bankName?: string;
 };
 
 type TenderMethod = "cash" | "qr";
@@ -31,18 +34,21 @@ export default function SplitPayment({
   const [activeTender, setActiveTender] = useState<TenderMethod | null>(null);
   const [cashInput, setCashInput] = useState("");
   const [isQrConfirmed, setIsQrConfirmed] = useState(false);
+  const [selectedQrId, setSelectedQrId] = useState<number | null>(null);
+  const selectedQr = resolveSelectedQr(qrCodes, selectedQrId);
 
   const paidAmount = paymentLines.reduce((sum, line) => sum + line.amount, 0);
   const remainingAmount = Math.max(totalDue - paidAmount, 0);
   const cashAmount = Number(cashInput || "0");
   const canAddCash = activeTender === "cash" && cashAmount > 0 && cashAmount <= remainingAmount;
-  const canAddQr = activeTender === "qr" && isQrConfirmed;
+  const canAddQr = activeTender === "qr" && isQrConfirmed && !!selectedQr;
   const canAddLine = remainingAmount > 0 && (canAddCash || canAddQr);
   const isComplete = remainingAmount === 0 && paymentLines.length > 0;
 
   const selectTender = (method: TenderMethod) => {
     setActiveTender(method);
     setIsQrConfirmed(false);
+    setSelectedQrId(null);
     if (method === "cash") setCashInput("");
   };
 
@@ -50,10 +56,16 @@ export default function SplitPayment({
     if (!canAddLine || !activeTender) return;
 
     const amount = activeTender === "cash" ? cashAmount : remainingAmount;
-    setPaymentLines((current) => [...current, { method: activeTender, amount }]);
+    const bankName = activeTender === "qr" ? selectedQr?.bankName : undefined;
+    console.log("Payment - split line added:", activeTender, amount, bankName);
+    setPaymentLines((current) => [
+      ...current,
+      { method: activeTender, amount, bankName },
+    ]);
     setActiveTender(null);
     setCashInput("");
     setIsQrConfirmed(false);
+    setSelectedQrId(null);
   };
 
   return (
@@ -124,7 +136,9 @@ export default function SplitPayment({
             ) : (
               <QrCode className="size-4" />
             )}
-            {line.method === "cash" ? t("payment.cash") : t("payment.qrCode")}
+            {line.method === "cash"
+              ? t("payment.cash")
+              : `${t("payment.qrCode")}${line.bankName ? ` · ${line.bankName}` : ""}`}
           </span>
           <span>{formatCurrency(line.amount, locale)}</span>
         </div>
@@ -171,14 +185,14 @@ export default function SplitPayment({
 
       {activeTender === "qr" && remainingAmount > 0 && (
         <>
-          <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-5 text-center">
-            <div className="mx-auto flex size-20 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
-              <QrCode className="size-14 text-slate-500" />
-            </div>
-            <p className="mt-3 text-sm text-slate-500">
-              {t("payment.qrPaymentForRemainingPrefix")}{" "}
-              {formatCurrency(remainingAmount, locale)}
-            </p>
+          <div className="mt-3">
+            <QrBankPanel
+              qrCodes={qrCodes}
+              selected={selectedQr}
+              onSelect={(qr) => setSelectedQrId(qr.id)}
+              disabled={isQrConfirmed}
+              instruction={`${t("payment.qrPaymentForRemainingPrefix")} ${formatCurrency(remainingAmount, locale)}`}
+            />
           </div>
           <CustomButton
             label={
@@ -188,7 +202,7 @@ export default function SplitPayment({
             }
             icon={Check}
             onClick={() => setIsQrConfirmed(true)}
-            disabled={isQrConfirmed}
+            disabled={isQrConfirmed || !selectedQr}
             className="mt-3 min-h-12 w-full bg-emerald-500 font-semibold text-white hover:bg-emerald-600 disabled:bg-emerald-100 disabled:text-emerald-700"
           />
         </>

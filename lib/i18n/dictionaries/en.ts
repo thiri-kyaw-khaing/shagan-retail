@@ -316,6 +316,10 @@ const en = {
   "payment.showQrInstruction":
     "Show the QR code to the customer and wait for payment on your device.",
   "payment.paymentConfirmed": "Payment confirmed",
+  "payment.qrChooseBank": "Choose the bank the customer is paying with",
+  "payment.qrPayingWith": "Paying with",
+  "payment.noQrCodesTitle": "No QR codes set up",
+  "payment.noQrCodesHint": "Add a bank QR code in Back Office → Customize Receipt → QR Payment, or take cash instead.",
   "payment.paymentReceivedConfirm": "Payment received — confirm",
   "payment.amountRemaining": "Amount remaining",
   "payment.nextTender": "Next tender",
