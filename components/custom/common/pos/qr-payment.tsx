@@ -1,13 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { ArrowRight, Banknote, Check, Layers3, QrCode } from "lucide-react";
 
 import BackButton from "@/components/custom/common/back-button";
 import CustomButton from "@/components/custom/common/custom-button";
 import { PaymentMethodButton } from "@/components/custom/common/pos/payment-method-selection";
+import QrBankPanel from "@/components/custom/common/pos/qr-bank-panel";
 import { formatCurrency } from "@/lib/i18n/format";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import type { QrPaymentProps } from "@/lib/types/model/payment";
+import { qrCodes, resolveSelectedQr } from "@/lib/types/model/qr-codes";
 
 export default function QrPayment({
   totalDue,
@@ -19,6 +22,13 @@ export default function QrPayment({
   onCompleteSale,
 }: QrPaymentProps) {
   const { t } = useTranslation();
+  const [selectedQrId, setSelectedQrId] = useState<number | null>(null);
+  const selectedQr = resolveSelectedQr(qrCodes, selectedQrId);
+
+  const handleConfirm = () => {
+    console.log("Payment - QR payment confirmed via:", selectedQr?.bankName);
+    onConfirmPayment();
+  };
 
   return (
     <div className="p-5 sm:p-6">
@@ -63,13 +73,14 @@ export default function QrPayment({
         />
       </div>
 
-      <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
-        <div className="mx-auto flex size-24 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
-          <QrCode className="size-16 text-slate-500" />
-        </div>
-        <p className="mx-auto mt-4 max-w-md text-sm text-slate-500">
-          {t("payment.showQrInstruction")}
-        </p>
+      <div className="mt-5">
+        <QrBankPanel
+          qrCodes={qrCodes}
+          selected={selectedQr}
+          onSelect={(qr) => setSelectedQrId(qr.id)}
+          disabled={isConfirmed}
+          instruction={t("payment.showQrInstruction")}
+        />
       </div>
 
       <CustomButton
@@ -79,8 +90,8 @@ export default function QrPayment({
             : t("payment.paymentReceivedConfirm")
         }
         icon={Check}
-        onClick={onConfirmPayment}
-        disabled={isConfirmed}
+        onClick={handleConfirm}
+        disabled={isConfirmed || !selectedQr}
         className="mt-5 min-h-14 w-full bg-emerald-500 text-base font-bold text-white hover:bg-emerald-600 disabled:bg-emerald-100 disabled:text-emerald-700"
       />
 
