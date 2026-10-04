@@ -1,70 +1,58 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { Plus } from "lucide-react";
 
 import PageHeader from "@/components/custom/common/back-office/page-header";
 import type { CatalogDialog } from "@/components/custom/common/back-office/product-catalog/catalog-dialog";
-import CategoryFormDialog from "@/components/custom/common/back-office/product-catalog/category-form-dialog";
-import CategoryList from "@/components/custom/common/back-office/product-catalog/category-list";
-import ComboFormDialog from "@/components/custom/common/back-office/product-catalog/combo-form-dialog";
-import ComboTable from "@/components/custom/common/back-office/product-catalog/combo-table";
-import DeleteCategoryDialog from "@/components/custom/common/back-office/product-catalog/delete-category-dialog";
-import DeleteComboDialog from "@/components/custom/common/back-office/product-catalog/delete-combo-dialog";
-import DeleteProductDialog from "@/components/custom/common/back-office/product-catalog/delete-product-dialog";
-import ProductFormDialog from "@/components/custom/common/back-office/product-catalog/product-form-dialog";
-import ProductTable from "@/components/custom/common/back-office/product-catalog/product-table";
+import CategoriesSection from "@/components/custom/common/back-office/product-catalog/categories-section";
+import CombosSection from "@/components/custom/common/back-office/product-catalog/combos-section";
+import { isExpired } from "@/components/custom/common/back-office/product-catalog/combo-table";
 import ProductTabs, {
   type ProductTab,
 } from "@/components/custom/common/back-office/product-catalog/product-tabs";
+import ProductsSection from "@/components/custom/common/back-office/product-catalog/products-section";
 import CustomButton from "@/components/custom/common/custom-button";
-import FormSelect from "@/components/custom/common/forms/form-select";
-import SearchBar from "@/components/custom/common/pos/search-bar";
-import { Form } from "@/components/ui/form";
-import { useCategoryCrud } from "@/lib/hooks/use-category-crud";
-import { useComboCrud } from "@/lib/hooks/use-combo-crud";
-import { useProductCrud } from "@/lib/hooks/use-product-crud";
+import {
+  categories as initialCategories,
+  type Category,
+} from "@/lib/types/model/categories";
+import { combos as initialCombos, type Combo } from "@/lib/types/model/combos";
+import {
+  products as initialProducts,
+  type Product,
+} from "@/lib/types/model/product";
 
 export default function ProductCatalogPage() {
   const [activeTab, setActiveTab] = useState<ProductTab>("products");
-  const [search, setSearch] = useState("");
   const [dialog, setDialog] = useState<CatalogDialog>(null);
-  const closeDialog = () => setDialog(null);
 
-  const categoryFilterForm = useForm<{ category: string }>({
-    defaultValues: { category: "all" },
-  });
-  const categoryFilter = categoryFilterForm.watch("category");
-
-  const categories = useCategoryCrud(dialog, closeDialog);
-  const products = useProductCrud(
-    dialog,
-    closeDialog,
-    categories.rows,
-    search,
-    categoryFilter,
+  // The three lists are shared: categories feed the product form, products feed the combos.
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  // Real categories only — excludes the POS-only "All"/"Combos" filter entries.
+  const [categories, setCategories] = useState<Category[]>(
+    initialCategories.filter((c) => c.id !== null && c.id !== 4),
   );
-  const combos = useComboCrud(dialog, closeDialog);
+  const [combos, setCombos] = useState<Combo[]>(initialCombos);
 
-  const addLabel = activeTab === "combos" ? "Add combo" : "Add product";
-  const handleAdd = () => {
-    if (activeTab === "combos") setDialog({ type: "add-combo" });
-    else if (activeTab === "products") setDialog({ type: "add-product" });
-  };
+  const sectionProps = { dialog, setDialog };
 
   return (
     <main className="min-h-[calc(100dvh-5rem)] bg-page p-4 sm:p-6">
       <PageHeader
         title="Product Catalog"
-        subtitle={`${products.rows.length} products · ${combos.rows.length} combos (${combos.expiredCount} expired)`}
+        subtitle={`${products.length} products · ${combos.length} combos (${combos.filter(isExpired).length} expired)`}
         backHref="/owner"
         action={
           activeTab !== "categories" ? (
             <CustomButton
-              label={addLabel}
+              label={activeTab === "combos" ? "Add combo" : "Add product"}
               icon={Plus}
-              onClick={handleAdd}
+              onClick={() =>
+                setDialog({
+                  type: activeTab === "combos" ? "add-combo" : "add-product",
+                })
+              }
               className="min-h-11 bg-brand px-4 font-semibold text-white hover:bg-brand/90"
             />
           ) : undefined
@@ -74,140 +62,28 @@ export default function ProductCatalogPage() {
       <ProductTabs activeTab={activeTab} onChange={setActiveTab} />
 
       {activeTab === "products" && (
-        <>
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-start">
-            <SearchBar
-              value={search}
-              onChange={setSearch}
-              placeholder="Search by name or barcode..."
-              className="flex-1 px-0 pt-0"
-            />
-            <Form {...categoryFilterForm}>
-              <div className="sm:w-48">
-                <FormSelect
-                  control={categoryFilterForm.control}
-                  path="category"
-                  options={categories.filterOptions}
-                  selectClassName="h-11"
-                />
-              </div>
-            </Form>
-          </div>
-
-          <div className="mt-5">
-            <ProductTable
-              products={products.filteredRows}
-              categories={categories.rows}
-              onEdit={(product) => setDialog({ type: "edit-product", product })}
-              onDelete={(product) =>
-                setDialog({ type: "delete-product", product })
-              }
-            />
-          </div>
-        </>
+        <ProductsSection
+          {...sectionProps}
+          products={products}
+          setProducts={setProducts}
+          categories={categories}
+        />
       )}
-
       {activeTab === "categories" && (
-        <div className="mt-5">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-ink-muted">
-              {categories.rows.length} categories
-            </p>
-            <CustomButton
-              label="Add Category"
-              icon={Plus}
-              onClick={() => setDialog({ type: "add-category" })}
-              className="min-h-11 bg-brand px-4 font-semibold text-white hover:bg-brand/90"
-            />
-          </div>
-
-          <div className="mt-4">
-            <CategoryList
-              categories={categories.rows}
-              onEdit={(category) =>
-                setDialog({ type: "edit-category", category })
-              }
-              onDelete={(category) =>
-                setDialog({ type: "delete-category", category })
-              }
-            />
-          </div>
-        </div>
+        <CategoriesSection
+          {...sectionProps}
+          categories={categories}
+          setCategories={setCategories}
+        />
       )}
-
       {activeTab === "combos" && (
-        <div className="mt-5">
-          <ComboTable
-            combos={combos.rows}
-            products={products.rows}
-            onEdit={(combo) => setDialog({ type: "edit-combo", combo })}
-            onDelete={(combo) => setDialog({ type: "delete-combo", combo })}
-          />
-        </div>
-      )}
-
-      {products.isFormOpen && (
-        <ProductFormDialog
-          mode={dialog?.type === "edit-product" ? "edit" : "add"}
-          isOpen
-          values={products.formValues}
-          categories={categories.rows}
-          onClose={closeDialog}
-          onSave={products.save}
+        <CombosSection
+          {...sectionProps}
+          combos={combos}
+          setCombos={setCombos}
+          products={products}
         />
       )}
-
-      <DeleteProductDialog
-        product={
-          products.isDeleteOpen && dialog?.type === "delete-product"
-            ? (dialog.product ?? null)
-            : null
-        }
-        onClose={closeDialog}
-        onConfirm={products.remove}
-      />
-
-      {categories.isFormOpen && (
-        <CategoryFormDialog
-          mode={dialog?.type === "edit-category" ? "edit" : "add"}
-          isOpen
-          values={categories.formValues}
-          onClose={closeDialog}
-          onSave={categories.save}
-        />
-      )}
-
-      <DeleteCategoryDialog
-        category={
-          categories.isDeleteOpen && dialog?.type === "delete-category"
-            ? (dialog.category ?? null)
-            : null
-        }
-        onClose={closeDialog}
-        onConfirm={categories.remove}
-      />
-
-      {combos.isFormOpen && (
-        <ComboFormDialog
-          mode={dialog?.type === "edit-combo" ? "edit" : "add"}
-          isOpen
-          values={combos.formValues}
-          items={combos.formItems}
-          products={products.rows}
-          onClose={closeDialog}
-          onSave={combos.save}
-        />
-      )}
-
-      <DeleteComboDialog
-        combo={
-          combos.isDeleteOpen && dialog?.type === "delete-combo"
-            ? (dialog.combo ?? null)
-            : null
-        }
-        onClose={closeDialog}
-        onConfirm={combos.remove}
-      />
     </main>
   );
 }

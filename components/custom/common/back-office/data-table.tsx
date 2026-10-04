@@ -19,6 +19,8 @@ type DataTableProps<T> = {
   getRowKey: (row: T) => string | number;
   emptyMessage: string;
   mobileCard?: (row: T) => ReactNode;
+  /** Extra classes for the outer wrapper, e.g. to drop the border when nested in a card. */
+  className?: string;
 };
 
 export default function DataTable<T>({
@@ -27,6 +29,7 @@ export default function DataTable<T>({
   getRowKey,
   emptyMessage,
   mobileCard,
+  className,
 }: DataTableProps<T>) {
   if (data.length === 0) {
     return (
@@ -37,7 +40,12 @@ export default function DataTable<T>({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-rose-200 bg-white">
+    <div
+      className={cn(
+        "overflow-hidden rounded-xl border border-rose-200 bg-white",
+        className,
+      )}
+    >
       <div
         className="hidden items-center gap-4 border-b border-rose-200 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 md:grid"
         style={{

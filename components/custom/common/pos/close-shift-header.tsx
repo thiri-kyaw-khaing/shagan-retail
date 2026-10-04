@@ -1,18 +1,17 @@
 import { LockKeyhole, PanelsTopLeft } from "lucide-react";
 import BackButton from "@/components/custom/common/back-button";
 import CustomButton from "@/components/custom/common/custom-button";
+import OpenDrawer from "@/components/custom/common/pos/open-drawer";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
 type CloseShiftHeaderProps = {
   branchName: string;
   staffName: string;
-  onOpenDrawer: () => void;
 };
 
 export default function CloseShiftHeader({
   branchName,
   staffName,
-  onOpenDrawer,
 }: CloseShiftHeaderProps) {
   const { t } = useTranslation();
 
@@ -39,11 +38,14 @@ export default function CloseShiftHeader({
         </div>
       </div>
 
-      <CustomButton
-        label={t("closeShift.openDrawer")}
-        icon={PanelsTopLeft}
-        onClick={onOpenDrawer}
-        className="min-h-11 rounded-xl border-2 border-rose-300 bg-white px-4 text-slate-700 shadow-none hover:bg-rose-100"
+      <OpenDrawer
+        trigger={
+          <CustomButton
+            label={t("closeShift.openDrawer")}
+            icon={PanelsTopLeft}
+            className="min-h-11 rounded-xl border-2 border-rose-300 bg-white px-4 text-slate-700 shadow-none hover:bg-rose-100"
+          />
+        }
       />
     </header>
   );
