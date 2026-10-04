@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import CashCountPanel from "@/components/custom/common/pos/cash-count-panel";
 import CloseShiftFooter from "@/components/custom/common/pos/close-shift-footer";
 import CloseShiftHeader from "@/components/custom/common/pos/close-shift-header";
-import OpenDrawer from "@/components/custom/common/pos/open-drawer";
 import ReconciliationSummary from "@/components/custom/common/pos/reconciliation-summary";
 import ShiftSummaryList from "@/components/custom/common/pos/shift-summary-list";
 import LabeledTextarea from "@/components/custom/common/labeled-textarea";
@@ -32,7 +31,6 @@ export default function CloseShiftPage() {
 
   const [cashInput, setCashInput] = useState("");
   const [reason, setReason] = useState("");
-  const [isOpenDrawerOpen, setIsOpenDrawerOpen] = useState(false);
 
   const countedCash = Number(cashInput || "0");
   const expectedCash = shiftSummary.openingCash + shiftSummary.cashSales;
@@ -70,7 +68,6 @@ export default function CloseShiftPage() {
         <CloseShiftHeader
           branchName={shiftSummary.branchName}
           staffName={shiftSummary.staffName}
-          onOpenDrawer={() => setIsOpenDrawerOpen(true)}
         />
 
         <div className="space-y-6 p-5 sm:p-6">
@@ -138,12 +135,6 @@ export default function CloseShiftPage() {
           />
         </div>
       </section>
-
-      <OpenDrawer
-        isOpen={isOpenDrawerOpen}
-        onClose={() => setIsOpenDrawerOpen(false)}
-        onConfirm={() => setIsOpenDrawerOpen(false)}
-      />
     </main>
   );
 }

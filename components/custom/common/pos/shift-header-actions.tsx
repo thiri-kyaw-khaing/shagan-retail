@@ -1,9 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useClickOutside } from "@/lib/hooks/use-click-outside";
 import LanguageSwitcherButton from "@/components/custom/common/language-switcher-button";
 import MoreMenu from "./more-menu";
 import SettingsDialog from "./settings-dialog";
@@ -23,7 +22,16 @@ export default function ShiftHeaderActions({ hasAlert = false }: ShiftHeaderActi
 
   const moreRef = useRef<HTMLDivElement>(null);
 
-  useClickOutside(moreRef, () => setIsMoreOpen(false));
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
+        setIsMoreOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   return (
     <>

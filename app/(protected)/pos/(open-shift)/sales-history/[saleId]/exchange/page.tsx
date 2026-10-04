@@ -17,7 +17,8 @@ import QrCollectStep from "@/components/custom/common/pos/qr-collect-step";
 import TransactionDoneStep from "@/components/custom/common/pos/transaction-done-step";
 import { sales } from "@/lib/types/model/sales";
 import { saleItems } from "@/lib/types/model/sale-items";
-import { useReplacementCart } from "@/lib/hooks/use-replacement-cart";
+import type { CartItemData } from "@/lib/types/model/cart";
+import type { Product } from "@/lib/types/model/product";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
 type Step =
@@ -57,13 +58,48 @@ export default function ExchangeItemsPage({ params }: ExchangeItemsPageProps) {
     Record<number, number>
   >({});
   const [condition, setCondition] = useState<ItemCondition | null>(null);
-  const replacement = useReplacementCart();
+  const [cart, setCart] = useState<CartItemData[]>([]);
   const [method, setMethod] = useState<RefundMethod | null>(null);
   const [managerPin, setManagerPin] = useState("");
   const [cashInput, setCashInput] = useState("");
   const [isQrConfirmed, setIsQrConfirmed] = useState(false);
 
   if (!sale) notFound();
+
+  const addReplacement = (product: Product) => {
+    setCart((current) => {
+      const existing = current.find((line) => line.productId === product.id);
+      if (existing) {
+        return current.map((line) =>
+          line.productId === product.id
+            ? { ...line, quantity: line.quantity + 1 }
+            : line,
+        );
+      }
+      return [
+        ...current,
+        {
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          imageUrl: product.imageUrl,
+          quantity: 1,
+        },
+      ];
+    });
+  };
+
+  const changeReplacementQty = (productId: number, qty: number) => {
+    setCart((current) =>
+      current.map((line) =>
+        line.productId === productId ? { ...line, quantity: qty } : line,
+      ),
+    );
+  };
+
+  const removeReplacement = (productId: number) => {
+    setCart((current) => current.filter((line) => line.productId !== productId));
+  };
 
   const customerLabel =
     sale.customerId === null
@@ -78,7 +114,7 @@ export default function ExchangeItemsPage({ params }: ExchangeItemsPageProps) {
     (sum, line) => sum + line.item.unitPrice * line.qty,
     0,
   );
-  const replacementValue = replacement.cart.reduce(
+  const replacementValue = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
@@ -90,7 +126,7 @@ export default function ExchangeItemsPage({ params }: ExchangeItemsPageProps) {
   };
 
   const handleReplacementContinue = () => {
-    console.log("Exchange - replacement items:", replacement.cart);
+    console.log("Exchange - replacement items:", cart);
     setStep("confirm");
   };
 
@@ -162,11 +198,11 @@ export default function ExchangeItemsPage({ params }: ExchangeItemsPageProps) {
       {step === "replacement" && (
         <ExchangeReplacementStep
           returnedValue={returnedValue}
-          cart={replacement.cart}
-          onAdd={replacement.add}
-          onQtyChange={replacement.setQty}
-          onRemove={replacement.remove}
-          canContinue={replacement.cart.length > 0}
+          cart={cart}
+          onAdd={addReplacement}
+          onQtyChange={changeReplacementQty}
+          onRemove={removeReplacement}
+          canContinue={cart.length > 0}
           onContinue={handleReplacementContinue}
         />
       )}

@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { CircleQuestionMark, Shield } from "lucide-react";
 
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import CustomButton from "@/components/custom/common/custom-button";
 import OptionTiles from "@/components/custom/common/option-tiles";
@@ -18,14 +20,10 @@ import { useTranslation } from "@/lib/i18n/use-translation";
 type ProviderPermission = "allowed" | "not_allowed";
 
 type HelpCenterDialogProps = {
-  isOpen: boolean;
-  onClose: () => void;
+  trigger: ReactNode;
 };
 
-export default function HelpCenterDialog({
-  isOpen,
-  onClose,
-}: HelpCenterDialogProps) {
+export default function HelpCenterDialog({ trigger }: HelpCenterDialogProps) {
   const { t } = useTranslation();
   const [permission, setPermission] = useState<ProviderPermission | null>(
     null,
@@ -46,17 +44,15 @@ export default function HelpCenterDialog({
   const handleSave = () => {
     if (!permission) return;
     console.log("[HelpCenterDialog] saved permission:", permission);
-    onClose();
   };
 
   return (
     <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        console.log("[HelpCenterDialog] open changed:", open);
-        if (!open) onClose();
-      }}
+      onOpenChange={(open) =>
+        console.log("[HelpCenterDialog] open changed:", open)
+      }
     >
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] overflow-y-auto rounded-2xl border-0 bg-white p-6 sm:max-w-md">
         <div className="flex items-center gap-3">
           <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-rose-600">
@@ -140,18 +136,21 @@ export default function HelpCenterDialog({
         </div>
 
         <DialogFooter className="mt-2 grid grid-cols-2 gap-3">
-          <CustomButton
-            label={t("helpCenterDialog.cancel")}
-            onClick={onClose}
-            className="min-h-11 w-full rounded-xl border-2 border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50"
-          />
+          <DialogClose asChild>
+            <CustomButton
+              label={t("helpCenterDialog.cancel")}
+              className="min-h-11 w-full rounded-xl border-2 border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50"
+            />
+          </DialogClose>
 
-          <CustomButton
-            label={t("helpCenterDialog.savePermission")}
-            onClick={handleSave}
-            disabled={!permission}
-            className="min-h-11 w-full rounded-xl bg-rose-600 px-3 text-sm font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-rose-300"
-          />
+          <DialogClose asChild>
+            <CustomButton
+              label={t("helpCenterDialog.savePermission")}
+              onClick={handleSave}
+              disabled={!permission}
+              className="min-h-11 w-full rounded-xl bg-rose-600 px-3 text-sm font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-rose-300"
+            />
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>
