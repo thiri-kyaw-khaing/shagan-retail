@@ -13,8 +13,9 @@ import type { Product } from "@/lib/types/model/product";
 type ProductsTabProps = {
   products: Product[];
   categories: Category[];
-  onEdit: (product: Product) => void;
-  onDelete: (product: Product) => void;
+  /** Omit both for a read-only list. */
+  onEdit?: (product: Product) => void;
+  onDelete?: (product: Product) => void;
 };
 
 export default function ProductsTab({

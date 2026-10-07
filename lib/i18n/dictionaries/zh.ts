@@ -12,8 +12,10 @@ const zh: typeof en = {
   "login.emailPlaceholder": "请输入您的电子邮箱",
   "login.passwordLabel": "密码",
   "login.passwordPlaceholder": "请输入您的密码",
-  "login.forgotPassword": "忘记密码？",
   "login.submit": "登录",
+  "login.submitting": "正在登录...",
+  "login.errorInvalid": "邮箱或密码错误，或该账户已被停用。",
+  "login.errorUnavailable": "无法连接服务器，请检查网络后重试。",
 
   "portal.title": "Shagan Retail",
   "portal.subtitle": "请选择一个门户以继续",
@@ -246,6 +248,8 @@ const zh: typeof en = {
   "backOffice.subtitle": "后台管理 v0.1",
   "backOffice.exitToPortal": "返回门户",
   "backOffice.signOut": "退出登录",
+  "backOffice.ownerRole": "店主",
+  "backOffice.allBranches": "所有分店",
 
   "chooseSection.helpCenter": "帮助中心",
   "chooseSection.customizeReceipt": "自定义收据",

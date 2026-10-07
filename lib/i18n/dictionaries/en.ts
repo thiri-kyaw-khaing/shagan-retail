@@ -10,8 +10,10 @@ const en = {
   "login.emailPlaceholder": "Enter your email",
   "login.passwordLabel": "Password",
   "login.passwordPlaceholder": "Enter your password",
-  "login.forgotPassword": "Forgot your password?",
   "login.submit": "Login",
+  "login.submitting": "Signing in...",
+  "login.errorInvalid": "Incorrect email or password, or this account is suspended.",
+  "login.errorUnavailable": "Can't reach the server. Check your connection and try again.",
 
   "portal.title": "Shagan Retail",
   "portal.subtitle": "Choose a portal to continue",
@@ -250,6 +252,8 @@ const en = {
   "backOffice.subtitle": "Back Office v0.1",
   "backOffice.exitToPortal": "Exit to Portal",
   "backOffice.signOut": "Sign out",
+  "backOffice.ownerRole": "Owner",
+  "backOffice.allBranches": "All branches",
 
   "chooseSection.helpCenter": "Help Center",
   "chooseSection.customizeReceipt": "Customize Receipt",

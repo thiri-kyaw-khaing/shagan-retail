@@ -1,24 +1,17 @@
-"use client";
+import OwnerHeader from "@/components/custom/common/back-office/owner-header";
+import { api } from "@/lib/api/server";
 
-import BackOfficeHeader from "@/components/custom/common/back-office/back-office-header";
-import { useTranslation } from "@/lib/i18n/use-translation";
-
-export default function BackOfficeLayout({
+export default async function BackOfficeLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { t } = useTranslation();
+  const me = await api.me();
 
   return (
     <div className="min-h-dvh bg-page">
-      <BackOfficeHeader
-        title={t("portal.title")}
-        subtitle={t("backOffice.subtitle")}
-        userName="U Aye Paung"
-        role="Owner"
-        branchName="Main Street Branch"
-      />
+      {/* Owner accounts are created without a name, so fall back to the email. */}
+      <OwnerHeader userName={me.name || me.email} />
       {children}
     </div>
   );

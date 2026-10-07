@@ -5,18 +5,22 @@ import { Home, LogOut } from "lucide-react";
 
 import CustomButton from "@/components/custom/common/custom-button";
 import LanguageSwitcherButton from "@/components/custom/common/language-switcher-button";
+import { logoutAction } from "@/lib/auth/actions";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
 type BackOfficeHeaderActionsProps = {
   userName: string;
   role: string;
   branchName: string;
+  /** Owners have no POS portal to return to (WORKFLOWS §3). */
+  showExitToPortal?: boolean;
 };
 
 export default function BackOfficeHeaderActions({
   userName,
   role,
   branchName,
+  showExitToPortal = false,
 }: BackOfficeHeaderActionsProps) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -34,17 +38,19 @@ export default function BackOfficeHeaderActions({
 
       <span className="h-6 w-px bg-white/30" />
 
-      <CustomButton
-        label={t("backOffice.exitToPortal")}
-        icon={Home}
-        onClick={() => router.push("/portal")}
-        className="bg-white h-10 font-semibold text-brand hover:bg-white/90"
-      />
+      {showExitToPortal && (
+        <CustomButton
+          label={t("backOffice.exitToPortal")}
+          icon={Home}
+          onClick={() => router.push("/portal")}
+          className="bg-white h-10 font-semibold text-brand hover:bg-white/90"
+        />
+      )}
 
       <CustomButton
         label={t("backOffice.signOut")}
         icon={LogOut}
-        onClick={() => router.push("/login")}
+        onClick={() => logoutAction()}
         className="bg-white h-10 font-semibold text-brand hover:bg-white/90"
       />
     </div>

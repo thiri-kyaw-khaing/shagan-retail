@@ -61,8 +61,9 @@ function ProductThumbnail({ product }: { product: Product }) {
 type ProductTableProps = {
   products: Product[];
   categories: Category[];
-  onEdit: (product: Product) => void;
-  onDelete: (product: Product) => void;
+  /** Omit both for a read-only table. */
+  onEdit?: (product: Product) => void;
+  onDelete?: (product: Product) => void;
 };
 
 export default function ProductTable({
@@ -97,7 +98,9 @@ export default function ProductTable({
       header: "Stock",
       render: (row) => <StockBadge product={row} />,
     },
-    {
+  ];
+  if (onEdit && onDelete) {
+    columns.push({
       key: "actions",
       header: "Actions",
       className: "flex justify-end",
@@ -117,8 +120,8 @@ export default function ProductTable({
           />
         </div>
       ),
-    },
-  ];
+    });
+  }
 
   return (
     <DataTable
@@ -144,20 +147,22 @@ export default function ProductTable({
             </div>
           </div>
 
-          <div className="flex shrink-0 flex-col gap-1">
-            <CustomButton
-              icon={Pencil}
-              aria-label={`Edit ${row.name}`}
-              onClick={() => onEdit(row)}
-              className="size-9 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
-            />
-            <CustomButton
-              icon={Trash2}
-              aria-label={`Delete ${row.name}`}
-              onClick={() => onDelete(row)}
-              className="size-9 bg-transparent p-0 text-brand shadow-none hover:bg-rose-50"
-            />
-          </div>
+          {onEdit && onDelete && (
+            <div className="flex shrink-0 flex-col gap-1">
+              <CustomButton
+                icon={Pencil}
+                aria-label={`Edit ${row.name}`}
+                onClick={() => onEdit(row)}
+                className="size-9 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
+              />
+              <CustomButton
+                icon={Trash2}
+                aria-label={`Delete ${row.name}`}
+                onClick={() => onDelete(row)}
+                className="size-9 bg-transparent p-0 text-brand shadow-none hover:bg-rose-50"
+              />
+            </div>
+          )}
         </div>
       )}
     />

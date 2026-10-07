@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,7 +20,7 @@ import FormInput from "../common/forms/form-input";
 import CustomButton from "../common/custom-button";
 import LanguageSwitcherButton from "@/components/custom/common/language-switcher-button";
 import { useTranslation } from "@/lib/i18n/use-translation";
-import { authUsers } from "@/lib/types/model/auth-users";
+import { loginAction, type LoginResult } from "@/lib/auth/actions";
 
 const LoginSchema = z.object({
   email: z
@@ -34,25 +33,23 @@ const LoginSchema = z.object({
 type LoginFormData = z.infer<typeof LoginSchema>;
 
 function LoginForm() {
-  const router = useRouter();
   const { t } = useTranslation();
+  const [error, setError] = useState<LoginResult["error"] | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(LoginSchema),
     defaultValues: { email: "", password: "" },
   });
 
+  // On success loginAction sets the session cookies and redirects by account
+  // type; it only returns when login failed.
   const onSubmit = (data: LoginFormData) => {
-    console.log(data);
-
-    // Mocked in place of a real login API call — looks up the account by email and
-    // routes by its type. Real check will compare data.password too once there's a backend.
-    const user = authUsers.find((authUser) => authUser.email === data.email);
-
-    if (user?.type === "owner") router.push("/owner");
-    else if (user?.type === "manager") router.push("/manager");
-    else if (user?.type === "service_center") router.push("/service-center");
-    else router.push("/portal");
+    setError(null);
+    startTransition(async () => {
+      const result = await loginAction(data.email, data.password);
+      setError(result.error);
+    });
   };
 
   return (
@@ -90,31 +87,28 @@ function LoginForm() {
                   type="email"
                 />
 
-                <div className="grid gap-2">
-                  <FormInput
-                    control={form.control}
-                    path="password"
-                    label={t("login.passwordLabel")}
-                    inputClassName="h-11 text-base sm:text-sm"
-                    placeholder={t("login.passwordPlaceholder")}
-                    type="password"
-                  />
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <Link
-                      href="/forgot-password"
-                      className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                    >
-                      {t("login.forgotPassword")}
-                    </Link>
-                  </div>
-                </div>
+                <FormInput
+                  control={form.control}
+                  path="password"
+                  label={t("login.passwordLabel")}
+                  inputClassName="h-11 text-base sm:text-sm"
+                  placeholder={t("login.passwordPlaceholder")}
+                  type="password"
+                />
+
+                {error && (
+                  <p role="alert" className="text-sm text-destructive">
+                    {t(error === "invalid_credentials" ? "login.errorInvalid" : "login.errorUnavailable")}
+                  </p>
+                )}
               </div>
             </CardContent>
 
             <CardFooter className="flex-col gap-2 px-8">
               <CustomButton
-                label={t("login.submit")}
+                label={t(isPending ? "login.submitting" : "login.submit")}
                 type="submit"
+                disabled={isPending}
                 className="h-11 w-full bg-brand hover:bg-brand/90 text-base sm:text-sm"
               />
             </CardFooter>
