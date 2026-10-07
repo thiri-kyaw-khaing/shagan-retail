@@ -55,7 +55,7 @@ export const sales: Sale[] = [
     total: 4100,
     paymentMethod: "qr",
     status: "completed",
-    completedAt: "2026-09-17T20:15:00.000Z",
+    completedAt: "2026-09-17T12:19:00",
     syncedAt: "2026-09-17T20:15:05.000Z",
   },
   {
@@ -72,7 +72,7 @@ export const sales: Sale[] = [
     total: 40700,
     paymentMethod: "cash",
     status: "completed",
-    completedAt: "2026-09-17T19:30:00.000Z",
+    completedAt: "2026-09-17T11:34:00",
     syncedAt: "2026-09-17T19:30:04.000Z",
   },
   {
@@ -89,7 +89,7 @@ export const sales: Sale[] = [
     total: 9300,
     paymentMethod: "cash",
     status: "completed",
-    completedAt: "2026-09-17T20:40:00.000Z",
+    completedAt: "2026-09-17T12:44:00",
     syncedAt: "2026-09-17T20:40:03.000Z",
   },
   {
@@ -123,7 +123,7 @@ export const sales: Sale[] = [
     total: 18500,
     paymentMethod: "cash",
     status: "completed",
-    completedAt: "2026-09-17T18:02:00.000Z",
+    completedAt: "2026-09-17T15:20:00",
     syncedAt: "2026-09-17T18:02:02.000Z",
   },
 ];
