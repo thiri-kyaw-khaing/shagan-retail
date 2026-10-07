@@ -12,8 +12,10 @@ const mm: typeof en = {
   "login.emailPlaceholder": "သင့်အီးမေးလ်ကို ထည့်ပါ",
   "login.passwordLabel": "စကားဝှက်",
   "login.passwordPlaceholder": "သင့်စကားဝှက်ကို ထည့်ပါ",
-  "login.forgotPassword": "စကားဝှက်မေ့နေပါသလား။",
   "login.submit": "ဝင်ရောက်ရန်",
+  "login.submitting": "ဝင်ရောက်နေသည်...",
+  "login.errorInvalid": "အီးမေးလ် သို့မဟုတ် စကားဝှက် မှားနေပါသည်၊ သို့မဟုတ် ဤအကောင့်ကို ဆိုင်းငံ့ထားပါသည်။",
+  "login.errorUnavailable": "ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။ အင်တာနက်ကို စစ်ဆေးပြီး ထပ်ကြိုးစားပါ။",
 
   "portal.title": "Shagan Retail",
   "portal.subtitle": "ဆက်လက်ရန် ပေါ်တယ်တစ်ခု ရွေးချယ်ပါ",
@@ -260,6 +262,8 @@ const mm: typeof en = {
   "backOffice.subtitle": "Back Office v0.1",
   "backOffice.exitToPortal": "Portal သို့ ထွက်ရန်",
   "backOffice.signOut": "ထွက်ရန်",
+  "backOffice.ownerRole": "ပိုင်ရှင်",
+  "backOffice.allBranches": "ဆိုင်ခွဲအားလုံး",
 
   "chooseSection.helpCenter": "အကူအညီစင်တာ",
   "chooseSection.customizeReceipt": "ဘောက်ချာစိတ်ကြိုက်ပြင်ဆင်ရန်",

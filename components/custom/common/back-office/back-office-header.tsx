@@ -7,6 +7,7 @@ type BackOfficeHeaderProps = {
   userName: string;
   role: string;
   branchName: string;
+  showExitToPortal?: boolean;
 };
 
 export default function BackOfficeHeader({
@@ -15,6 +16,7 @@ export default function BackOfficeHeader({
   userName,
   role,
   branchName,
+  showExitToPortal,
 }: BackOfficeHeaderProps) {
   return (
     <header className="flex flex-col gap-3 bg-brand px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
@@ -23,6 +25,7 @@ export default function BackOfficeHeader({
         userName={userName}
         role={role}
         branchName={branchName}
+        showExitToPortal={showExitToPortal}
       />
     </header>
   );
