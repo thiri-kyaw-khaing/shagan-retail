@@ -4,6 +4,7 @@ const VALUE_TONES = {
   default: "text-ink",
   warning: "text-amber-600",
   accent: "text-rose-800",
+  positive: "text-emerald-700",
 } as const;
 
 type KpiCardProps = {
@@ -12,6 +13,7 @@ type KpiCardProps = {
   caption: string;
   tone?: keyof typeof VALUE_TONES;
   mono?: boolean;
+  wrapCaption?: boolean;
 };
 
 export default function KpiCard({
@@ -20,6 +22,7 @@ export default function KpiCard({
   caption,
   tone = "default",
   mono,
+  wrapCaption,
 }: KpiCardProps) {
   return (
     <div className="min-w-0 rounded-2xl border border-rose-100 bg-white p-4 sm:p-5">
@@ -36,7 +39,10 @@ export default function KpiCard({
       >
         {value}
       </p>
-      <p className="mt-1 truncate text-sm text-slate-500" title={caption}>
+      <p
+        className={cn("mt-1 text-sm text-slate-500", !wrapCaption && "truncate")}
+        title={caption}
+      >
         {caption}
       </p>
     </div>

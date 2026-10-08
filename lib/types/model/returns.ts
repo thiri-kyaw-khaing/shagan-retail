@@ -29,6 +29,6 @@ export const returns: Return[] = [
     refundMethod: "cash",
     refundTotal: 2800,
     approvedBy: 4,
-    createdAt: "2026-09-17T21:05:00.000Z",
+    createdAt: "2026-09-17T15:45:00",
   },
 ];
