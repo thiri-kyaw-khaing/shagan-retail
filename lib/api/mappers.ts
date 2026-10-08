@@ -108,7 +108,9 @@ export function toStaffRow(
     id: staff.id,
     name: staff.name,
     role: roleNames.get(staff.role) ?? "—",
+    roleId: staff.role,
     branch: branchNames.get(staff.branch_id) ?? "—",
+    branchId: staff.branch_id,
     phone: staff.phone,
     status: staff.status,
   };

@@ -1,25 +1,20 @@
-import type { Product } from "@/lib/types/model/product";
-import type { StockMovement } from "@/lib/types/model/inventory-ledger";
+/** Stock is per branch: quantities keyed by `${branchId}:${productId}`. */
+export type BranchStock = Record<string, number>;
 
-/**
- * Stock on hand for a product: the balance of its most recent ledger entry
- * (movements are ordered newest first), falling back to the catalog stock.
- */
-export function getCurrentStock(
-  product: Product,
-  movements: StockMovement[],
-): number {
-  const latest = movements.find((movement) => movement.sku === product.barcode);
-  return latest ? latest.balance : product.stock;
-}
+export const stockKey = (branchId: string | number, productId: string | number) =>
+  `${branchId}:${productId}`;
 
-export function buildProductOptions(
-  products: Product[],
-  movements: StockMovement[],
-) {
+export type LedgerOption = { value: string; label: string };
+
+/** Product options labelled with their stock at one branch. */
+export function productOptionsAt(
+  products: { id: number; name: string }[],
+  stock: BranchStock,
+  branchId: string,
+): LedgerOption[] {
   return products.map((product) => ({
     value: String(product.id),
-    label: `${product.name} · stock: ${getCurrentStock(product, movements)}`,
+    label: `${product.name} · stock: ${stock[stockKey(branchId, product.id)] ?? 0}`,
   }));
 }
 

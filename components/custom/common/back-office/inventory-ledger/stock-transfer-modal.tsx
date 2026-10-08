@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -12,49 +12,45 @@ import LedgerActionDialog, {
   LEDGER_LABEL_CLASS,
 } from "@/components/custom/common/back-office/inventory-ledger/ledger-action-dialog";
 import {
-  buildProductOptions,
-  getCurrentStock,
   parseWholeQuantity,
+  productOptionsAt,
+  stockKey,
+  type BranchStock,
+  type LedgerOption,
 } from "@/components/custom/common/back-office/inventory-ledger/ledger-stock";
-import { branches } from "@/lib/types/model/branches";
-import type { StockMovement } from "@/lib/types/model/inventory-ledger";
-import { products, type Product } from "@/lib/types/model/product";
 
 type StockTransferFormValues = {
   fromBranch: string;
   toBranch: string;
   productId: string;
   quantity: string;
-  reason: string;
 };
 
 export type StockTransferSubmission = {
-  fromBranch: string;
-  toBranch: string;
-  product: Product;
+  fromBranch: number;
+  toBranch: number;
+  productId: number;
   quantity: number;
-  reason: string;
 };
 
 type StockTransferModalProps = {
-  movements: StockMovement[];
+  products: { id: number; name: string }[];
+  branchOptions: LedgerOption[];
+  stock: BranchStock;
+  defaultFromBranch: string;
   onClose: () => void;
   onSave: (transfer: StockTransferSubmission) => void;
+  pending?: boolean;
+  error?: string | null;
 };
 
-const BRANCH_OPTIONS = branches.map((branch) => ({
-  value: branch.name,
-  label: branch.name,
-}));
-
-function createTransferSchema(stockByProductId: Record<string, number>) {
+function createTransferSchema(stock: BranchStock) {
   return z
     .object({
       fromBranch: z.string().min(1),
       toBranch: z.string().min(1),
       productId: z.string().min(1, "Choose a product"),
       quantity: z.string().trim(),
-      reason: z.string().trim().min(1, "Reason is required"),
     })
     .superRefine((values, ctx) => {
       if (values.toBranch === values.fromBranch) {
@@ -66,88 +62,87 @@ function createTransferSchema(stockByProductId: Record<string, number>) {
       }
 
       const quantity = parseWholeQuantity(values.quantity);
-      const stock = stockByProductId[values.productId] ?? 0;
+      const onHand = stock[stockKey(values.fromBranch, values.productId)] ?? 0;
       if (quantity === null) {
         ctx.addIssue({
           code: "custom",
           path: ["quantity"],
           message: "Enter a whole number greater than 0",
         });
-      } else if (quantity > stock) {
+      } else if (quantity > onHand) {
         ctx.addIssue({
           code: "custom",
           path: ["quantity"],
-          message: `Only ${stock} in stock`,
+          message: `Only ${onHand} in stock at the sending branch`,
         });
       }
     });
 }
 
+// Creates a *pending* transfer; stock moves when it's marked Completed in the
+// Transfers list (two-step flow, decided 2026-10-08). The backend has no
+// reason/note field on transfers, so the form doesn't ask for one.
 export default function StockTransferModal({
-  movements,
+  products,
+  branchOptions,
+  stock,
+  defaultFromBranch,
   onClose,
   onSave,
+  pending,
+  error,
 }: StockTransferModalProps) {
-  const productOptions = useMemo(
-    () => buildProductOptions(products, movements),
-    [movements],
-  );
-  const schema = useMemo(
-    () =>
-      createTransferSchema(
-        Object.fromEntries(
-          products.map((product) => [
-            String(product.id),
-            getCurrentStock(product, movements),
-          ]),
-        ),
-      ),
-    [movements],
-  );
+  const schema = useMemo(() => createTransferSchema(stock), [stock]);
+  const defaultTo = branchOptions.find((b) => b.value !== defaultFromBranch)?.value ?? "";
 
   const form = useForm<StockTransferFormValues>({
     resolver: zodResolver(schema),
     mode: "onChange",
     defaultValues: {
-      fromBranch: BRANCH_OPTIONS[0]?.value ?? "",
-      toBranch: BRANCH_OPTIONS[1]?.value ?? "",
-      productId: productOptions[0]?.value ?? "",
+      fromBranch: defaultFromBranch,
+      toBranch: defaultTo,
+      productId: products[0] ? String(products[0].id) : "",
       quantity: "",
-      reason: "",
     },
   });
 
-  const values = form.watch();
+  const values = useWatch({ control: form.control }) as StockTransferFormValues;
   const canSubmit = schema.safeParse(values).success;
+  const productOptions = useMemo(
+    () => productOptionsAt(products, stock, values.fromBranch),
+    [products, stock, values.fromBranch],
+  );
 
   const handleSubmit = (data: StockTransferFormValues) => {
-    const product = products.find((item) => String(item.id) === data.productId);
     const quantity = parseWholeQuantity(data.quantity);
-    if (!product || quantity === null) return;
-
+    if (quantity === null) return;
     onSave({
-      fromBranch: data.fromBranch,
-      toBranch: data.toBranch,
-      product,
+      fromBranch: Number(data.fromBranch),
+      toBranch: Number(data.toBranch),
+      productId: Number(data.productId),
       quantity,
-      reason: data.reason.trim(),
     });
   };
 
   return (
     <LedgerActionDialog
       title="Stock Transfer"
-      submitLabel="Save Transfer"
+      submitLabel="Send Transfer"
       form={form}
       canSubmit={canSubmit}
       onClose={onClose}
       onSubmit={handleSubmit}
+      pending={pending}
+      error={error}
     >
+      <p className="text-sm text-ink-muted">
+        Stock leaves the sending branch when the transfer is marked Completed.
+      </p>
       <FormSelect
         control={form.control}
         path="fromBranch"
         label="From branch"
-        options={BRANCH_OPTIONS}
+        options={branchOptions}
         className={LEDGER_LABEL_CLASS}
         selectClassName={LEDGER_FIELD_CLASS}
       />
@@ -155,7 +150,7 @@ export default function StockTransferModal({
         control={form.control}
         path="toBranch"
         label="To branch"
-        options={BRANCH_OPTIONS}
+        options={branchOptions}
         className={LEDGER_LABEL_CLASS}
         selectClassName={LEDGER_FIELD_CLASS}
       />
@@ -173,14 +168,6 @@ export default function StockTransferModal({
         label="Transfer qty"
         type="number"
         placeholder="e.g. 5"
-        className={LEDGER_LABEL_CLASS}
-        inputClassName={LEDGER_FIELD_CLASS}
-      />
-      <FormInput
-        control={form.control}
-        path="reason"
-        label="Reason"
-        placeholder="e.g. Restock North Market, balance shelf stock..."
         className={LEDGER_LABEL_CLASS}
         inputClassName={LEDGER_FIELD_CLASS}
       />

@@ -21,10 +21,6 @@ export default function ReceiptInfoCard({
   form: UseFormReturn<CustomizeReceiptFormValues>;
 }) {
   const values = useWatch({ control: form.control });
-  const setShow = (
-    name: "showAddress" | "showPhone" | "showThankYouMessage",
-    show: boolean,
-  ) => form.setValue(name, show, { shouldDirty: true });
 
   return (
     <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6">
@@ -33,7 +29,7 @@ export default function ReceiptInfoCard({
       <FormInput
         control={form.control}
         path="shopName"
-        label="Shop Name"
+        label="Shop Name *"
         className={LABEL_CLASS}
         inputClassName={INPUT_CLASS}
       />
@@ -43,8 +39,6 @@ export default function ReceiptInfoCard({
           label="Address"
           required
           charCount={{ current: values.address?.length ?? 0, max: ADDRESS_MAX }}
-          show={values.showAddress}
-          onShowChange={(show) => setShow("showAddress", show)}
         />
         <Textarea
           {...form.register("address")}
@@ -54,23 +48,18 @@ export default function ReceiptInfoCard({
       </div>
 
       <div>
-        <ReceiptFieldHeader
-          label="Phone Number"
-          show={values.showPhone}
-          onShowChange={(show) => setShow("showPhone", show)}
-        />
+        <ReceiptFieldHeader label="Phone Number" required />
         <Input {...form.register("phone")} className={INPUT_CLASS} />
       </div>
 
       <div>
         <ReceiptFieldHeader
           label="Thank-you Message"
+          required
           charCount={{
             current: values.thankYouMessage?.length ?? 0,
             max: THANK_YOU_MAX,
           }}
-          show={values.showThankYouMessage}
-          onShowChange={(show) => setShow("showThankYouMessage", show)}
         />
         <Textarea
           {...form.register("thankYouMessage")}

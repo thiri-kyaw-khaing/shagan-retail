@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
+import FormError from "@/components/custom/common/forms/form-error";
 import FormInput from "@/components/custom/common/forms/form-input";
 import CustomButton from "@/components/custom/common/custom-button";
 import {
@@ -15,9 +16,10 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 
+/** All three are required by the backend. */
 export type SupplierFormValues = {
   name: string;
-  contact: string;
+  address: string;
   phone: string;
 };
 
@@ -27,6 +29,8 @@ type SupplierFormDialogProps = {
   values: SupplierFormValues;
   onClose: () => void;
   onSave: (values: SupplierFormValues) => void;
+  pending?: boolean;
+  error?: string | null;
 };
 
 export default function SupplierFormDialog({
@@ -35,8 +39,12 @@ export default function SupplierFormDialog({
   values,
   onClose,
   onSave,
+  pending = false,
+  error,
 }: SupplierFormDialogProps) {
   const form = useForm<SupplierFormValues>({ defaultValues: values });
+  const fields = form.watch(["name", "address", "phone"]);
+  const canSubmit = !pending && fields.every((value) => value.trim() !== "");
 
   useEffect(() => {
     if (isOpen) form.reset(values);
@@ -68,9 +76,9 @@ export default function SupplierFormDialog({
             />
             <FormInput
               control={form.control}
-              path="contact"
-              label="Contact person"
-              placeholder="e.g. U Kyaw Zin"
+              path="address"
+              label="Address"
+              placeholder="e.g. No. 8, Strand Road, Yangon"
               className="text-sm font-semibold uppercase tracking-wide text-slate-500"
               inputClassName="mt-2 h-12 border-rose-200 text-base font-normal normal-case tracking-normal"
             />
@@ -83,6 +91,8 @@ export default function SupplierFormDialog({
               inputClassName="mt-2 h-12 border-rose-200 text-base font-normal normal-case tracking-normal"
             />
 
+            <FormError message={error} />
+
             <DialogFooter className="mt-2 sm:flex-row">
               <CustomButton
                 label="Cancel"
@@ -90,8 +100,9 @@ export default function SupplierFormDialog({
                 className="min-h-12 border border-slate-200 bg-white px-5 text-slate-600 shadow-none hover:bg-slate-50"
               />
               <CustomButton
-                label="Save supplier"
+                label={pending ? "Saving..." : "Save supplier"}
                 type="submit"
+                disabled={!canSubmit}
                 className="min-h-12 bg-brand px-5 font-semibold text-white hover:bg-brand/90 disabled:bg-rose-200"
               />
             </DialogFooter>

@@ -6,7 +6,8 @@ import { QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MAX_QR_BYTES = 5 * 1024 * 1024;
-const ACCEPTED_QR_TYPES = ["image/png", "image/jpeg", "image/svg+xml"];
+// What the backend can decode for QR codes (it rejects SVG and others).
+const ACCEPTED_QR_TYPES = ["image/png", "image/jpeg"];
 
 type QrUploadFieldProps = {
   previewUrl: string;
@@ -27,24 +28,15 @@ export default function QrUploadField({
     if (!file || disabled) return;
 
     if (!ACCEPTED_QR_TYPES.includes(file.type)) {
-      setError("Use a PNG, JPG or SVG file.");
-      console.log(
-        "Customize Receipt - rejected QR image (unsupported type):",
-        file.type,
-      );
+      setError("Use a PNG or JPG file.");
       return;
     }
     if (file.size > MAX_QR_BYTES) {
       setError("File is larger than 5MB.");
-      console.log(
-        "Customize Receipt - rejected QR image (too large):",
-        file.size,
-      );
       return;
     }
 
     setError(null);
-    console.log("Customize Receipt - QR image selected:", file.name, file.size);
     onFileAccepted(file);
   };
 
@@ -65,7 +57,7 @@ export default function QrUploadField({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/svg+xml"
+        accept="image/png,image/jpeg"
         className="hidden"
         onChange={handleInputChange}
       />
@@ -105,7 +97,7 @@ export default function QrUploadField({
             </span>
             <span className="font-bold text-ink">Drop your QR image here</span>
             <span className="text-sm text-ink-muted">
-              or click to browse — PNG, JPG, SVG
+              or click to browse — PNG or JPG
             </span>
           </>
         )}

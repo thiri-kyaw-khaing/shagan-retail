@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { FieldValues, SubmitHandler, UseFormReturn } from "react-hook-form";
 
 import CustomButton from "@/components/custom/common/custom-button";
+import FormError from "@/components/custom/common/forms/form-error";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,8 @@ type LedgerActionDialogProps<T extends FieldValues> = {
   onClose: () => void;
   onSubmit: SubmitHandler<T>;
   children: ReactNode;
+  pending?: boolean;
+  error?: string | null;
 };
 
 export default function LedgerActionDialog<T extends FieldValues>({
@@ -37,7 +40,10 @@ export default function LedgerActionDialog<T extends FieldValues>({
   onClose,
   onSubmit,
   children,
+  pending = false,
+  error,
 }: LedgerActionDialogProps<T>) {
+  const enabled = canSubmit && !pending;
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent
@@ -54,6 +60,8 @@ export default function LedgerActionDialog<T extends FieldValues>({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             {children}
 
+            <FormError message={error} />
+
             <DialogFooter className="mt-2 sm:flex-row">
               <CustomButton
                 label="Cancel"
@@ -61,12 +69,12 @@ export default function LedgerActionDialog<T extends FieldValues>({
                 className="min-h-12 border border-slate-200 bg-white px-5 text-slate-600 shadow-none hover:bg-slate-50"
               />
               <CustomButton
-                label={submitLabel}
+                label={pending ? "Saving..." : submitLabel}
                 type="submit"
-                disabled={!canSubmit}
+                disabled={!enabled}
                 className={cn(
                   "min-h-12 px-5 font-semibold text-white",
-                  canSubmit ? "bg-brand hover:bg-brand/90" : "bg-rose-200",
+                  enabled ? "bg-brand hover:bg-brand/90" : "bg-rose-200",
                 )}
               />
             </DialogFooter>

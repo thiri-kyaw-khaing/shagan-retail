@@ -142,3 +142,15 @@ export const stockMovements: StockMovement[] = [
     reference: "S-4291",
   },
 ];
+
+export type TransferStatus = "pending" | "in_transit" | "completed" | "cancelled";
+
+/** A stock transfer between branches. The API doesn't list its items yet. */
+export type StockTransferRow = {
+  id: number;
+  fromBranch: string;
+  toBranch: string;
+  status: TransferStatus;
+  /** Preformatted in business time. */
+  createdAtLabel: string;
+};

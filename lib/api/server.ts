@@ -4,9 +4,11 @@
 // access token is fresh.
 import "server-only";
 
+import { refresh } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import type { ActionResult } from "@/lib/api/action-result";
 import { ApiError, callBackend } from "@/lib/api/backend";
 import { ACCESS_COOKIE } from "@/lib/api/session";
 import type {
@@ -22,7 +24,9 @@ import type {
   ApiProduct,
   ApiProductRevenue,
   ApiPurchaseOrder,
+  ApiPaymentQrCode,
   ApiPurchaseOrderDetail,
+  ApiReceiptSettings,
   ApiReceipt,
   ApiRole,
   ApiSale,
@@ -30,6 +34,7 @@ import type {
   ApiSalesTrend,
   ApiStaff,
   ApiStockLevel,
+  ApiStockTransfer,
   ApiSupplier,
   ApiTodayReport,
   ApiTransactions,
@@ -45,6 +50,43 @@ async function authed<T>(path: string, init?: Parameters<typeof callBackend>[1])
     // Refresh failed or the session was revoked server-side.
     if (err instanceof ApiError && err.status === 401) redirect("/login");
     throw err;
+  }
+}
+
+/**
+ * The message to show for a failed write. Typed backend errors ("a category
+ * with this name already exists") are meant for people; gin's raw validator
+ * text ("Key: 'CreateStaffRequest.Pin' Error:...") is not.
+ */
+function messageFor(err: unknown): string {
+  if (err instanceof ApiError) {
+    if (err.message.startsWith("Key: '") || err.message.includes("Error:Field validation")) {
+      return "Some fields are missing or invalid. Check the form and try again.";
+    }
+    if (err.status >= 500) return "The server hit an error. Please try again.";
+    return err.message.charAt(0).toUpperCase() + err.message.slice(1);
+  }
+  return "Can't reach the server. Check your connection and try again.";
+}
+
+type MutateInit = { method: "POST" | "PUT" | "PATCH" | "DELETE"; json?: unknown; form?: FormData };
+
+/**
+ * A write for a Server Function: on success re-renders the current route with
+ * fresh data (all reads here are uncached); on failure returns the message
+ * instead of throwing.
+ */
+export async function mutate<T = undefined>(path: string, { method, json, form }: MutateInit): Promise<ActionResult<T>> {
+  try {
+    // A multipart body: fetch sets the Content-Type boundary itself.
+    const data = await authed<T>(path, { method, json, body: form });
+    refresh();
+    return { ok: true, data };
+  } catch (err) {
+    // redirect() from authed() (expired session) must propagate.
+    if (!(err instanceof ApiError) && !(err instanceof TypeError)) throw err;
+    console.error(`${method} ${path} failed`, err);
+    return { ok: false, error: messageFor(err) };
   }
 }
 
@@ -101,9 +143,27 @@ export const api = {
     authed<ApiStockLevel[]>(withQuery("/stock-levels", scoped(scope))),
   lowStock: (scope: BranchScope) =>
     authed<ApiStockLevel[]>(withQuery("/inventory/low-stock", scoped(scope))),
+  /** Newest first; either end of the transfer matching the branch. */
+  stockTransfers: (scope: BranchScope) =>
+    authed<ApiStockTransfer[]>(withQuery("/stock-transfers", scoped(scope))),
   /** Oldest first. */
   ledger: (scope: BranchScope) =>
     authed<ApiLedgerEntry[]>(withQuery("/inventory/ledger", scoped(scope))),
+
+  /**
+   * A branch's receipt settings (falling back to the org default), or the
+   * default itself with `branchId: null`. null when none exist yet (404).
+   */
+  receiptSettings: async (scope: BranchScope) => {
+    try {
+      return await authed<ApiReceiptSettings>(withQuery("/receipt-settings", scoped(scope)));
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) return null;
+      throw err;
+    }
+  },
+  paymentQrCodes: (branchId: number) =>
+    authed<ApiPaymentQrCode[]>(`/branches/${branchId}/payment-qr-codes`),
 
   /** Newest first. */
   auditLog: (scope: BranchScope) => authed<ApiAuditLog[]>(withQuery("/audit-log", scoped(scope))),

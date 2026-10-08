@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { ImagePlus } from "lucide-react";
 
+import FormError from "@/components/custom/common/forms/form-error";
 import FormInput from "@/components/custom/common/forms/form-input";
 import FormSelect from "@/components/custom/common/forms/form-select";
 import CustomButton from "@/components/custom/common/custom-button";
@@ -28,7 +29,10 @@ export type ProductFormValues = {
   discount: string;
   threshold: string;
   tax: string;
+  /** Current image (an uploaded URL or a local preview). */
   imageUrl: string;
+  /** A newly picked photo to upload; null keeps the current one. */
+  imageFile: File | null;
 };
 
 type ProductFormDialogProps = {
@@ -38,6 +42,8 @@ type ProductFormDialogProps = {
   categories: Category[];
   onClose: () => void;
   onSave: (values: ProductFormValues) => void;
+  pending?: boolean;
+  error?: string | null;
 };
 
 const LABEL_CLASS = "text-sm font-semibold uppercase tracking-wide text-slate-500";
@@ -45,14 +51,15 @@ const INPUT_CLASS =
   "mt-2 h-11 border-rose-200 text-base font-normal normal-case tracking-normal text-ink";
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
-const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+// What the backend can decode (it rejects anything else, WebP included).
+const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/gif"];
 
 function ProductPhotoField({
   value,
   onChange,
 }: {
   value: string;
-  onChange: (url: string) => void;
+  onChange: (url: string, file: File) => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
@@ -70,19 +77,11 @@ function ProductPhotoField({
     if (!file) return;
 
     if (!ACCEPTED_PHOTO_TYPES.includes(file.type)) {
-      setError("Use a JPG, PNG or WebP file.");
-      console.log(
-        "Product Catalog - rejected product photo (unsupported type):",
-        file.type,
-      );
+      setError("Use a JPG, PNG or GIF file.");
       return;
     }
     if (file.size > MAX_PHOTO_BYTES) {
       setError("File is larger than 5MB.");
-      console.log(
-        "Product Catalog - rejected product photo (too large):",
-        file.size,
-      );
       return;
     }
 
@@ -90,8 +89,7 @@ function ProductPhotoField({
     const url = URL.createObjectURL(file);
     objectUrlRef.current = url;
     setError(null);
-    console.log("Product Catalog - product photo selected:", file.name, file.size);
-    onChange(url);
+    onChange(url, file);
   };
 
   return (
@@ -99,7 +97,7 @@ function ProductPhotoField({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/jpeg,image/png,image/gif"
         className="hidden"
         onChange={handleFileChange}
       />
@@ -124,7 +122,7 @@ function ProductPhotoField({
           <>
             <ImagePlus className="size-8 text-rose-300" />
             <span className="font-semibold text-ink">Add product photo</span>
-            <span className="text-xs text-ink-muted">JPG, PNG or WebP · max 5MB</span>
+            <span className="text-xs text-ink-muted">JPG, PNG or GIF · max 5MB · required</span>
           </>
         )}
       </button>
@@ -140,11 +138,27 @@ export default function ProductFormDialog({
   categories,
   onClose,
   onSave,
+  pending = false,
+  error,
 }: ProductFormDialogProps) {
   const form = useForm<ProductFormValues>({ defaultValues: values });
+  const [name, barcode, price, threshold, imageFile] = form.watch([
+    "name",
+    "barcode",
+    "price",
+    "threshold",
+    "imageFile",
+  ]);
+  // The backend requires these on create (a photo included); on edit every
+  // field is optional and only what's sent changes.
   const canSubmit =
-    mode === "edit" ||
-    (form.watch("name").trim().length > 0 && form.watch("barcode").trim().length > 0);
+    !pending &&
+    (mode === "edit" ||
+      (name.trim() !== "" &&
+        barcode.trim() !== "" &&
+        price !== "" &&
+        threshold !== "" &&
+        imageFile !== null));
   const categoryOptions = categories
     .filter((category) => category.id !== null && category.id !== 4)
     .map((category) => ({ value: String(category.id), label: category.label }));
@@ -172,7 +186,10 @@ export default function ProductFormDialog({
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <ProductPhotoField
                 value={form.watch("imageUrl")}
-                onChange={(url) => form.setValue("imageUrl", url, { shouldDirty: true })}
+                onChange={(url, file) => {
+                  form.setValue("imageUrl", url, { shouldDirty: true });
+                  form.setValue("imageFile", file, { shouldDirty: true });
+                }}
               />
 
               <div className="flex flex-col gap-5">
@@ -228,7 +245,7 @@ export default function ProductFormDialog({
                 control={form.control}
                 path="discount"
                 type="number"
-                label="Discount (%)"
+                label="Discount (K)"
                 placeholder="0"
                 className={LABEL_CLASS}
                 inputClassName={INPUT_CLASS}
@@ -249,12 +266,14 @@ export default function ProductFormDialog({
                 control={form.control}
                 path="tax"
                 type="number"
-                label="Tax (%)"
+                label="Tax per unit (K)"
                 placeholder="0"
                 className={LABEL_CLASS}
                 inputClassName={INPUT_CLASS}
               />
             </div>
+
+            <FormError message={error} />
 
             <DialogFooter className="mt-2 sm:flex-row">
               <CustomButton
@@ -263,7 +282,7 @@ export default function ProductFormDialog({
                 className="min-h-12 border border-slate-200 bg-white px-5 text-slate-600 shadow-none hover:bg-slate-50"
               />
               <CustomButton
-                label="Save product"
+                label={pending ? "Saving..." : "Save product"}
                 type="submit"
                 disabled={!canSubmit}
                 className={cn(

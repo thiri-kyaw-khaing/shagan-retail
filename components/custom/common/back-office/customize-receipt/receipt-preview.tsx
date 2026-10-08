@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/i18n/format";
 import type { ReceiptSettings } from "@/lib/types/model/receipt-settings";
 
 const SAMPLE_ITEMS = [
@@ -21,6 +22,7 @@ type ReceiptPreviewProps = {
 
 export default function ReceiptPreview({ settings }: ReceiptPreviewProps) {
   const printedAt = new Date().toLocaleString("en-US", {
+    timeZone: BUSINESS_TIME_ZONE,
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -33,10 +35,10 @@ export default function ReceiptPreview({ settings }: ReceiptPreviewProps) {
       <p className="text-center text-sm font-bold tracking-wide">
         {settings.shopName || "SHOP NAME"}
       </p>
-      {settings.showAddress && settings.address && (
+      {settings.address && (
         <p className="text-center">{settings.address}</p>
       )}
-      {settings.showPhone && settings.phone && (
+      {settings.phone && (
         <p className="text-center">Phone: {settings.phone}</p>
       )}
 
@@ -76,7 +78,7 @@ export default function ReceiptPreview({ settings }: ReceiptPreviewProps) {
         <span>{money(SAMPLE_TOTAL)}</span>
       </div>
 
-      {settings.showThankYouMessage && settings.thankYouMessage && (
+      {settings.thankYouMessage && (
         <>
           <p className="my-3 text-center text-slate-300">{DASHED_LINE}</p>
           <p className="text-center italic">{settings.thankYouMessage}</p>

@@ -1,6 +1,7 @@
 "use client";
 
 import CustomButton from "@/components/custom/common/custom-button";
+import FormError from "@/components/custom/common/forms/form-error";
 import {
   Dialog,
   DialogContent,
@@ -15,12 +16,16 @@ type DeleteCategoryDialogProps = {
   category: Category | null;
   onClose: () => void;
   onConfirm: () => void;
+  pending?: boolean;
+  error?: string | null;
 };
 
 export default function DeleteCategoryDialog({
   category,
   onClose,
   onConfirm,
+  pending = false,
+  error,
 }: DeleteCategoryDialogProps) {
   const Icon = category?.icon;
 
@@ -36,10 +41,12 @@ export default function DeleteCategoryDialog({
             Delete &quot;{category?.label ?? "this category"}&quot;?
           </DialogTitle>
           <DialogDescription className="text-base text-ink-muted">
-            This will permanently remove the category. Products assigned to it
-            will not be deleted.
+            This permanently removes the category. A category that still has
+            products can&apos;t be deleted - move or delete them first.
           </DialogDescription>
         </DialogHeader>
+
+        <FormError message={error} />
 
         <DialogFooter className="flex-row justify-center gap-3 sm:justify-center">
           <CustomButton
@@ -48,8 +55,9 @@ export default function DeleteCategoryDialog({
             className="min-h-12 flex-1 border border-slate-200 bg-white px-5 font-semibold text-slate-600 shadow-none hover:bg-slate-50"
           />
           <CustomButton
-            label="Delete"
+            label={pending ? "Deleting..." : "Delete"}
             onClick={onConfirm}
+            disabled={pending}
             className="min-h-12 flex-1 bg-brand px-5 font-semibold text-white hover:bg-brand/90"
           />
         </DialogFooter>

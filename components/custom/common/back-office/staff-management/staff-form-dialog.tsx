@@ -2,12 +2,11 @@
 
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { ArrowRight } from "lucide-react";
 
+import FormError from "@/components/custom/common/forms/form-error";
 import FormInput from "@/components/custom/common/forms/form-input";
 import FormSelect from "@/components/custom/common/forms/form-select";
 import CustomButton from "@/components/custom/common/custom-button";
-import OptionTiles from "@/components/custom/common/option-tiles";
 import {
   Dialog,
   DialogContent,
@@ -16,43 +15,63 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { roles } from "@/lib/types/model/roles";
-import { branches } from "@/lib/types/model/branches";
-import type { DrawerAccess } from "@/lib/types/model/staffs";
+import { Form } from "@/components/ui/form";
+import type { StaffStatus } from "@/lib/types/model/staffs";
 import { cn } from "@/lib/utils";
 
+/** Ids are strings for the selects. `pin` is blank on edit unless it's being changed. */
 export type StaffFormValues = {
   name: string;
   phone: string;
-  role: string;
-  branch: string;
-  drawerAccess: DrawerAccess;
+  roleId: string;
+  branchId: string;
+  pin: string;
+  status: StaffStatus;
 };
+
+type Option = { value: string; label: string };
 
 type StaffFormDialogProps = {
   mode: "add" | "edit";
   isOpen: boolean;
   values: StaffFormValues;
+  roleOptions: Option[];
+  branchOptions: Option[];
   onClose: () => void;
   onSave: (values: StaffFormValues) => void;
+  pending?: boolean;
+  error?: string | null;
 };
 
-const ROLE_OPTIONS = roles.map((role) => ({ value: role.name, label: role.name }));
-const BRANCH_OPTIONS = branches.map((branch) => ({
-  value: branch.name,
-  label: branch.name,
-}));
+// The backend stores any string; offer only the three it understands.
+const STATUS_OPTIONS: Option[] = [
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+  { value: "suspended", label: "Suspended" },
+];
+
+const LABEL_CLASS = "text-sm font-semibold uppercase tracking-wide text-slate-500";
+const INPUT_CLASS =
+  "mt-2 h-12 border-rose-200 text-base font-normal normal-case tracking-normal text-ink";
+
+const isPin = (value: string) => /^\d{6}$/.test(value);
 
 export default function StaffFormDialog({
   mode,
   isOpen,
   values,
+  roleOptions,
+  branchOptions,
   onClose,
   onSave,
+  pending = false,
+  error,
 }: StaffFormDialogProps) {
   const form = useForm<StaffFormValues>({ defaultValues: values });
-  const canSubmit = mode === "edit" || form.watch("name").trim().length > 0;
+  const [name, phone, pin] = form.watch(["name", "phone", "pin"]);
+  // A PIN is required on create; on edit, blank keeps the current one.
+  const pinOk = mode === "add" ? isPin(pin) : pin === "" || isPin(pin);
+  const canSubmit = !pending && name.trim() !== "" && phone.trim() !== "" && pinOk;
 
   useEffect(() => {
     if (isOpen) form.reset(values);
@@ -67,7 +86,7 @@ export default function StaffFormDialog({
           </DialogTitle>
           <DialogDescription className="text-base text-slate-500">
             {mode === "add"
-              ? "Add a new staff member to your team."
+              ? "Add a new staff member. They sign in at the till with their PIN."
               : "Update this staff member's information."}
           </DialogDescription>
         </DialogHeader>
@@ -79,60 +98,63 @@ export default function StaffFormDialog({
               path="name"
               label="Full name"
               placeholder="e.g. Ma Hnin"
-              className="text-sm font-semibold uppercase tracking-wide text-slate-500"
-              inputClassName="mt-2 h-12 border-rose-200 text-base font-normal normal-case tracking-normal text-ink"
+              className={LABEL_CLASS}
+              inputClassName={INPUT_CLASS}
             />
             <FormInput
               control={form.control}
               path="phone"
               label="Phone number"
               placeholder="e.g. 09-421-000-000"
-              className="text-sm font-semibold uppercase tracking-wide text-slate-500"
-              inputClassName="mt-2 h-12 border-rose-200 text-base font-normal normal-case tracking-normal text-ink"
+              className={LABEL_CLASS}
+              inputClassName={INPUT_CLASS}
             />
-            <FormSelect
-              control={form.control}
-              path="role"
-              label="Role"
-              options={ROLE_OPTIONS}
-              className="text-sm font-semibold uppercase tracking-wide text-slate-500"
-              selectClassName="mt-2 h-12 border-rose-200 text-base font-normal normal-case tracking-normal text-ink"
-            />
-            <FormSelect
-              control={form.control}
-              path="branch"
-              label="Branch"
-              options={BRANCH_OPTIONS}
-              className="text-sm font-semibold uppercase tracking-wide text-slate-500"
-              selectClassName="mt-2 h-12 border-rose-200 text-base font-normal normal-case tracking-normal text-ink"
-            />
-
-            {mode === "edit" && (
-              <FormField
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <FormSelect
                 control={form.control}
-                name="drawerAccess"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                      Open drawer permission
-                    </FormLabel>
-                    <OptionTiles
-                      options={[
-                        { id: "allowed", label: "✓ Allowed" },
-                        { id: "not_allowed", label: "🔒 Not Allowed" },
-                      ]}
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                    <p className="text-sm text-slate-500">
-                      {field.value === "allowed"
-                        ? "This employee is allowed to open the cash drawer during a shift."
-                        : "This employee is not allowed to open the cash drawer without a sale."}
-                    </p>
-                  </FormItem>
-                )}
+                path="roleId"
+                label="Role"
+                options={roleOptions}
+                className={LABEL_CLASS}
+                selectClassName={INPUT_CLASS}
               />
-            )}
+              <FormSelect
+                control={form.control}
+                path="branchId"
+                label="Branch"
+                options={branchOptions}
+                className={LABEL_CLASS}
+                selectClassName={INPUT_CLASS}
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div>
+                <FormInput
+                  control={form.control}
+                  path="pin"
+                  type="password"
+                  label={mode === "add" ? "6-digit PIN" : "New PIN (optional)"}
+                  placeholder={mode === "add" ? "••••••" : "Leave blank to keep"}
+                  className={LABEL_CLASS}
+                  inputClassName={INPUT_CLASS}
+                />
+                {pin !== "" && !isPin(pin) && (
+                  <p className="mt-1 text-xs text-brand">The PIN must be exactly 6 digits.</p>
+                )}
+              </div>
+              {mode === "edit" && (
+                <FormSelect
+                  control={form.control}
+                  path="status"
+                  label="Status"
+                  options={STATUS_OPTIONS}
+                  className={LABEL_CLASS}
+                  selectClassName={INPUT_CLASS}
+                />
+              )}
+            </div>
+
+            <FormError message={error} />
 
             <DialogFooter className="mt-2 sm:flex-row">
               <CustomButton
@@ -141,8 +163,7 @@ export default function StaffFormDialog({
                 className="min-h-12 border border-slate-200 bg-white px-5 text-slate-600 shadow-none hover:bg-slate-50"
               />
               <CustomButton
-                label={mode === "add" ? "Continue to PIN" : "Save changes"}
-                icon={mode === "add" ? ArrowRight : undefined}
+                label={pending ? "Saving..." : mode === "add" ? "Add staff" : "Save changes"}
                 type="submit"
                 disabled={!canSubmit}
                 className={cn(
