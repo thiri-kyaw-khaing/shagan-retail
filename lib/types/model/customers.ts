@@ -9,6 +9,9 @@ export type Customer = {
   lifetimeSpend: number;
 };
 
+/** A customer as the backend stores them (no email, visits or spend - decided 2026-10-06). */
+export type CustomerRow = Pick<Customer, "id" | "name" | "phone">;
+
 export const customers: Customer[] = [
   {
     id: 101,

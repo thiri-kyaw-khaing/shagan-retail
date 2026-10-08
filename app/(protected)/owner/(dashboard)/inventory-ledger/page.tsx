@@ -42,6 +42,10 @@ export default async function InventoryLedgerPage() {
           fromBranch: branchNames.get(t.from_branch) ?? "—",
           toBranch: branchNames.get(t.to_branch) ?? "—",
           status: t.status,
+          itemsLabel: t.items
+            .map((item) => `${item.qty} × ${productsById.get(item.product_id)?.name ?? `#${item.product_id}`}`)
+            .join(", "),
+          note: t.note,
           createdAtLabel: formatDisplayDateTime(t.created_at),
         }))}
       products={products.map(({ id, name }) => ({ id, name }))}

@@ -6,8 +6,11 @@ import DataTable, {
   type DataTableColumn,
 } from "@/components/custom/common/back-office/data-table";
 import CustomButton from "@/components/custom/common/custom-button";
+import type { PaymentMethod } from "@/lib/types/model/payment";
 import type { SalesHistoryRow } from "@/lib/types/model/sales";
 import { cn } from "@/lib/utils";
+
+const METHOD_LABEL: Record<PaymentMethod, string> = { cash: "Cash", qr: "QR", split: "Split" };
 
 const STATUS_STYLE: Record<SalesHistoryRow["status"], string> = {
   open: "bg-amber-100 text-amber-700",
@@ -29,33 +32,25 @@ function StatusBadge({ status }: { status: SalesHistoryRow["status"] }) {
   );
 }
 
-// The backend only lets a staff PIN token void today; the owner path is
-// backend recommendation #6 (decided 2026-10-06). Until then Void is shown
-// disabled. Void also needs the sale's shift to still be open.
-const VOID_UNAVAILABLE = "Owner voids need a backend update - not available yet";
-
-function VoidButton({ className }: { className: string }) {
-  return (
-    <span title={VOID_UNAVAILABLE} className="inline-flex">
-      <CustomButton
-        label="Void"
-        icon={Ban}
-        disabled
-        aria-label={VOID_UNAVAILABLE}
-        className={cn(
-          "min-h-9 border border-rose-200 bg-white px-3 text-xs font-semibold text-brand shadow-none disabled:opacity-40",
-          className,
-        )}
-      />
-    </span>
-  );
-}
+const VOID_CLASS =
+  "min-h-9 border border-rose-200 bg-white px-3 text-xs font-semibold text-brand shadow-none hover:bg-rose-50 disabled:opacity-40";
 
 type SalesHistoryTableProps = {
   sales: SalesHistoryRow[];
+  onVoid: (sale: SalesHistoryRow) => void;
 };
 
-export default function SalesHistoryTable({ sales }: SalesHistoryTableProps) {
+export default function SalesHistoryTable({ sales, onVoid }: SalesHistoryTableProps) {
+  const voidButton = (row: SalesHistoryRow, className = "") => (
+    <CustomButton
+      label="Void"
+      icon={Ban}
+      onClick={() => onVoid(row)}
+      disabled={row.status !== "completed"}
+      className={cn(VOID_CLASS, className)}
+    />
+  );
+
   const columns: DataTableColumn<SalesHistoryRow>[] = [
     {
       key: "receipt",
@@ -67,6 +62,7 @@ export default function SalesHistoryTable({ sales }: SalesHistoryTableProps) {
     { key: "customer", header: "Customer", render: (row) => row.customerName },
     { key: "branch", header: "Branch", render: (row) => row.branch },
     { key: "datetime", header: "Date / Time", render: (row) => row.completedAtLabel },
+    { key: "method", header: "Method", render: (row) => METHOD_LABEL[row.method] },
     { key: "status", header: "Status", render: (row) => <StatusBadge status={row.status} /> },
     {
       key: "total",
@@ -77,7 +73,7 @@ export default function SalesHistoryTable({ sales }: SalesHistoryTableProps) {
       key: "actions",
       header: "Actions",
       className: "flex justify-end",
-      render: () => <VoidButton className="" />,
+      render: (row) => voidButton(row),
     },
   ];
 
@@ -98,14 +94,16 @@ export default function SalesHistoryTable({ sales }: SalesHistoryTableProps) {
               <p className="text-sm text-ink-muted">
                 {row.customerName} · {row.completedAtLabel}
               </p>
-              <p className="mt-1 text-sm text-ink-muted">{row.branch}</p>
+              <p className="mt-1 text-sm text-ink-muted">
+                {row.branch} · {METHOD_LABEL[row.method]}
+              </p>
             </div>
             <span className="shrink-0 font-semibold text-ink">
               K {row.total.toLocaleString("en-US")}
             </span>
           </div>
 
-          <VoidButton className="w-full" />
+          {voidButton(row, "w-full")}
         </div>
       )}
     />

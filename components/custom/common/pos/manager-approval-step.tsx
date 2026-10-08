@@ -1,5 +1,7 @@
+import type { ReactNode } from "react";
 import { Lock } from "lucide-react";
 import CustomButton from "@/components/custom/common/custom-button";
+import FormError from "@/components/custom/common/forms/form-error";
 import NumPad, { PinDots } from "@/components/custom/common/numpad";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { cn } from "@/lib/utils";
@@ -12,6 +14,10 @@ type ManagerApprovalStepProps = {
   pin: string;
   onPinChange: (pin: string) => void;
   onSubmit: () => void;
+  /** Shown above the PIN, e.g. the approver picker. */
+  children?: ReactNode;
+  pending?: boolean;
+  error?: string | null;
 };
 
 export default function ManagerApprovalStep({
@@ -20,9 +26,12 @@ export default function ManagerApprovalStep({
   pin,
   onPinChange,
   onSubmit,
+  children,
+  pending = false,
+  error,
 }: ManagerApprovalStepProps) {
   const { t } = useTranslation();
-  const canSubmit = pin.length === PIN_LENGTH;
+  const canSubmit = pin.length === PIN_LENGTH && !pending;
 
   return (
     <div className="mx-auto flex max-w-md flex-col items-center px-4 pt-8 text-center bg-white rounded-2xl p-6 shadow-md sm:px-10 sm:pt-10 ">
@@ -33,8 +42,14 @@ export default function ManagerApprovalStep({
       <h1 className="mt-4 text-xl font-bold text-ink">{title}</h1>
       <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>
 
+      {children && <div className="mt-4 w-full text-left">{children}</div>}
+
       <div className="mt-6">
         <PinDots total={PIN_LENGTH} current={pin.length} />
+      </div>
+
+      <div className="mt-4 w-full">
+        <FormError message={error} />
       </div>
 
       <div className="mt-8 w-full ">
@@ -48,7 +63,7 @@ export default function ManagerApprovalStep({
 
       <div className="mt-6 w-full">
         <CustomButton
-          label={`${t("return.continue")} →`}
+          label={pending ? "Checking..." : `${t("return.continue")} →`}
           onClick={onSubmit}
           disabled={!canSubmit}
           className={cn(

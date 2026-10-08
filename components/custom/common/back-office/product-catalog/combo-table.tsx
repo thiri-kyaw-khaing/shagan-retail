@@ -86,8 +86,7 @@ export default function ComboTable({
               <ExpiryBadge combo={combo} />
             </div>
             <p className="mt-1 text-sm text-ink-muted">
-              {/* The combos API doesn't return items yet (backend recommendation #3). */}
-              {itemSummary(combo, products) || "Items not available"}
+              {itemSummary(combo, products) || "No items"}
             </p>
             <p className="mt-1 text-xs text-slate-400">
               Expires {formatExpiry(combo.expiresAt)}

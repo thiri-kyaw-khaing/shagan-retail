@@ -1,3 +1,4 @@
+import type { QrCode } from "@/lib/types/model/qr-codes";
 import type { LucideIcon } from "lucide-react";
 
 import type { Locale } from "@/lib/i18n/config";
@@ -33,6 +34,8 @@ export type CashPaymentProps = {
 export type QrPaymentProps = {
   totalDue: number;
   locale: Locale;
+  /** This branch's payment QR codes. */
+  qrCodes: QrCode[];
   isConfirmed: boolean;
   onBack: () => void;
   onSelectMethod: (method: PaymentMethod) => void;
@@ -40,12 +43,16 @@ export type QrPaymentProps = {
   onCompleteSale: () => void;
 };
 
+/** One tender in a split payment. Split cash never gives change. */
+export type SplitLine = { method: "cash" | "qr"; amount: number; bankName?: string };
+
 export type SplitPaymentProps = {
   totalDue: number;
   locale: Locale;
+  qrCodes: QrCode[];
   onBack: () => void;
   onSelectMethod: (method: PaymentMethod) => void;
-  onCompleteSale: () => void;
+  onCompleteSale: (lines: SplitLine[]) => void;
 };
 
 export type PaymentCompleteProps = {

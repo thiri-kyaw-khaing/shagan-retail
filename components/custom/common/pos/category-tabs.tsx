@@ -1,11 +1,15 @@
 "use client";
 
 import CustomButton from "@/components/custom/common/custom-button";
-import { categories, type CategoryId } from "@/lib/types/model/categories";
+import { Grid2X2 } from "lucide-react";
+
+import type { Category, CategoryId } from "@/lib/types/model/categories";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { cn } from "@/lib/utils";
 
 type CategoryTabsProps = {
+  /** The org's categories; an "All" tab is added in front. */
+  categories: Category[];
   selected: CategoryId;
   onSelect: (categoryId: CategoryId) => void;
 };
@@ -19,10 +23,12 @@ const CATEGORY_LABEL_KEYS = {
 } as const;
 
 export default function CategoryTabs({
+  categories,
   selected,
   onSelect,
 }: CategoryTabsProps) {
   const { t } = useTranslation();
+  const tabs: Category[] = [{ id: null, label: "All", icon: Grid2X2 }, ...categories];
 
   return (
     <div
@@ -30,7 +36,7 @@ export default function CategoryTabs({
       aria-label="Product categories"
       className="flex gap-2 overflow-x-auto px-4 py-3"
     >
-      {categories.map((category) => {
+      {tabs.map((category) => {
         const active = selected === category.id;
         const labelKey =
           CATEGORY_LABEL_KEYS[

@@ -10,7 +10,8 @@ import QrBankPanel from "@/components/custom/common/pos/qr-bank-panel";
 import { formatCurrency } from "@/lib/i18n/format";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import type { QrPaymentProps } from "@/lib/types/model/payment";
-import { qrCodes, resolveSelectedQr } from "@/lib/types/model/qr-codes";
+import { resolveSelectedQr } from "@/lib/types/model/qr-codes";
+import { useCustomerLabel } from "@/components/custom/common/pos/pos-context";
 
 export default function QrPayment({
   totalDue,
@@ -20,13 +21,14 @@ export default function QrPayment({
   onSelectMethod,
   onConfirmPayment,
   onCompleteSale,
+  qrCodes,
 }: QrPaymentProps) {
   const { t } = useTranslation();
+  const customerLabel = useCustomerLabel(t("sell.walkIn"));
   const [selectedQrId, setSelectedQrId] = useState<number | null>(null);
   const selectedQr = resolveSelectedQr(qrCodes, selectedQrId);
 
   const handleConfirm = () => {
-    console.log("Payment - QR payment confirmed via:", selectedQr?.bankName);
     onConfirmPayment();
   };
 
@@ -40,7 +42,7 @@ export default function QrPayment({
           />
           <p className="mt-3 text-sm text-slate-500">
             {t("payment.customerPrefix")}{" "}
-            <strong className="text-slate-900">{t("sell.walkIn")}</strong>
+            <strong className="text-slate-900">{customerLabel}</strong>
           </p>
           <p className="mt-1 text-sm text-slate-500">
             {t("payment.choosePaymentMethod")}

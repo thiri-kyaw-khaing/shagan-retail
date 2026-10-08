@@ -4,13 +4,30 @@ import { useMemo, useState } from "react";
 
 import PageHeader from "@/components/custom/common/back-office/page-header";
 import SalesHistoryTable from "@/components/custom/common/back-office/sales-history/sales-history-table";
+import VoidSaleDialog from "@/components/custom/common/back-office/sales-history/void-sale-dialog";
 import SearchBar from "@/components/custom/common/pos/search-bar";
 import { Input } from "@/components/ui/input";
+import { useAction } from "@/lib/api/use-action";
+import { voidSaleAction } from "@/lib/sales/actions";
 import type { SalesHistoryRow } from "@/lib/types/model/sales";
 
-export default function SalesHistoryView({ sales }: { sales: SalesHistoryRow[] }) {
+type SalesHistoryViewProps = {
+  /** The latest page of receipts. */
+  sales: SalesHistoryRow[];
+  /** All receipts in scope, including older ones not loaded. */
+  totalCount: number;
+};
+
+export default function SalesHistoryView({ sales, totalCount }: SalesHistoryViewProps) {
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("");
+  const [voiding, setVoiding] = useState<SalesHistoryRow | null>(null);
+  const { isPending, error, run, clearError } = useAction();
+
+  const closeVoid = () => {
+    clearError();
+    setVoiding(null);
+  };
 
   const filteredSales = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -28,7 +45,11 @@ export default function SalesHistoryView({ sales }: { sales: SalesHistoryRow[] }
     <main className="min-h-[calc(100dvh-5rem)] bg-page p-4 sm:p-6">
       <PageHeader
         title="Sales History"
-        subtitle={`${filteredSales.length} receipts · ${sales.length} total`}
+        subtitle={
+          totalCount > sales.length
+            ? `${filteredSales.length} shown · latest ${sales.length} of ${totalCount} receipts`
+            : `${filteredSales.length} receipts · ${sales.length} total`
+        }
         backHref="/owner"
       />
 
@@ -48,8 +69,20 @@ export default function SalesHistoryView({ sales }: { sales: SalesHistoryRow[] }
       </div>
 
       <div className="mt-5">
-        <SalesHistoryTable sales={filteredSales} />
+        <SalesHistoryTable sales={filteredSales} onVoid={setVoiding} />
       </div>
+
+      {voiding && (
+        <VoidSaleDialog
+          sale={voiding}
+          onClose={closeVoid}
+          onConfirm={(reason, explanation) =>
+            run(() => voidSaleAction(voiding.id, reason, explanation), closeVoid)
+          }
+          pending={isPending}
+          error={error}
+        />
+      )}
     </main>
   );
 }

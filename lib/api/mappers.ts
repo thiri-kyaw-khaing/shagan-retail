@@ -29,6 +29,7 @@ import type { Expense } from "@/lib/types/model/expenses";
 import type { StockMovement, StockMovementType } from "@/lib/types/model/inventory-ledger";
 import type { Product } from "@/lib/types/model/product";
 import type { PurchaseOrder, PurchaseOrderStatus } from "@/lib/types/model/purchase-orders";
+import type { PaymentMethod } from "@/lib/types/model/payment";
 import { getReceiptNumber, type SalesHistoryRow } from "@/lib/types/model/sales";
 import type { StaffRow } from "@/lib/types/model/staffs";
 import type { Supplier } from "@/lib/types/model/suppliers";
@@ -74,12 +75,11 @@ export function toCategory(category: ApiCategory): Category {
 }
 
 /**
- * Today's date as the backend's reports see it: the UTC calendar day
- * ("YYYY-MM-DD"). Used so client-side "today" filters agree with
- * /reports/today until the backend uses a local timezone (recommendation #9).
+ * Today's calendar date in business time ("YYYY-MM-DD") - the same day the
+ * backend's reports call "today" (they use the org's timezone).
  */
-export function utcToday(now = new Date()): string {
-  return now.toISOString().slice(0, 10);
+export function businessToday(now = new Date()): string {
+  return now.toLocaleDateString("en-CA", { timeZone: BUSINESS_TIME_ZONE });
 }
 
 /** Keeps rows for one branch; `branchId: null` keeps everything (all branches). */
@@ -87,7 +87,7 @@ export function inBranch<T extends { branch_id: number }>(rows: T[], branchId: n
   return branchId === null ? rows : rows.filter((row) => row.branch_id === branchId);
 }
 
-/** Today's (UTC) expenses total for the branch scope. */
+/** One day's expenses total for the branch scope. */
 export function expensesTotalOn(expenses: ApiExpense[], day: string, branchId: number | null): number {
   return inBranch(expenses, branchId)
     .filter((expense) => expense.date.slice(0, 10) === day)
@@ -184,8 +184,14 @@ export function formatDisplayDateTime(iso: string | null): string {
   return `${day}, ${time}`;
 }
 
+/** "split" when a sale was paid with both cash and QR. */
+export function toPaymentMethod(methods: ("cash" | "qr")[]): PaymentMethod {
+  if (methods.length > 1) return "split";
+  return methods[0] ?? "cash";
+}
+
 export function toSalesHistoryRow(
-  sale: ApiSale,
+  sale: ApiSale & { payment_methods: ("cash" | "qr")[] },
   customerNames: Map<number, string>,
   branchNames: Map<number, string>,
 ): SalesHistoryRow {
@@ -198,6 +204,8 @@ export function toSalesHistoryRow(
     completedOn: sale.completed_at ? businessDate(sale.completed_at) : null,
     status: sale.status,
     total: decimalToNumber(sale.total),
+    method: toPaymentMethod(sale.payment_methods),
+    shiftId: sale.shift_id,
   };
 }
 
@@ -322,8 +330,10 @@ export function toAuditLogEntry(log: ApiAuditLog, actors: AuditActors): AuditLog
   const action = auditAction(log);
   // Sale events are logged with a staff id as actor; everything else (today:
   // staff edits) with an org user id. See ApiAuditLog.
-  const isStaffActor = log.entity === "sale";
-  const actorId = log.actor_id;
+  // An owner acting directly (e.g. a void with no PIN) is recorded in
+  // actor_user_id, with actor_id null.
+  const isStaffActor = log.entity === "sale" && log.actor_id !== null;
+  const actorId = isStaffActor ? log.actor_id : (log.actor_user_id ?? log.actor_id);
   const userName =
     (actorId !== null && (isStaffActor ? actors.staff : actors.users).get(actorId)) || "—";
   const userRole =
@@ -345,18 +355,17 @@ export function toAuditLogEntry(log: ApiAuditLog, actors: AuditActors): AuditLog
   };
 }
 
-/** `items` stays empty until the API returns them (backend recommendation #3). */
 export function toCombo(combo: ApiCombo): Combo {
   return {
     id: combo.id,
     name: combo.name,
     price: decimalToNumber(combo.price),
     expiresAt: combo.expires_at,
-    items: [],
+    items: combo.items.map((item) => ({ productId: item.product_id, quantity: item.qty })),
   };
 }
 
-/** "YYYY-MM-DD" `days` before `day` (both UTC calendar days). */
+/** The calendar day `days` after `day` ("YYYY-MM-DD"; negative goes back). Pure date math. */
 export function shiftDay(day: string, days: number): string {
   const date = new Date(`${day}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + days);
@@ -364,8 +373,8 @@ export function shiftDay(day: string, days: number): string {
 }
 
 /**
- * One bar per day for the `days` days ending `today` (UTC, like the
- * backend's buckets). The API omits days with no sales, so those are 0.
+ * One bar per day for the `days` days ending `today` (business-time days,
+ * like the backend's buckets). The API omits days with no sales, so those are 0.
  */
 export function toRevenueBars(trend: ApiSalesTrend, today: string, days = 7): RevenueBar[] {
   const byDay = new Map(trend.points.map((point) => [point.period, decimalToNumber(point.net_sales)]));

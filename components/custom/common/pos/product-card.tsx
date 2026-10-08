@@ -1,4 +1,3 @@
-import Image from "next/image";
 
 import QuantityStepper from "@/components/custom/common/quantity-stepper";
 import type { Product } from "@/lib/types/model/product";
@@ -20,16 +19,14 @@ export default function ProductCard({
   onDecrease,
 }: ProductCardProps) {
   const { t } = useTranslation();
+  // The backend refuses a sale that would take stock below zero.
+  const soldOut = quantity >= product.stock;
+  const canAdd = product.isActive && !soldOut;
 
   const image = (
     <div className="relative size-20 overflow-hidden rounded-lg bg-slate-100">
-      <Image
-        src={product.imageUrl}
-        alt={product.name}
-        fill
-        sizes="80px"
-        className="object-cover"
-      />
+      {/* eslint-disable-next-line @next/next/no-img-element -- presigned, expiring storage URL; not optimizable */}
+      <img src={product.imageUrl} alt={product.name} className="absolute inset-0 size-full object-cover" />
     </div>
   );
 
@@ -42,6 +39,9 @@ export default function ProductCard({
       <p className="mt-1 font-bold text-rose-900">
         K {product.price.toLocaleString()}
       </p>
+      <p className={`text-xs ${product.stock > 0 ? "text-slate-400" : "font-semibold text-amber-600"}`}>
+        {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+      </p>
     </>
   );
 
@@ -51,7 +51,7 @@ export default function ProductCard({
         type="button"
         onClick={() => onSelect(product)}
         className="group hidden min-h-44 w-full flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm transition hover:border-rose-300 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-50 lg:flex"
-        disabled={!product.isActive}
+        disabled={!canAdd}
       >
         {productInfo}
       </button>
@@ -68,6 +68,7 @@ export default function ProductCard({
             <QuantityStepper
               value={quantity}
               min={0}
+              max={product.stock}
               onChange={(next) =>
                 next > quantity ? onIncrease(product.id) : onDecrease(product.id)
               }
@@ -77,7 +78,7 @@ export default function ProductCard({
           <button
             type="button"
             onClick={() => onSelect(product)}
-            disabled={!product.isActive}
+            disabled={!canAdd}
             className="mt-3 min-h-11 w-full rounded-lg bg-brand px-4 font-semibold text-white hover:bg-brand/90 disabled:opacity-50"
           >
             {t("product.add")}

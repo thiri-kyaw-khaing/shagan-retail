@@ -1,13 +1,11 @@
 import ShiftHeaderBrand from "./shift-header-brand";
 import ShiftHeaderNav from "./shift-header-nav";
 import ShiftHeaderActions from "./shift-header-actions";
-import { heldSales } from "@/lib/types/model/heldsale";
 
 type ShiftHeaderProps = {
   storeName?: string;
   branchName: string;
   time: string;
-  heldCount?: number;
   hasMoreAlert?: boolean;
 };
 
@@ -15,7 +13,6 @@ export default function ShiftHeader({
   storeName = "Shagan Retail",
   branchName,
   time,
-  heldCount = 0,
   hasMoreAlert = false,
 }: ShiftHeaderProps) {
   return (
@@ -27,7 +24,7 @@ export default function ShiftHeader({
       />
 
       <div className="flex items-center justify-between gap-2 sm:justify-end sm:gap-3">
-        <ShiftHeaderNav heldCount={heldSales.length} />
+        <ShiftHeaderNav />
         <ShiftHeaderActions hasAlert={hasMoreAlert} />
       </div>
     </header>

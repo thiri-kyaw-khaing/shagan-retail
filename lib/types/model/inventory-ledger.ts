@@ -145,12 +145,15 @@ export const stockMovements: StockMovement[] = [
 
 export type TransferStatus = "pending" | "in_transit" | "completed" | "cancelled";
 
-/** A stock transfer between branches. The API doesn't list its items yet. */
+/** A stock transfer between branches. */
 export type StockTransferRow = {
   id: number;
   fromBranch: string;
   toBranch: string;
   status: TransferStatus;
+  /** e.g. "10 × Green Tea 500ml". */
+  itemsLabel: string;
+  note: string;
   /** Preformatted in business time. */
   createdAtLabel: string;
 };

@@ -1,4 +1,3 @@
-import Image from "next/image";
 
 import QuantityStepper from "@/components/custom/common/quantity-stepper";
 import type { CartItemData } from "@/lib/types/model/cart";
@@ -20,13 +19,8 @@ export default function CartItem({
     <article className="flex items-start gap-3 border-b border-slate-100 p-4">
       {/* Product image */}
       <div className="relative size-11 shrink-0 overflow-hidden rounded-md bg-slate-100">
-        <Image
-          src={item.imageUrl}
-          alt={item.name}
-          fill
-          sizes="44px"
-          className="object-cover"
-        />
+        {/* eslint-disable-next-line @next/next/no-img-element -- presigned, expiring storage URL; not optimizable */}
+        <img src={item.imageUrl} alt={item.name} className="absolute inset-0 size-full object-cover" />
       </div>
 
       {/* Product name and quantity */}

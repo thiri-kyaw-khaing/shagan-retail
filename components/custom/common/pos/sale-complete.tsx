@@ -6,14 +6,17 @@ import CustomButton from "@/components/custom/common/custom-button";
 import { formatCurrency } from "@/lib/i18n/format";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import type { SaleCompleteProps } from "@/lib/types/model/sale-complete";
+import { useCustomerLabel } from "@/components/custom/common/pos/pos-context";
 
 export default function SaleComplete({
   total,
   change,
+  receiptNo,
   locale,
   onNewSale,
 }: SaleCompleteProps) {
   const { t } = useTranslation();
+  const customerLabel = useCustomerLabel(t("sell.walkIn"));
 
   return (
     <div className="p-6 text-center sm:p-8">
@@ -29,14 +32,16 @@ export default function SaleComplete({
       </p>
       <p className="mt-2 text-lg text-slate-600">
         {t("payment.customerPrefix")}{" "}
-        <strong className="text-slate-900">{t("sell.walkIn")}</strong>
+        <strong className="text-slate-900">{customerLabel}</strong>
       </p>
       <p className="mt-1 text-slate-500">
-        {t("payment.receiptPrefix")} #S-4295
+        {t("payment.receiptPrefix")} #{receiptNo}
       </p>
-      <p className="mt-4 text-xl font-semibold text-emerald-600">
-        {t("payment.changeGivenPrefix")} {formatCurrency(change, locale)}
-      </p>
+      {change !== null && (
+        <p className="mt-4 text-xl font-semibold text-emerald-600">
+          {t("payment.changeGivenPrefix")} {formatCurrency(change, locale)}
+        </p>
+      )}
 
       <div className="mt-10 grid gap-3 sm:grid-cols-2">
         <CustomButton
