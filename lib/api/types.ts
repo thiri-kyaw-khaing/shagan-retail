@@ -317,3 +317,37 @@ export type ApiSalesSummary = ApiSalesTotals & {
   by_payment_method: ApiPaymentMethodBreakdown[];
   by_category: { category_id: number; category_name: string; net_sales: Decimal }[];
 };
+
+export type ApiTransferStatus = "pending" | "in_transit" | "completed" | "cancelled";
+
+/** `GET /stock-transfers` - the backend doesn't return the items (backend recommendation #15). */
+export type ApiStockTransfer = {
+  id: number;
+  from_branch: number;
+  to_branch: number;
+  status: ApiTransferStatus;
+  actor_id: number | null;
+  created_at: string;
+};
+
+/** `GET /receipt-settings` - a branch's own row, or the org default (`is_global`). */
+export type ApiReceiptSettings = {
+  id: number;
+  org_id: number;
+  branch_id: number | null;
+  shop_name: string;
+  address: string;
+  phone: string;
+  thank_you: string;
+  is_global: boolean;
+};
+
+/** `image_url` is presigned and expires after ~15 minutes. */
+export type ApiPaymentQrCode = {
+  id: number;
+  branch_id: number;
+  bank_name: string;
+  is_active: boolean;
+  created_at: string;
+  image_url: string;
+};

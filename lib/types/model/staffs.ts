@@ -18,7 +18,10 @@ export type Staff = {
  * setting in the backend - it follows the role's `open_drawer_no_sale`
  * permission (decided 2026-10-06: drop it).
  */
-export type StaffRow = Omit<Staff, "drawerAccess">;
+export type StaffRow = Omit<Staff, "drawerAccess"> & {
+  roleId: number;
+  branchId: number;
+};
 
 export const staffs: Staff[] = [
   {

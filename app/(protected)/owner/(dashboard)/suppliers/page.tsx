@@ -6,10 +6,11 @@ import { getBranchSelection } from "@/lib/branch/selected-branch";
 // Suppliers are shared org-wide (WORKFLOWS §7); purchase orders belong to a
 // branch, so they follow the header's branch filter.
 export default async function SuppliersPage() {
-  const [{ branches, selected }, suppliers, orders] = await Promise.all([
+  const [{ branches, selected }, suppliers, orders, products] = await Promise.all([
     getBranchSelection(),
     api.suppliers(),
     api.purchaseOrders(),
+    api.products(),
   ]);
   const supplierNames = nameById(suppliers);
   const branchNames = nameById(branches);
@@ -21,6 +22,9 @@ export default async function SuppliersPage() {
         // The API returns POs unordered; show newest first.
         .toSorted((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
         .map((order) => toPurchaseOrder(order, supplierNames, branchNames))}
+      branchOptions={branches.map((b) => ({ value: String(b.id), label: b.name }))}
+      productOptions={products.map((p) => ({ value: String(p.id), label: `${p.name} (${p.barcode})` }))}
+      defaultBranchId={String(selected?.id ?? branches[0]?.id ?? "")}
     />
   );
 }

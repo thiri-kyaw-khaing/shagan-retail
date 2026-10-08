@@ -1,10 +1,10 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
+import { useMemo } from "react";
 
 import type { CatalogDialogState } from "@/components/custom/common/back-office/product-catalog/catalog-dialog";
 import {
-  parseProductForm,
+  toProductFormData,
   toProductFormValues,
 } from "@/components/custom/common/back-office/product-catalog/catalog-form-values";
 import DeleteProductDialog from "@/components/custom/common/back-office/product-catalog/delete-product-dialog";
@@ -12,12 +12,17 @@ import ProductFormDialog, {
   type ProductFormValues,
 } from "@/components/custom/common/back-office/product-catalog/product-form-dialog";
 import ProductsTab from "@/components/custom/common/back-office/product-catalog/products-tab";
+import { useAction } from "@/lib/api/use-action";
+import {
+  createProductAction,
+  deleteProductAction,
+  updateProductAction,
+} from "@/lib/catalog/actions";
 import type { Category } from "@/lib/types/model/categories";
 import type { Product } from "@/lib/types/model/product";
 
 type ProductsSectionProps = CatalogDialogState & {
   products: Product[];
-  setProducts: Dispatch<SetStateAction<Product[]>>;
   categories: Category[];
 };
 
@@ -25,32 +30,31 @@ export default function ProductsSection({
   dialog,
   setDialog,
   products,
-  setProducts,
   categories,
 }: ProductsSectionProps) {
-  const closeDialog = () => setDialog(null);
+  const { isPending, error, run, clearError } = useAction();
+  const editing = dialog?.type === "edit-product" ? dialog.product : undefined;
+  // Stable per open dialog, so a failed save's re-render doesn't reset the form.
+  const formValues = useMemo(() => toProductFormValues(editing, categories), [editing, categories]);
+
+  const closeDialog = () => {
+    clearError();
+    setDialog(null);
+  };
 
   const saveProduct = (values: ProductFormValues) => {
-    console.log("Product Catalog - save product:", dialog?.type, values);
-    const parsed = parseProductForm(values);
-
     if (dialog?.type === "add-product") {
-      setProducts((rows) => [
-        ...rows,
-        { id: Date.now(), stock: 0, isActive: true, ...parsed },
-      ]);
-    } else if (dialog?.type === "edit-product" && dialog.product) {
-      setProducts((rows) =>
-        rows.map((p) => (p.id === dialog.product?.id ? { ...p, ...parsed } : p)),
-      );
+      run(() => createProductAction(toProductFormData(values, "add")), closeDialog);
+    } else if (editing) {
+      const id = editing.id;
+      run(() => updateProductAction(id, toProductFormData(values, "edit")), closeDialog);
     }
-    closeDialog();
   };
 
   const deleteProduct = () => {
     if (dialog?.type !== "delete-product" || !dialog.product) return;
-    setProducts((rows) => rows.filter((p) => p.id !== dialog.product?.id));
-    closeDialog();
+    const id = dialog.product.id;
+    run(() => deleteProductAction(id), closeDialog);
   };
 
   return (
@@ -66,19 +70,21 @@ export default function ProductsSection({
         <ProductFormDialog
           mode={dialog.type === "add-product" ? "add" : "edit"}
           isOpen
-          values={toProductFormValues(dialog.product, categories)}
+          values={formValues}
           categories={categories}
           onClose={closeDialog}
           onSave={saveProduct}
+          pending={isPending}
+          error={error}
         />
       )}
 
       <DeleteProductDialog
-        product={
-          dialog?.type === "delete-product" ? (dialog.product ?? null) : null
-        }
+        product={dialog?.type === "delete-product" ? (dialog.product ?? null) : null}
         onClose={closeDialog}
         onConfirm={deleteProduct}
+        pending={isPending}
+        error={error}
       />
     </>
   );

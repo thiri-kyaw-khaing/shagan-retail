@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
+import FormError from "@/components/custom/common/forms/form-error";
 import FormInput from "@/components/custom/common/forms/form-input";
 import CustomButton from "@/components/custom/common/custom-button";
 import {
@@ -23,6 +24,10 @@ type CategoryFormDialogProps = {
   values: CategoryFormValues;
   onClose: () => void;
   onSave: (values: CategoryFormValues) => void;
+  /** While the save is in flight. */
+  pending?: boolean;
+  /** The last save's error, shown above the buttons. */
+  error?: string | null;
 };
 
 export default function CategoryFormDialog({
@@ -31,9 +36,11 @@ export default function CategoryFormDialog({
   values,
   onClose,
   onSave,
+  pending = false,
+  error,
 }: CategoryFormDialogProps) {
   const form = useForm<CategoryFormValues>({ defaultValues: values });
-  const canSubmit = form.watch("name").trim().length > 0;
+  const canSubmit = form.watch("name").trim().length > 0 && !pending;
 
   useEffect(() => {
     if (isOpen) form.reset(values);
@@ -59,6 +66,8 @@ export default function CategoryFormDialog({
               inputClassName="mt-2 h-11 border-rose-200 text-base font-normal normal-case tracking-normal text-ink"
             />
 
+            <FormError message={error} />
+
             <DialogFooter className="mt-2 flex-row justify-center gap-3 sm:justify-center">
               <CustomButton
                 label="Cancel"
@@ -66,7 +75,7 @@ export default function CategoryFormDialog({
                 className="min-h-12 flex-1 border border-slate-200 bg-white px-5 font-semibold text-slate-600 shadow-none hover:bg-slate-50"
               />
               <CustomButton
-                label={mode === "add" ? "Create" : "Save"}
+                label={pending ? "Saving..." : mode === "add" ? "Create" : "Save"}
                 type="submit"
                 disabled={!canSubmit}
                 className={cn(

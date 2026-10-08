@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
+import FormError from "@/components/custom/common/forms/form-error";
 import FormInput from "@/components/custom/common/forms/form-input";
 import CustomButton from "@/components/custom/common/custom-button";
 import {
@@ -18,10 +19,10 @@ import {
 import { Form } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 
+// No email: the backend doesn't store one (decided 2026-10-06).
 export type CustomerFormValues = {
   name: string;
   phone: string;
-  email?: string;
 };
 
 type CustomerFormDialogProps = {
@@ -29,6 +30,8 @@ type CustomerFormDialogProps = {
   existingPhones: string[];
   onClose: () => void;
   onSave: (values: CustomerFormValues) => void;
+  pending?: boolean;
+  error?: string | null;
 };
 
 const normalizePhone = (phone: string) => phone.replace(/\D/g, "");
@@ -46,22 +49,18 @@ function createCustomerFormSchema(existingPhones: string[]) {
         (phone) => !normalizedExisting.includes(normalizePhone(phone)),
         "A customer with this phone number already exists",
       ),
-    email: z
-      .string()
-      .trim()
-      .email("Please enter a valid email address")
-      .optional()
-      .or(z.literal("")),
   });
 }
 
-const DEFAULT_VALUES: CustomerFormValues = { name: "", phone: "", email: "" };
+const DEFAULT_VALUES: CustomerFormValues = { name: "", phone: "" };
 
 export default function CustomerFormDialog({
   isOpen,
   existingPhones,
   onClose,
   onSave,
+  pending = false,
+  error,
 }: CustomerFormDialogProps) {
   const schema = useMemo(
     () => createCustomerFormSchema(existingPhones),
@@ -76,19 +75,14 @@ export default function CustomerFormDialog({
 
   const name = form.watch("name");
   const phone = form.watch("phone");
-  const email = form.watch("email");
 
   const canSubmit = useMemo(
-    () => schema.safeParse({ name, phone, email }).success,
-    [schema, name, phone, email],
+    () => !pending && schema.safeParse({ name, phone }).success,
+    [schema, name, phone, pending],
   );
 
   const handleSave = (values: CustomerFormValues) => {
-    onSave({
-      name: values.name.trim(),
-      phone: values.phone.trim(),
-      email: values.email?.trim() || undefined,
-    });
+    onSave({ name: values.name.trim(), phone: values.phone.trim() });
   };
 
   return (
@@ -121,15 +115,8 @@ export default function CustomerFormDialog({
               className="text-sm font-semibold uppercase tracking-wide text-slate-500"
               inputClassName="mt-2 h-12 border-rose-200 text-base font-normal normal-case tracking-normal text-ink"
             />
-            <FormInput
-              control={form.control}
-              path="email"
-              label="Email (optional)"
-              type="email"
-              placeholder="e.g. khinmyo@gmail.com"
-              className="text-sm font-semibold uppercase tracking-wide text-slate-500"
-              inputClassName="mt-2 h-12 border-rose-200 text-base font-normal normal-case tracking-normal text-ink"
-            />
+
+            <FormError message={error} />
 
             <DialogFooter className="mt-2 sm:flex-row">
               <CustomButton
@@ -138,7 +125,7 @@ export default function CustomerFormDialog({
                 className="min-h-12 border border-slate-200 bg-white px-5 text-slate-600 shadow-none hover:bg-slate-50"
               />
               <CustomButton
-                label="Save"
+                label={pending ? "Saving..." : "Save"}
                 type="submit"
                 disabled={!canSubmit}
                 className={cn(

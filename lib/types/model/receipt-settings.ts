@@ -1,38 +1,22 @@
-import type { BranchId } from "./branches";
-
-// Deviates from the real `receipt_settings` schema (no org/is_global concept
-// modeled yet) and adds three UI-only "show on receipt" toggles that aren't
-// real columns — flagged simplification, matches again once the backend is ready.
+/**
+ * What prints at the top and bottom of a receipt. The backend stores these
+ * four (all required) per branch, with an org-wide default that branches
+ * without their own settings fall back to. No show/hide toggles - every
+ * receipt prints all four (decided 2026-10-08).
+ */
 export type ReceiptSettings = {
-  branchId: BranchId;
   shopName: string;
   address: string;
-  showAddress: boolean;
   phone: string;
-  showPhone: boolean;
   thankYouMessage: string;
-  showThankYouMessage: boolean;
 };
 
-export const receiptSettings: ReceiptSettings[] = [
-  {
-    branchId: 1,
-    shopName: "SHAGAN RETAIL",
-    address: "No. 25, Main Street, Yangon",
-    showAddress: true,
-    phone: "09-421-123-456",
-    showPhone: true,
-    thankYouMessage: "Thank you for shopping with us!",
-    showThankYouMessage: true,
-  },
-  {
-    branchId: 2,
-    shopName: "SHAGAN RETAIL",
-    address: "No. 8, North Market Road, Yangon",
-    showAddress: true,
-    phone: "09-421-345-678",
-    showPhone: true,
-    thankYouMessage: "Thank you for shopping with us!",
-    showThankYouMessage: true,
-  },
-];
+/** "default" is the org-wide receipt; otherwise a branch id. */
+export type ReceiptTarget = "default" | `${number}`;
+
+export type ReceiptSettingsEntry = {
+  /** null when nothing has been saved yet (not even a default). */
+  settings: ReceiptSettings | null;
+  /** True when a branch has no settings of its own and shows the default. */
+  usesDefault: boolean;
+};

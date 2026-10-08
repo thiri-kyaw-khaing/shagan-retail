@@ -39,7 +39,7 @@ export default function QrPaymentPreview({ qrCodes }: { qrCodes: QrCode[] }) {
                   key={qr.id}
                   className="rounded-xl border border-rose-100 p-2 text-center"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview, not an optimizable Next.js asset */}
+                  {/* eslint-disable-next-line @next/next/no-img-element -- presigned storage URL, not an optimizable Next.js asset */}
                   <img
                     src={qr.imageUrl}
                     alt={`${qr.bankName} QR code`}

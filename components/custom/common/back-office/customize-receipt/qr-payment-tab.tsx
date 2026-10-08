@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
+import FilterSelect from "@/components/custom/common/back-office/filter-select";
 import QrPaymentPreview from "@/components/custom/common/back-office/customize-receipt/qr-payment-preview";
 import QrUploadCard from "@/components/custom/common/back-office/customize-receipt/qr-upload-card";
 import SavedQrList from "@/components/custom/common/back-office/customize-receipt/saved-qr-list";
 import CustomButton from "@/components/custom/common/custom-button";
+import FormError from "@/components/custom/common/forms/form-error";
 import FormInput from "@/components/custom/common/forms/form-input";
 import { Form } from "@/components/ui/form";
+import { useAction } from "@/lib/api/use-action";
+import { deletePaymentQrAction, uploadPaymentQrAction } from "@/lib/platform/actions";
 import { MAX_QR_CODES, type QrCode } from "@/lib/types/model/qr-codes";
 
 const LABEL_CLASS = "text-xs font-bold tracking-wide text-slate-500 uppercase";
@@ -16,60 +20,56 @@ const INPUT_CLASS = "h-11 rounded-xl border-slate-200 bg-slate-50";
 
 type QrFormValues = { bankName: string };
 
-export default function QrPaymentTab() {
-  const [qrCodes, setQrCodes] = useState<QrCode[]>([]);
-  const [pendingUrl, setPendingUrl] = useState("");
-  const latestQrCodes = useRef<QrCode[]>([]);
-  const latestPendingUrl = useRef("");
+type QrPaymentTabProps = {
+  branchOptions: { value: string; label: string }[];
+  /** Saved codes per branch id. */
+  qrByBranch: Record<string, QrCode[]>;
+  initialBranchId: string;
+};
+
+// QR codes are per branch (up to 5, one per bank) - managed here, shown to
+// customers on that branch's payment screen.
+export default function QrPaymentTab({ branchOptions, qrByBranch, initialBranchId }: QrPaymentTabProps) {
+  const [branchId, setBranchId] = useState(initialBranchId);
+  const [pending, setPending] = useState<{ file: File; url: string } | null>(null);
+  const { isPending, error, run, clearError } = useAction();
 
   const form = useForm<QrFormValues>({ defaultValues: { bankName: "" } });
   const bankName = useWatch({ control: form.control, name: "bankName" });
 
+  const qrCodes = qrByBranch[branchId] ?? [];
   const isFull = qrCodes.length >= MAX_QR_CODES;
-  const canSave = !isFull && pendingUrl !== "" && bankName.trim().length > 0;
+  const duplicateBank = qrCodes.some((qr) => qr.bankName === bankName.trim());
+  const canSave =
+    !isPending && !isFull && pending !== null && bankName.trim().length > 0 && !duplicateBank;
 
-  useEffect(() => {
-    latestQrCodes.current = qrCodes;
-    latestPendingUrl.current = pendingUrl;
-  }, [qrCodes, pendingUrl]);
+  // Release the local preview when it's replaced or the tab goes away.
+  useEffect(() => () => {
+    if (pending) URL.revokeObjectURL(pending.url);
+  }, [pending]);
 
-  // QR images are blob URLs held only in memory — release them (saved and
-  // picked-but-unsaved) when the tab goes away.
-  useEffect(() => {
-    return () => {
-      latestQrCodes.current.forEach((qr) => URL.revokeObjectURL(qr.imageUrl));
-      if (latestPendingUrl.current) {
-        URL.revokeObjectURL(latestPendingUrl.current);
-      }
-    };
-  }, []);
-
-  const handleFileAccepted = (file: File) => {
-    if (pendingUrl) URL.revokeObjectURL(pendingUrl);
-    setPendingUrl(URL.createObjectURL(file));
-  };
-
-  const handleSave = (values: QrFormValues) => {
-    if (!canSave) return;
-
-    console.log("Customize Receipt - save QR code:", values.bankName);
-    setQrCodes((current) => [
-      ...current,
-      { id: Date.now(), bankName: values.bankName.trim(), imageUrl: pendingUrl },
-    ]);
-    // The saved list now owns this blob URL, so it must not be revoked here.
-    setPendingUrl("");
+  const switchBranch = (next: string) => {
+    setBranchId(next);
+    setPending(null);
+    clearError();
     form.reset({ bankName: "" });
   };
 
-  const handleRemove = (id: number) => {
-    const target = qrCodes.find((qr) => qr.id === id);
-    if (!target) return;
-
-    console.log("Customize Receipt - remove QR code:", target.bankName);
-    URL.revokeObjectURL(target.imageUrl);
-    setQrCodes((current) => current.filter((qr) => qr.id !== id));
+  const handleSave = (values: QrFormValues) => {
+    if (!canSave || !pending) return;
+    const data = new FormData();
+    data.set("bank_name", values.bankName.trim());
+    data.set("file", pending.file);
+    run(
+      () => uploadPaymentQrAction(Number(branchId), data),
+      () => {
+        setPending(null);
+        form.reset({ bankName: "" });
+      },
+    );
   };
+
+  const handleRemove = (id: number) => run(() => deletePaymentQrAction(Number(branchId), id));
 
   return (
     <Form {...form}>
@@ -78,10 +78,21 @@ export default function QrPaymentTab() {
         className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px] lg:items-start"
       >
         <div className="space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+            <p className={LABEL_CLASS}>QR codes for</p>
+            <FilterSelect
+              aria-label="Branch"
+              value={branchId}
+              onChange={switchBranch}
+              options={branchOptions}
+              className="mt-2"
+            />
+          </div>
+
           <QrUploadCard
             savedCount={qrCodes.length}
-            pendingUrl={pendingUrl}
-            onFileAccepted={handleFileAccepted}
+            pendingUrl={pending?.url ?? ""}
+            onFileAccepted={(file) => setPending({ file, url: URL.createObjectURL(file) })}
           />
 
           <div className="rounded-2xl border border-slate-200 bg-white p-6">
@@ -93,11 +104,18 @@ export default function QrPaymentTab() {
               className={LABEL_CLASS}
               inputClassName={INPUT_CLASS}
             />
+            {duplicateBank && (
+              <p className="mt-2 text-sm text-brand">
+                This branch already has a QR code for {bankName.trim()}. Remove it first.
+              </p>
+            )}
           </div>
+
+          <FormError message={error} />
 
           <div className="flex justify-end">
             <CustomButton
-              label="Save QR Code"
+              label={isPending ? "Saving..." : "Save QR Code"}
               type="submit"
               disabled={!canSave}
               className="h-11 bg-brand px-6 font-semibold text-white hover:bg-brand/90 disabled:cursor-not-allowed disabled:bg-rose-200"
@@ -105,7 +123,7 @@ export default function QrPaymentTab() {
           </div>
 
           {qrCodes.length > 0 && (
-            <SavedQrList qrCodes={qrCodes} onRemove={handleRemove} />
+            <SavedQrList qrCodes={qrCodes} onRemove={handleRemove} disabled={isPending} />
           )}
         </div>
 

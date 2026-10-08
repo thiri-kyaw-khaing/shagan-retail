@@ -17,6 +17,11 @@ export default async function StaffManagementPage() {
       staffs={inBranch(staff, selected?.id ?? null).map((s) =>
         toStaffRow(s, roleNames, branchNames),
       )}
+      // The three seeded roles, as-is (decided 2026-10-06; no 4-role mapping).
+      roleOptions={roles.map((role) => ({ value: String(role.id), label: role.name }))}
+      branchOptions={branches.map((branch) => ({ value: String(branch.id), label: branch.name }))}
+      defaultRoleId={String(roles.find((role) => role.code === "staff")?.id ?? roles[0]?.id ?? "")}
+      defaultBranchId={String(selected?.id ?? branches[0]?.id ?? "")}
     />
   );
 }

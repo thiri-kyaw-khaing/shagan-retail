@@ -1,17 +1,34 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 
 import PageHeader from "@/components/custom/common/back-office/page-header";
+import CustomerFormDialog, {
+  type CustomerFormValues,
+} from "@/components/custom/common/back-office/customers/customer-form-dialog";
 import CustomerTable, {
   type CustomerRow,
 } from "@/components/custom/common/back-office/customers/customer-table";
+import CustomButton from "@/components/custom/common/custom-button";
 import { Input } from "@/components/ui/input";
+import { useAction } from "@/lib/api/use-action";
+import { createCustomerAction } from "@/lib/customers/actions";
 
-// Read-only for now; Add Customer returns with real writes in Phase 3.
 export default function CustomerDirectory({ customers }: { customers: CustomerRow[] }) {
   const [search, setSearch] = useState("");
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const { isPending, error, run, clearError } = useAction();
+  const existingPhones = useMemo(() => customers.map((c) => c.phone), [customers]);
+
+  const closeAdd = () => {
+    clearError();
+    setIsAddOpen(false);
+  };
+
+  const addCustomer = (values: CustomerFormValues) => {
+    run(() => createCustomerAction(values), closeAdd);
+  };
 
   const filteredCustomers = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -30,6 +47,14 @@ export default function CustomerDirectory({ customers }: { customers: CustomerRo
         title="Customer"
         subtitle={`${filteredCustomers.length} of ${customers.length} customers`}
         backHref="/owner"
+        action={
+          <CustomButton
+            label="Add Customer"
+            icon={Plus}
+            onClick={() => setIsAddOpen(true)}
+            className="min-h-11 bg-brand px-4 font-semibold text-white hover:bg-brand/90"
+          />
+        }
       />
 
       <div className="relative mt-5 max-w-xl">
@@ -52,6 +77,17 @@ export default function CustomerDirectory({ customers }: { customers: CustomerRo
           }
         />
       </div>
+
+      {isAddOpen && (
+        <CustomerFormDialog
+          isOpen
+          existingPhones={existingPhones}
+          onClose={closeAdd}
+          onSave={addCustomer}
+          pending={isPending}
+          error={error}
+        />
+      )}
     </main>
   );
 }

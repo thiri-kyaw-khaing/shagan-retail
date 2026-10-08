@@ -5,9 +5,11 @@ import type { QrCode } from "@/lib/types/model/qr-codes";
 type SavedQrListProps = {
   qrCodes: QrCode[];
   onRemove: (id: number) => void;
+  /** While a save or removal is in flight. */
+  disabled?: boolean;
 };
 
-export default function SavedQrList({ qrCodes, onRemove }: SavedQrListProps) {
+export default function SavedQrList({ qrCodes, onRemove, disabled }: SavedQrListProps) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6">
       <h2 className="font-bold text-ink">Saved QR codes</h2>
@@ -18,7 +20,7 @@ export default function SavedQrList({ qrCodes, onRemove }: SavedQrListProps) {
             key={qr.id}
             className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview, not an optimizable Next.js asset */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- presigned storage URL, not an optimizable Next.js asset */}
             <img
               src={qr.imageUrl}
               alt={`${qr.bankName} QR code`}
@@ -30,6 +32,7 @@ export default function SavedQrList({ qrCodes, onRemove }: SavedQrListProps) {
             <button
               type="button"
               onClick={() => onRemove(qr.id)}
+              disabled={disabled}
               aria-label={`Remove ${qr.bankName} QR code`}
               className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-rose-50 hover:text-brand"
             >

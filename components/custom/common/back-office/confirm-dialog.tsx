@@ -10,45 +10,43 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { Supplier } from "@/lib/types/model/suppliers";
 
-type DeleteSupplierDialogProps = {
-  supplier: Supplier | null;
-  onClose: () => void;
+type ConfirmDialogProps = {
+  title: string;
+  description: string;
+  confirmLabel: string;
   onConfirm: () => void;
+  onClose: () => void;
   pending?: boolean;
   error?: string | null;
 };
 
-export default function DeleteSupplierDialog({
-  supplier,
-  onClose,
+/** A yes/no step before a status change that can't be undone. */
+export default function ConfirmDialog({
+  title,
+  description,
+  confirmLabel,
   onConfirm,
+  onClose,
   pending = false,
   error,
-}: DeleteSupplierDialogProps) {
+}: ConfirmDialogProps) {
   return (
-    <Dialog
-      open={supplier !== null}
-      onOpenChange={(open) => !open && onClose()}
-    >
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="rounded-2xl border-0 bg-white sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete supplier?</DialogTitle>
-          <DialogDescription>
-            This will remove {supplier?.name ?? "this supplier"}. A supplier with
-            purchase orders can&apos;t be deleted.
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <FormError message={error} />
         <DialogFooter>
           <CustomButton
-            label="Cancel"
+            label="Back"
             onClick={onClose}
             className="border border-slate-200 bg-white text-slate-600 shadow-none hover:bg-slate-50"
           />
           <CustomButton
-            label={pending ? "Deleting..." : "Delete"}
+            label={pending ? "Working..." : confirmLabel}
             onClick={onConfirm}
             disabled={pending}
             className="bg-brand text-white hover:bg-brand/90"

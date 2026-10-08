@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
+import FormError from "@/components/custom/common/forms/form-error";
 import FormInput from "@/components/custom/common/forms/form-input";
 import CustomButton from "@/components/custom/common/custom-button";
 import QuantityStepper from "@/components/custom/common/quantity-stepper";
@@ -32,6 +33,8 @@ type ComboFormDialogProps = {
   products: Product[];
   onClose: () => void;
   onSave: (values: ComboFormValues, items: ComboItem[]) => void;
+  pending?: boolean;
+  error?: string | null;
 };
 
 const LABEL_CLASS = "text-sm font-semibold uppercase tracking-wide text-slate-500";
@@ -111,13 +114,19 @@ export default function ComboFormDialog({
   products,
   onClose,
   onSave,
+  pending = false,
+  error,
 }: ComboFormDialogProps) {
   const form = useForm<ComboFormValues>({ defaultValues: values });
   const [items, setItems] = useState<ComboItem[]>(initialItems);
+  const [name, price, expiresAt] = form.watch(["name", "price", "expiresAt"]);
   const canSubmit =
-    form.watch("name").trim().length > 0 &&
-    items.length > 0 &&
-    form.watch("expiresAt").trim().length > 0;
+    !pending &&
+    name.trim().length > 0 &&
+    price !== "" &&
+    expiresAt.trim().length > 0 &&
+    // Contents are only chosen on create (see below).
+    (mode === "edit" || items.length > 0);
 
   useEffect(() => {
     if (isOpen) {
@@ -152,11 +161,20 @@ export default function ComboFormDialog({
             <div>
               <p className={LABEL_CLASS}>Products in Combo</p>
               <div className="mt-2">
-                <ComboItemPicker
-                  products={products}
-                  selected={items}
-                  onChange={setItems}
-                />
+                {mode === "add" ? (
+                  <ComboItemPicker
+                    products={products}
+                    selected={items}
+                    onChange={setItems}
+                  />
+                ) : (
+                  // The backend can't change a combo's products once it's
+                  // created (PATCH ignores items).
+                  <p className="rounded-xl border border-rose-100 bg-rose-50/50 p-3 text-sm text-ink-muted">
+                    A combo&apos;s products can&apos;t be changed after it&apos;s created. To
+                    sell a different bundle, create a new combo.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -180,6 +198,8 @@ export default function ComboFormDialog({
               />
             </div>
 
+            <FormError message={error} />
+
             <DialogFooter className="mt-2 flex-row justify-center gap-3 sm:justify-center">
               <CustomButton
                 label="Cancel"
@@ -187,7 +207,7 @@ export default function ComboFormDialog({
                 className="min-h-12 flex-1 border border-slate-200 bg-white px-5 font-semibold text-slate-600 shadow-none hover:bg-slate-50"
               />
               <CustomButton
-                label={mode === "add" ? "Create combo" : "Save changes"}
+                label={pending ? "Saving..." : mode === "add" ? "Create combo" : "Save changes"}
                 type="submit"
                 disabled={!canSubmit}
                 className={cn(
