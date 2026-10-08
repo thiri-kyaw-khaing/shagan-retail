@@ -86,6 +86,12 @@ export default function InventoryLedgerTable({
       render: (row) => <span className="font-semibold text-ink">{row.balance}</span>,
     },
     {
+      key: "branch",
+      header: "Branch",
+      width: "1fr",
+      render: (row) => row.branch ?? "—",
+    },
+    {
       key: "user",
       header: "User",
       width: "1fr",
@@ -135,7 +141,8 @@ export default function InventoryLedgerTable({
             {formatDateTime(row.occurredAt)}
           </p>
           <p className="text-xs text-ink-muted">
-            {row.userName} · <span className="font-mono">{row.reference}</span>
+            {row.userName}
+            {row.branch && ` · ${row.branch}`} · <span className="font-mono">{row.reference}</span>
           </p>
         </div>
       )}

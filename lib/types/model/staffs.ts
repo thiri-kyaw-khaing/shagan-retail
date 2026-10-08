@@ -1,6 +1,6 @@
 export type StaffId = number;
 
-export type StaffStatus = "active" | "inactive";
+export type StaffStatus = "active" | "inactive" | "suspended";
 export type DrawerAccess = "allowed" | "not_allowed";
 
 export type Staff = {
@@ -12,6 +12,13 @@ export type Staff = {
   drawerAccess: DrawerAccess;
   status: StaffStatus;
 };
+
+/**
+ * A staff member as the Back Office shows it. Drawer access isn't a per-staff
+ * setting in the backend - it follows the role's `open_drawer_no_sale`
+ * permission (decided 2026-10-06: drop it).
+ */
+export type StaffRow = Omit<Staff, "drawerAccess">;
 
 export const staffs: Staff[] = [
   {

@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import BackOfficeHeaderBrand from "./back-office-header-brand";
 import BackOfficeHeaderActions from "./back-office-header-actions";
 
@@ -7,6 +9,7 @@ type BackOfficeHeaderProps = {
   userName: string;
   role: string;
   branchName: string;
+  branchSlot?: ReactNode;
   showExitToPortal?: boolean;
 };
 
@@ -16,6 +19,7 @@ export default function BackOfficeHeader({
   userName,
   role,
   branchName,
+  branchSlot,
   showExitToPortal,
 }: BackOfficeHeaderProps) {
   return (
@@ -25,6 +29,7 @@ export default function BackOfficeHeader({
         userName={userName}
         role={role}
         branchName={branchName}
+        branchSlot={branchSlot}
         showExitToPortal={showExitToPortal}
       />
     </header>

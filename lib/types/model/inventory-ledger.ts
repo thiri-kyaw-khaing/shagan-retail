@@ -1,6 +1,13 @@
 export type StockMovementId = number;
 
-export type StockMovementType = "receipt" | "adjustment" | "sale" | "transfer";
+export type StockMovementType =
+  | "receipt"
+  | "adjustment"
+  | "sale"
+  | "transfer"
+  | "return"
+  | "void"
+  | "exchange";
 
 export type StockMovement = {
   id: StockMovementId;
@@ -13,6 +20,8 @@ export type StockMovement = {
   /** Stock on hand after this movement. */
   balance: number;
   userName: string;
+  /** Branch whose stock moved; the balance is per branch. */
+  branch?: string;
   reference: string;
   /** Free-text context (e.g. branches and reason) for entries created in the UI. */
   note?: string;

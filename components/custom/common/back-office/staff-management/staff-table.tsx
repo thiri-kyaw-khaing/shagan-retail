@@ -7,33 +7,36 @@ import DataTable, {
 } from "@/components/custom/common/back-office/data-table";
 import CustomButton from "@/components/custom/common/custom-button";
 import AvatarInitials from "@/components/custom/common/avatar-initials";
-import type { Staff } from "@/lib/types/model/staffs";
+import type { StaffRow } from "@/lib/types/model/staffs";
 import { cn } from "@/lib/utils";
 
-function DrawerAccessBadge({ staff }: { staff: Staff }) {
-  const allowed = staff.drawerAccess === "allowed";
+const STATUS_STYLE: Record<StaffRow["status"], string> = {
+  active: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  inactive: "border-slate-200 bg-slate-50 text-slate-600",
+  suspended: "border-amber-200 bg-amber-50 text-amber-700",
+};
 
+function StatusBadge({ status }: { status: StaffRow["status"] }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold",
-        allowed
-          ? "border-rose-200 bg-rose-50 text-rose-700"
-          : "border-slate-200 bg-slate-50 text-slate-600",
+        "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold capitalize",
+        STATUS_STYLE[status],
       )}
     >
-      {allowed ? "✓ Allowed" : "Not Allowed"}
+      {status}
     </span>
   );
 }
 
 type StaffTableProps = {
-  staffs: Staff[];
-  onEdit: (staff: Staff) => void;
+  staffs: StaffRow[];
+  /** Omit for a read-only table. */
+  onEdit?: (staff: StaffRow) => void;
 };
 
 export default function StaffTable({ staffs, onEdit }: StaffTableProps) {
-  const columns: DataTableColumn<Staff>[] = [
+  const columns: DataTableColumn<StaffRow>[] = [
     {
       key: "name",
       header: "Name",
@@ -52,11 +55,13 @@ export default function StaffTable({ staffs, onEdit }: StaffTableProps) {
       render: (row) => <span className="font-mono text-xs">{row.phone}</span>,
     },
     {
-      key: "drawer",
-      header: "Open Drawer",
-      render: (row) => <DrawerAccessBadge staff={row} />,
+      key: "status",
+      header: "Status",
+      render: (row) => <StatusBadge status={row.status} />,
     },
-    {
+  ];
+  if (onEdit) {
+    columns.push({
       key: "actions",
       header: "Actions",
       className: "justify-end",
@@ -68,8 +73,8 @@ export default function StaffTable({ staffs, onEdit }: StaffTableProps) {
           className="size-10 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
         />
       ),
-    },
-  ];
+    });
+  }
 
   return (
     <DataTable
@@ -90,17 +95,19 @@ export default function StaffTable({ staffs, onEdit }: StaffTableProps) {
                 {row.phone}
               </p>
               <div className="mt-2">
-                <DrawerAccessBadge staff={row} />
+                <StatusBadge status={row.status} />
               </div>
             </div>
           </div>
 
-          <CustomButton
-            icon={Pencil}
-            aria-label={`Edit ${row.name}`}
-            onClick={() => onEdit(row)}
-            className="size-9 shrink-0 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
-          />
+          {onEdit && (
+            <CustomButton
+              icon={Pencil}
+              aria-label={`Edit ${row.name}`}
+              onClick={() => onEdit(row)}
+              className="size-9 shrink-0 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
+            />
+          )}
         </div>
       )}
     />

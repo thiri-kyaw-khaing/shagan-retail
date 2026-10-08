@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Home, LogOut } from "lucide-react";
 
@@ -12,6 +13,8 @@ type BackOfficeHeaderActionsProps = {
   userName: string;
   role: string;
   branchName: string;
+  /** Replaces the static branch name, e.g. with the Owner's branch picker. */
+  branchSlot?: ReactNode;
   /** Owners have no POS portal to return to (WORKFLOWS §3). */
   showExitToPortal?: boolean;
 };
@@ -20,6 +23,7 @@ export default function BackOfficeHeaderActions({
   userName,
   role,
   branchName,
+  branchSlot,
   showExitToPortal = false,
 }: BackOfficeHeaderActionsProps) {
   const router = useRouter();
@@ -30,9 +34,11 @@ export default function BackOfficeHeaderActions({
       <div className="text-right text-white">
         <p className="font-bold">{userName}</p>
         <p className="text-xs text-white/80">
-          {role} · {branchName}
+          {branchSlot ? role : `${role} · ${branchName}`}
         </p>
       </div>
+
+      {branchSlot}
 
       <LanguageSwitcherButton className="bg-white/15 text-white hover:bg-white/25" />
 

@@ -6,27 +6,26 @@ import DataTable, {
   type DataTableColumn,
 } from "@/components/custom/common/back-office/data-table";
 import SaleReportStatusBadge from "@/components/custom/common/back-office/reports/sale-report-status-badge";
-import { formatClockTime, formatCurrency } from "@/lib/i18n/format";
+import { formatClockTime, formatCurrency, formatShortDate } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/i18n/locale-context";
-import type { ReportRow } from "@/lib/types/model/reports";
+import type { TransactionRow } from "@/lib/types/model/reports";
 
-const METHOD_LABEL = { cash: "Cash", qr: "QR", split: "Split" } as const;
+type TransactionsTableProps = {
+  rows: TransactionRow[];
+  /** All transactions in the range; `rows` may be only the first page. */
+  totalCount: number;
+};
 
-export default function TransactionsTable({ rows }: { rows: ReportRow[] }) {
+// GET /reports/transactions returns each sale's total and status only - the
+// per-sale payment method, discount and refund aren't in that response.
+export default function TransactionsTable({ rows, totalCount }: TransactionsTableProps) {
   const { locale } = useLocale();
-  const money = (value: number) => (
-    <span className="font-mono text-xs">{formatCurrency(value, locale)}</span>
-  );
-  const optionalMoney = (value: number, className?: string) =>
-    value > 0 ? (
-      <span className={`font-mono text-xs ${className ?? ""}`}>
-        {formatCurrency(value, locale)}
-      </span>
-    ) : (
-      <span className="text-slate-400">—</span>
-    );
+  const when = (iso: string) => {
+    const date = new Date(iso);
+    return `${formatShortDate(date, locale)} ${formatClockTime(date, locale)}`;
+  };
 
-  const columns: DataTableColumn<ReportRow>[] = [
+  const columns: DataTableColumn<TransactionRow>[] = [
     {
       key: "receipt",
       header: "Receipt",
@@ -35,25 +34,17 @@ export default function TransactionsTable({ rows }: { rows: ReportRow[] }) {
     },
     {
       key: "time",
-      header: "Time",
-      width: "0.9fr",
-      render: (row) => (
-        <span className="text-ink-muted">
-          {formatClockTime(row.completedAt, locale)}
-        </span>
-      ),
+      header: "Date / Time",
+      width: "1.2fr",
+      render: (row) => <span className="text-ink-muted">{when(row.completedAt)}</span>,
     },
     { key: "cashier", header: "Cashier", width: "1.1fr", render: (row) => row.cashierName },
-    { key: "method", header: "Method", width: "0.8fr", render: (row) => METHOD_LABEL[row.method] },
-    { key: "gross", header: "Gross", render: (row) => money(row.gross) },
-    { key: "discount", header: "Discount", render: (row) => optionalMoney(row.discount) },
-    { key: "refund", header: "Refund", render: (row) => optionalMoney(row.refund, "text-brand") },
     {
-      key: "net",
-      header: "Net",
+      key: "total",
+      header: "Total",
       render: (row) => (
         <span className="font-mono text-xs font-semibold text-rose-800">
-          {formatCurrency(row.net, locale)}
+          {formatCurrency(row.total, locale)}
         </span>
       ),
     },
@@ -82,6 +73,11 @@ export default function TransactionsTable({ rows }: { rows: ReportRow[] }) {
     <section className="space-y-3">
       <h2 className="text-xs font-bold tracking-wide text-slate-500 uppercase">
         Recent transactions
+        {totalCount > rows.length && (
+          <span className="ml-2 font-normal normal-case">
+            (latest {rows.length} of {totalCount})
+          </span>
+        )}
       </h2>
 
       <DataTable
@@ -95,21 +91,14 @@ export default function TransactionsTable({ rows }: { rows: ReportRow[] }) {
               <div>
                 <p className="font-semibold text-ink">#{row.receiptNo}</p>
                 <p className="text-xs text-ink-muted">
-                  {formatClockTime(row.completedAt, locale)} · {row.cashierName} ·{" "}
-                  {METHOD_LABEL[row.method]}
+                  {when(row.completedAt)} · {row.cashierName}
                 </p>
               </div>
               <SaleReportStatusBadge status={row.status} />
             </div>
-            <div className="flex items-baseline justify-between text-sm">
-              <span className="text-ink-muted">
-                Gross {formatCurrency(row.gross, locale)}
-                {row.refund > 0 && ` · Refund ${formatCurrency(row.refund, locale)}`}
-              </span>
-              <span className="font-mono font-semibold text-rose-800">
-                {formatCurrency(row.net, locale)}
-              </span>
-            </div>
+            <p className="text-right font-mono font-semibold text-rose-800">
+              {formatCurrency(row.total, locale)}
+            </p>
           </div>
         )}
       />

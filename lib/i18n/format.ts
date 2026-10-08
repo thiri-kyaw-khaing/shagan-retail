@@ -1,8 +1,16 @@
 import { toBcp47, type Locale } from "./config";
 
+/**
+ * The shop's time zone. Dates are pinned to it rather than the machine's
+ * clock so the server render (likely UTC in the cloud) and the browser show
+ * the same time, and every till and the Back Office agree on what "8 Oct" is.
+ */
+export const BUSINESS_TIME_ZONE = "Asia/Yangon";
+
 export function formatDate(date: Date, locale: Locale): string {
   return new Intl.DateTimeFormat(toBcp47(locale), {
     dateStyle: "medium",
+    timeZone: BUSINESS_TIME_ZONE,
   }).format(date);
 }
 
@@ -10,6 +18,7 @@ export function formatTime(date: Date, locale: Locale): string {
   return new Intl.DateTimeFormat(toBcp47(locale), {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: BUSINESS_TIME_ZONE,
   }).format(date);
 }
 
@@ -26,6 +35,7 @@ export function formatShortDate(date: Date, locale: Locale): string {
     year: "numeric",
     month: "numeric",
     day: "numeric",
+    timeZone: BUSINESS_TIME_ZONE,
   }).format(date);
 }
 
@@ -34,5 +44,6 @@ export function formatClockTime(date: Date, locale: Locale): string {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
+    timeZone: BUSINESS_TIME_ZONE,
   }).format(date);
 }

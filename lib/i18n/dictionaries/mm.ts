@@ -264,6 +264,7 @@ const mm: typeof en = {
   "backOffice.signOut": "ထွက်ရန်",
   "backOffice.ownerRole": "ပိုင်ရှင်",
   "backOffice.allBranches": "ဆိုင်ခွဲအားလုံး",
+  "backOffice.branchFilter": "ဆိုင်ခွဲ",
 
   "chooseSection.helpCenter": "အကူအညီစင်တာ",
   "chooseSection.customizeReceipt": "ဘောက်ချာစိတ်ကြိုက်ပြင်ဆင်ရန်",

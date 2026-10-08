@@ -10,8 +10,9 @@ import type { Supplier } from "@/lib/types/model/suppliers";
 
 type SupplierTableProps = {
   suppliers: Supplier[];
-  onEdit: (supplier: Supplier) => void;
-  onDelete: (supplier: Supplier) => void;
+  /** Omit both for a read-only table. */
+  onEdit?: (supplier: Supplier) => void;
+  onDelete?: (supplier: Supplier) => void;
 };
 
 export default function SupplierTable({
@@ -25,14 +26,16 @@ export default function SupplierTable({
       header: "Supplier",
       render: (row) => <span className="font-semibold">{row.name}</span>,
     },
-    { key: "contact", header: "Contact", render: (row) => row.contact },
+    { key: "address", header: "Address", render: (row) => row.address },
     {
       key: "phone",
       header: "Phone",
       render: (row) => <span className="font-mono text-xs">{row.phone}</span>,
     },
     { key: "lastOrder", header: "Last order", render: (row) => row.lastOrder },
-    {
+  ];
+  if (onEdit && onDelete) {
+    columns.push({
       key: "actions",
       header: "Actions",
       className: "flex justify-end",
@@ -52,8 +55,8 @@ export default function SupplierTable({
           />
         </div>
       ),
-    },
-  ];
+    });
+  }
 
   return (
     <DataTable

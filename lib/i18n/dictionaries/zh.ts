@@ -250,6 +250,7 @@ const zh: typeof en = {
   "backOffice.signOut": "退出登录",
   "backOffice.ownerRole": "店主",
   "backOffice.allBranches": "所有分店",
+  "backOffice.branchFilter": "分店",
 
   "chooseSection.helpCenter": "帮助中心",
   "chooseSection.customizeReceipt": "自定义收据",
