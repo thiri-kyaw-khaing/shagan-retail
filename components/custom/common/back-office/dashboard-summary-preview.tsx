@@ -10,25 +10,26 @@ import {
 
 import DashboardPreviewCard from "@/components/custom/common/back-office/dashboard-preview-card";
 import MetricRow from "@/components/custom/common/back-office/metric-row";
-import { sales } from "@/lib/types/model/sales";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { formatCurrency, formatNumber } from "@/lib/i18n/format";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
-// No stock/expense mock data files exist yet
-// until inventory and expenses are modeled.
-const LOW_STOCK_COUNT = 2;
-const TOTAL_EXPENSES = 0;
+type DashboardSummaryPreviewProps = {
+  salesToday: number;
+  /** Net sales today (gross - discounts - returns). */
+  revenue: number;
+  lowStockCount: number;
+  expensesToday: number;
+};
 
-export default function DashboardSummaryPreview() {
+export default function DashboardSummaryPreview({
+  salesToday,
+  revenue,
+  lowStockCount,
+  expensesToday,
+}: DashboardSummaryPreviewProps) {
   const { locale } = useLocale();
   const { t } = useTranslation();
-
-  const completedSales = sales.filter((sale) => sale.status === "completed");
-  const revenueTotal = completedSales.reduce(
-    (sum, sale) => sum + sale.total,
-    0,
-  );
 
   return (
     <DashboardPreviewCard
@@ -39,23 +40,23 @@ export default function DashboardSummaryPreview() {
     >
       <MetricRow
         label={t("dashboardPreview.salesToday")}
-        value={formatNumber(completedSales.length, locale)}
+        value={formatNumber(salesToday, locale)}
         icon={ShoppingBag}
       />
       <MetricRow
         label={t("dashboardPreview.revenue")}
-        value={formatCurrency(revenueTotal, locale)}
+        value={formatCurrency(revenue, locale)}
         icon={TrendingUp}
       />
       <MetricRow
         label={t("dashboardPreview.lowStock")}
-        value={formatNumber(LOW_STOCK_COUNT, locale)}
+        value={formatNumber(lowStockCount, locale)}
         icon={Archive}
         variant="warning"
       />
       <MetricRow
         label={t("dashboardPreview.totalExpenses")}
-        value={formatCurrency(TOTAL_EXPENSES, locale)}
+        value={formatCurrency(expensesToday, locale)}
         icon={Wallet}
       />
     </DashboardPreviewCard>

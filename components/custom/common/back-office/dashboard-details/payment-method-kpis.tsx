@@ -3,17 +3,16 @@
 import KpiCard from "@/components/custom/common/back-office/kpi-card";
 import { formatCurrency } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/i18n/locale-context";
-import { getSalesByMethod } from "@/lib/types/model/dashboard";
-import type { Sale } from "@/lib/types/model/sales";
+import type { MethodTotals } from "@/lib/types/model/dashboard";
 
 function receiptsCaption(count: number) {
   return `${count} ${count === 1 ? "receipt" : "receipts"}`;
 }
 
-export default function PaymentMethodKpis({ sales }: { sales: Sale[] }) {
+type PaymentMethodKpisProps = { cash: MethodTotals; qr: MethodTotals };
+
+export default function PaymentMethodKpis({ cash, qr }: PaymentMethodKpisProps) {
   const { locale } = useLocale();
-  const cash = getSalesByMethod(sales, "cash");
-  const qr = getSalesByMethod(sales, "qr");
 
   return (
     <div className="grid grid-cols-2 gap-3">

@@ -9,9 +9,8 @@ import type {
   ActiveDatePreset,
   DateRange,
   DateRangePreset,
+  ReportTab,
 } from "@/lib/types/model/reports";
-
-export type ReportTab = "summary" | "products";
 
 const TAB_OPTIONS: { value: ReportTab; label: string }[] = [
   { value: "summary", label: "Sales Summary" },
@@ -25,12 +24,10 @@ type ReportFiltersProps = {
   range: DateRange;
   onPresetChange: (preset: DateRangePreset) => void;
   onCustomRangeApply: (range: DateRange) => void;
-  branch: string;
-  onBranchChange: (value: string) => void;
-  branchOptions: FilterSelectOption[];
-  cashier: string;
-  onCashierChange: (value: string) => void;
-  cashierOptions: FilterSelectOption[];
+  /** Optional: omit to hide (the Owner Back Office uses the header's branch filter). */
+  branch?: { value: string; onChange: (value: string) => void; options: FilterSelectOption[] };
+  /** Optional: per-cashier reporting is out of scope for v1 (WORKFLOWS §11). */
+  cashier?: { value: string; onChange: (value: string) => void; options: FilterSelectOption[] };
   canReset: boolean;
   onReset: () => void;
 };
@@ -43,11 +40,7 @@ export default function ReportFilters({
   onPresetChange,
   onCustomRangeApply,
   branch,
-  onBranchChange,
-  branchOptions,
   cashier,
-  onCashierChange,
-  cashierOptions,
   canReset,
   onReset,
 }: ReportFiltersProps) {
@@ -73,20 +66,24 @@ export default function ReportFilters({
         onCustomApply={onCustomRangeApply}
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <FilterSelect
-          aria-label="Filter by branch"
-          value={branch}
-          onChange={onBranchChange}
-          options={branchOptions}
-          className="sm:w-40"
-        />
-        <FilterSelect
-          aria-label="Filter by cashier"
-          value={cashier}
-          onChange={onCashierChange}
-          options={cashierOptions}
-          className="sm:w-40"
-        />
+        {branch && (
+          <FilterSelect
+            aria-label="Filter by branch"
+            value={branch.value}
+            onChange={branch.onChange}
+            options={branch.options}
+            className="sm:w-40"
+          />
+        )}
+        {cashier && (
+          <FilterSelect
+            aria-label="Filter by cashier"
+            value={cashier.value}
+            onChange={cashier.onChange}
+            options={cashier.options}
+            className="sm:w-40"
+          />
+        )}
         {canReset && (
           <button
             type="button"

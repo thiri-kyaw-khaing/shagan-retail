@@ -14,11 +14,12 @@ import { cn } from "@/lib/utils";
 type ExpenseTableProps = {
   expenses: Expense[];
   total: number;
-  onEdit: (expense: Expense) => void;
-  onDelete: (expense: Expense) => void;
+  /** Omit both for a read-only table. */
+  onEdit?: (expense: Expense) => void;
+  onDelete?: (expense: Expense) => void;
 };
 
-type RowActionsProps = Pick<ExpenseTableProps, "onEdit" | "onDelete"> & {
+type RowActionsProps = Required<Pick<ExpenseTableProps, "onEdit" | "onDelete">> & {
   expense: Expense;
   className?: string;
 };
@@ -82,7 +83,9 @@ export default function ExpenseTable({
         </span>
       ),
     },
-    {
+  ];
+  if (onEdit && onDelete) {
+    columns.push({
       key: "actions",
       header: "",
       width: "88px",
@@ -90,8 +93,8 @@ export default function ExpenseTable({
       render: (row) => (
         <RowActions expense={row} onEdit={onEdit} onDelete={onDelete} />
       ),
-    },
-  ];
+    });
+  }
 
   return (
     <>
@@ -112,12 +115,14 @@ export default function ExpenseTable({
                 {formatCurrency(row.amount, locale)}
               </p>
             </div>
-            <RowActions
-              expense={row}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              className="shrink-0 flex-col"
-            />
+            {onEdit && onDelete && (
+              <RowActions
+                expense={row}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                className="shrink-0 flex-col"
+              />
+            )}
           </div>
         )}
       />

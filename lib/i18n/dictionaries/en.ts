@@ -254,6 +254,7 @@ const en = {
   "backOffice.signOut": "Sign out",
   "backOffice.ownerRole": "Owner",
   "backOffice.allBranches": "All branches",
+  "backOffice.branchFilter": "Branch",
 
   "chooseSection.helpCenter": "Help Center",
   "chooseSection.customizeReceipt": "Customize Receipt",

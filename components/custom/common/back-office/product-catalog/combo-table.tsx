@@ -3,6 +3,7 @@
 import { Pencil, Trash2 } from "lucide-react";
 
 import CustomButton from "@/components/custom/common/custom-button";
+import { BUSINESS_TIME_ZONE } from "@/lib/i18n/format";
 import type { Combo } from "@/lib/types/model/combos";
 import type { Product } from "@/lib/types/model/product";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ function formatExpiry(expiresAt: string) {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: BUSINESS_TIME_ZONE,
   });
 }
 
@@ -52,8 +54,9 @@ function ExpiryBadge({ combo }: { combo: Combo }) {
 type ComboTableProps = {
   combos: Combo[];
   products: Product[];
-  onEdit: (combo: Combo) => void;
-  onDelete: (combo: Combo) => void;
+  /** Omit both for a read-only list. */
+  onEdit?: (combo: Combo) => void;
+  onDelete?: (combo: Combo) => void;
 };
 
 export default function ComboTable({
@@ -83,7 +86,8 @@ export default function ComboTable({
               <ExpiryBadge combo={combo} />
             </div>
             <p className="mt-1 text-sm text-ink-muted">
-              {itemSummary(combo, products) || "No items"}
+              {/* The combos API doesn't return items yet (backend recommendation #3). */}
+              {itemSummary(combo, products) || "Items not available"}
             </p>
             <p className="mt-1 text-xs text-slate-400">
               Expires {formatExpiry(combo.expiresAt)}
@@ -94,20 +98,22 @@ export default function ComboTable({
             <span className="font-bold text-black">
               K {combo.price.toLocaleString()}
             </span>
-            <div className="flex gap-1">
-              <CustomButton
-                icon={Pencil}
-                aria-label={`Edit ${combo.name}`}
-                onClick={() => onEdit(combo)}
-                className="size-9 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
-              />
-              <CustomButton
-                icon={Trash2}
-                aria-label={`Delete ${combo.name}`}
-                onClick={() => onDelete(combo)}
-                className="size-9 bg-transparent p-0 text-brand shadow-none hover:bg-rose-50"
-              />
-            </div>
+            {onEdit && onDelete && (
+              <div className="flex gap-1">
+                <CustomButton
+                  icon={Pencil}
+                  aria-label={`Edit ${combo.name}`}
+                  onClick={() => onEdit(combo)}
+                  className="size-9 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
+                />
+                <CustomButton
+                  icon={Trash2}
+                  aria-label={`Delete ${combo.name}`}
+                  onClick={() => onDelete(combo)}
+                  className="size-9 bg-transparent p-0 text-brand shadow-none hover:bg-rose-50"
+                />
+              </div>
+            )}
           </div>
         </div>
       ))}

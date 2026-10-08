@@ -28,7 +28,7 @@ export default function ReceiveStockDialog({
         <DialogHeader>
           <DialogTitle>Receive stock?</DialogTitle>
           <DialogDescription>
-            Mark {order?.id} from {order?.supplier} as received.
+            Mark {order?.poNumber} from {order?.supplier} as received.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

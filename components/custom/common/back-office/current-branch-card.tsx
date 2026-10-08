@@ -1,15 +1,9 @@
-"use client";
+import { MapPin } from "lucide-react";
 
-import { ChevronDown, MapPin } from "lucide-react";
-
-// Single-branch mock data for now — swap for a real branch switcher once multiple branches exist.
-const CURRENT_BRANCH = "Main Street Branch";
-
-export default function CurrentBranchCard() {
+/** Mobile-only reminder of the branch scope; switch branches with the header's picker. */
+export default function CurrentBranchCard({ branchName }: { branchName: string }) {
   return (
-    <button
-      type="button"
-      onClick={() => console.log("Current Branch card clicked (placeholder — no branch switcher yet)")}
+    <div
       className="mb-4 flex w-full items-center gap-3 rounded-2xl border-2 border-rose-100 bg-white px-4 py-3 text-left shadow-sm sm:hidden"
     >
       <MapPin className="size-5 shrink-0 text-rose-500" />
@@ -17,9 +11,8 @@ export default function CurrentBranchCard() {
         <p className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
           Current Branch
         </p>
-        <p className="truncate font-bold text-ink">{CURRENT_BRANCH}</p>
+        <p className="truncate font-bold text-ink">{branchName}</p>
       </div>
-      <ChevronDown className="size-5 shrink-0 text-ink-muted" />
-    </button>
+    </div>
   );
 }

@@ -6,6 +6,9 @@ export const STOCK_MOVEMENT_LABEL: Record<StockMovementType, string> = {
   adjustment: "Adjustment",
   sale: "Sale",
   transfer: "Transfer",
+  return: "Return",
+  void: "Void",
+  exchange: "Exchange",
 };
 
 const MOVEMENT_CLASS: Record<StockMovementType, string> = {
@@ -13,6 +16,9 @@ const MOVEMENT_CLASS: Record<StockMovementType, string> = {
   adjustment: "border-amber-300 bg-amber-50 text-amber-700",
   sale: "border-emerald-300 bg-emerald-50 text-emerald-700",
   transfer: "border-sky-300 bg-sky-50 text-sky-700",
+  return: "border-violet-300 bg-violet-50 text-violet-700",
+  void: "border-rose-300 bg-rose-50 text-rose-700",
+  exchange: "border-indigo-300 bg-indigo-50 text-indigo-700",
 };
 
 export default function StockMovementBadge({

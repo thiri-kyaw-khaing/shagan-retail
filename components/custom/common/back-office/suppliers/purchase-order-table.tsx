@@ -12,7 +12,8 @@ import type { PurchaseOrder } from "@/lib/types/model/purchase-orders";
 type PurchaseOrderTableProps = {
   orders: PurchaseOrder[];
   onView: (order: PurchaseOrder) => void;
-  onReceive: (order: PurchaseOrder) => void;
+  /** Omit to hide receiving (read-only). */
+  onReceive?: (order: PurchaseOrder) => void;
 };
 
 const formatMoney = (value: number) => `K ${value.toLocaleString("en-US")}`;
@@ -24,11 +25,12 @@ export default function PurchaseOrderTable({
 }: PurchaseOrderTableProps) {
   const columns: DataTableColumn<PurchaseOrder>[] = [
     {
-      key: "id",
+      key: "poNumber",
       header: "PO #",
-      render: (row) => <span className="font-mono text-xs">{row.id}</span>,
+      render: (row) => <span className="font-mono text-xs">{row.poNumber}</span>,
     },
     { key: "supplier", header: "Supplier", render: (row) => row.supplier },
+    { key: "branch", header: "Branch", render: (row) => row.branch },
     { key: "date", header: "Date", render: (row) => row.date },
     {
       key: "status",
@@ -50,11 +52,11 @@ export default function PurchaseOrderTable({
         <div className="flex justify-end gap-2">
           <CustomButton
             icon={Eye}
-            aria-label={`View ${row.id}`}
+            aria-label={`View ${row.poNumber}`}
             onClick={() => onView(row)}
             className="size-10 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
           />
-          {row.status === "Open" && (
+          {onReceive && row.status === "Approved" && (
             <CustomButton
               label="Receive"
               onClick={() => onReceive(row)}

@@ -127,3 +127,17 @@ export const sales: Sale[] = [
     syncedAt: "2026-09-17T18:02:02.000Z",
   },
 ];
+
+/** A receipt row in the Back Office sales history (live data). */
+export type SalesHistoryRow = {
+  id: SaleId;
+  receiptNo: string;
+  customerName: string;
+  branch: string;
+  /** Preformatted on the server in business time, e.g. "8 Oct, 13:44". */
+  completedAtLabel: string;
+  /** Business-time calendar date ("YYYY-MM-DD") for the date filter. */
+  completedOn: string | null;
+  status: "open" | "completed" | "voided" | "refunded";
+  total: number;
+};

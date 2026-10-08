@@ -6,15 +6,13 @@ import PanelCard, {
 import { formatRangeLabel } from "@/components/custom/common/back-office/reports/date-range-filter";
 import SegmentedControl from "@/components/custom/common/back-office/segmented-control";
 import { toBcp47 } from "@/lib/i18n/config";
-import { formatCurrency } from "@/lib/i18n/format";
+import { BUSINESS_TIME_ZONE, formatCurrency } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/i18n/locale-context";
-import type { Shift } from "@/lib/types/model/shifts";
 import {
-  buildTrend,
   getRangeDays,
   type ActiveDatePreset,
   type DateRange,
-  type ReportRow,
+  type TrendBucket,
   type TrendGranularity,
 } from "@/lib/types/model/reports";
 
@@ -29,42 +27,45 @@ const BASELINE_PX = 3;
 const MAX_LABELLED_BUCKETS = 10;
 
 type SalesTrendCardProps = {
-  rows: ReportRow[];
-  shifts: Shift[];
+  /** Precomputed on the server from the report endpoints. */
+  buckets: TrendBucket[];
   range: DateRange;
   activePreset: ActiveDatePreset;
   view: TrendGranularity;
   onViewChange: (view: TrendGranularity) => void;
+  /** The backend only reports hourly sales for today. */
+  hourlyDisabled: boolean;
   weeklyDisabled: boolean;
 };
 
 export default function SalesTrendCard({
-  rows,
-  shifts,
+  buckets,
   range,
   activePreset,
   view,
   onViewChange,
+  hourlyDisabled,
   weeklyDisabled,
 }: SalesTrendCardProps) {
   const { locale } = useLocale();
 
-  const buckets = buildTrend(rows, view, shifts, range);
   const max = Math.max(...buckets.map((bucket) => bucket.value), 1);
   const labelStep = Math.ceil(buckets.length / MAX_LABELLED_BUCKETS);
   const showValues = buckets.length <= MAX_LABELLED_BUCKETS;
 
   const useWeekdays = view === "daily" && getRangeDays(range) <= 7;
-  const formatter = new Intl.DateTimeFormat(
-    toBcp47(locale),
-    view === "hourly"
-      ? { hour: "numeric" }
+  // Hourly buckets are UTC hours, i.e. half past the hour in Myanmar time, so
+  // show minutes. Pinned to the business zone so server and browser agree.
+  const formatter = new Intl.DateTimeFormat(toBcp47(locale), {
+    ...(view === "hourly"
+      ? { hour: "numeric", minute: "2-digit" }
       : useWeekdays
         ? { weekday: "short" }
-        : { day: "numeric", month: "short" },
-  );
-  const formatLabel = (date: Date) => {
-    const label = formatter.format(date);
+        : { day: "numeric", month: "short" }),
+    timeZone: BUSINESS_TIME_ZONE,
+  });
+  const formatLabel = (iso: string) => {
+    const label = formatter.format(new Date(iso));
     return view === "hourly" ? label.replace(/\s/g, "") : label;
   };
 
@@ -80,7 +81,7 @@ export default function SalesTrendCard({
           value={view}
           onChange={onViewChange}
           options={[
-            { value: "hourly", label: "Hourly" },
+            { value: "hourly", label: "Hourly", disabled: hourlyDisabled },
             { value: "daily", label: "Daily" },
             { value: "weekly", label: "Weekly", disabled: weeklyDisabled },
           ]}
@@ -100,7 +101,7 @@ export default function SalesTrendCard({
         >
           {buckets.map((bucket, index) => (
             <div
-              key={bucket.start.getTime()}
+              key={bucket.start}
               className="flex min-w-0 flex-col items-center gap-1"
             >
               <div
