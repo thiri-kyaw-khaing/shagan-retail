@@ -11,27 +11,29 @@ import {
 import CustomButton from "@/components/custom/common/custom-button";
 import CustomerListItem from "@/components/custom/common/pos/customer-list-item";
 import CreateCustomerForm from "@/components/custom/common/pos/create-customer-form";
-import {
-  customers as initialCustomers,
-  type Customer,
-} from "@/lib/types/model/customers";
+import { useAction } from "@/lib/api/use-action";
+import { createCustomerAction } from "@/lib/customers/actions";
+import type { CustomerRow } from "@/lib/types/model/customers";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
 type ChooseCustomerDialogProps = {
   isOpen: boolean;
+  /** The org's customers (shared by every branch). */
+  customers: CustomerRow[];
   onClose: () => void;
-  onSelect: (customer: Customer | null) => void;
+  onSelect: (customer: CustomerRow | null) => void;
 };
 
 export default function ChooseCustomerDialog({
   isOpen,
+  customers,
   onClose,
   onSelect,
 }: ChooseCustomerDialogProps) {
   const { t } = useTranslation();
-  const [customers, setCustomers] = useState(initialCustomers);
   const [search, setSearch] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const { isPending, error, run, clearError } = useAction();
 
   const filtered = customers.filter((customer) =>
     `${customer.name} ${customer.phone}`
@@ -42,10 +44,11 @@ export default function ChooseCustomerDialog({
   const handleClose = () => {
     setSearch("");
     setIsCreating(false);
+    clearError();
     onClose();
   };
 
-  const handleSelect = (customer: Customer | null) => {
+  const handleSelect = (customer: CustomerRow | null) => {
     onSelect(customer);
     handleClose();
   };
@@ -59,10 +62,14 @@ export default function ChooseCustomerDialog({
 
         {isCreating ? (
           <CreateCustomerForm
-            onSave={(customer) => {
-              setCustomers((current) => [...current, customer]);
-              handleSelect(customer);
-            }}
+            onSave={(values) =>
+              run(
+                () => createCustomerAction(values),
+                (created) => handleSelect({ id: created.id, name: created.name, phone: created.phone }),
+              )
+            }
+            pending={isPending}
+            error={error}
           />
         ) : (
           <>

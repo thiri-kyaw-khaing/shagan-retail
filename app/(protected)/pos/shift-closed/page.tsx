@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Printer } from "lucide-react";
+import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import CustomButton from "@/components/custom/common/custom-button";
 import SummaryCard from "@/components/custom/common/summary-card";
 import { toBcp47 } from "@/lib/i18n/config";
+import { BUSINESS_TIME_ZONE } from "@/lib/i18n/format";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
 export default function ShiftClosedPage() {
@@ -27,8 +28,10 @@ function ShiftClosedContent() {
   const total = searchParams.get("total") ?? "0";
   const cash = searchParams.get("cash") ?? "0";
   const qr = searchParams.get("qr") ?? "0";
-  const staff = searchParams.get("staff") ?? "Ma Thida";
-  const branch = searchParams.get("branch") ?? "Main Street Branch";
+  const counted = searchParams.get("counted");
+  const difference = Number(searchParams.get("difference") ?? "0");
+  const staff = searchParams.get("staff") ?? "";
+  const branch = searchParams.get("branch") ?? "";
   const closedAt = searchParams.get("closedAt");
 
   const formatMoney = (value: string) =>
@@ -38,6 +41,7 @@ function ShiftClosedContent() {
     ? new Intl.DateTimeFormat(toBcp47(locale), {
         dateStyle: "medium",
         timeStyle: "short",
+        timeZone: BUSINESS_TIME_ZONE,
       }).format(new Date(closedAt))
     : "-";
 
@@ -67,19 +71,24 @@ function ShiftClosedContent() {
             { label: "Total", value: formatMoney(total) },
             { label: "Cash", value: formatMoney(cash) },
             { label: "QR", value: formatMoney(qr) },
+            ...(counted !== null
+              ? [
+                  { label: "Cash counted", value: formatMoney(counted) },
+                  {
+                    label: "Difference",
+                    value: `${difference > 0 ? "+" : difference < 0 ? "−" : ""}${formatMoney(String(Math.abs(difference)))}`,
+                  },
+                ]
+              : []),
           ]}
         />
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-[1fr_2fr]">
-          <CustomButton
-            label="Print"
-            icon={Printer}
-            className="min-h-14 border border-slate-200 bg-white text-lg font-semibold text-slate-600 shadow-none hover:bg-slate-50"
-          />
+        <div className="mt-8">
+          {/* The cashier is already signed out; the next one picks themselves. */}
           <CustomButton
             label="Sign Out"
-            onClick={() => router.push("/portal")}
-            className="min-h-14 bg-brand text-lg font-bold text-white hover:bg-brand/90"
+            onClick={() => router.push("/pos/select-staff")}
+            className="min-h-14 w-full bg-brand text-lg font-bold text-white hover:bg-brand/90"
           />
         </div>
       </section>

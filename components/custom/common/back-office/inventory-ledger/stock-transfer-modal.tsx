@@ -24,6 +24,7 @@ type StockTransferFormValues = {
   toBranch: string;
   productId: string;
   quantity: string;
+  note: string;
 };
 
 export type StockTransferSubmission = {
@@ -31,6 +32,7 @@ export type StockTransferSubmission = {
   toBranch: number;
   productId: number;
   quantity: number;
+  note: string;
 };
 
 type StockTransferModalProps = {
@@ -51,6 +53,7 @@ function createTransferSchema(stock: BranchStock) {
       toBranch: z.string().min(1),
       productId: z.string().min(1, "Choose a product"),
       quantity: z.string().trim(),
+      note: z.string().max(500, "Keep the note under 500 characters"),
     })
     .superRefine((values, ctx) => {
       if (values.toBranch === values.fromBranch) {
@@ -80,8 +83,7 @@ function createTransferSchema(stock: BranchStock) {
 }
 
 // Creates a *pending* transfer; stock moves when it's marked Completed in the
-// Transfers list (two-step flow, decided 2026-10-08). The backend has no
-// reason/note field on transfers, so the form doesn't ask for one.
+// Transfers list (two-step flow, decided 2026-10-08).
 export default function StockTransferModal({
   products,
   branchOptions,
@@ -103,6 +105,7 @@ export default function StockTransferModal({
       toBranch: defaultTo,
       productId: products[0] ? String(products[0].id) : "",
       quantity: "",
+      note: "",
     },
   });
 
@@ -121,6 +124,7 @@ export default function StockTransferModal({
       toBranch: Number(data.toBranch),
       productId: Number(data.productId),
       quantity,
+      note: data.note.trim(),
     });
   };
 
@@ -168,6 +172,14 @@ export default function StockTransferModal({
         label="Transfer qty"
         type="number"
         placeholder="e.g. 5"
+        className={LEDGER_LABEL_CLASS}
+        inputClassName={LEDGER_FIELD_CLASS}
+      />
+      <FormInput
+        control={form.control}
+        path="note"
+        label="Note (optional)"
+        placeholder="e.g. Restock North Market for the weekend"
         className={LEDGER_LABEL_CLASS}
         inputClassName={LEDGER_FIELD_CLASS}
       />

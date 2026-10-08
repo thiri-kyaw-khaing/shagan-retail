@@ -4,12 +4,10 @@ import { TriangleAlert } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
-const alerts = [
-  { product: "Canned Fish", quantity: 8 },
-  { product: "Washing Powder", quantity: 6 },
-];
+export type StockAlert = { product: string; quantity: number };
 
-export function StockAlertsCard() {
+/** Low-stock products at this till's branch. */
+export function StockAlertsCard({ alerts }: { alerts: StockAlert[] }) {
   const { t } = useTranslation();
 
   return (
@@ -22,10 +20,11 @@ export function StockAlertsCard() {
       </CardHeader>
 
       <CardContent>
+        {alerts.length === 0 && <p className="py-4 text-slate-400">Nothing running low.</p>}
         <ul>
           {alerts.map((alert, index) => (
             <li
-              key={alert.product}
+              key={`${alert.product}-${index}`}
               className={`flex items-center justify-between py-4 ${
                 index < alerts.length - 1 ? "border-b" : ""
               }`}

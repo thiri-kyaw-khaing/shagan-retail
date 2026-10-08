@@ -29,7 +29,11 @@ export default function NumPad({
     if (disabled) return;
     if (k === "⌫") return onChange(value.slice(0, -1));
     if (k === "CLR") return onChange("");
-    if (mode === "pin" && value.length >= (maxPin ?? 6)) return;
+    if (mode === "pin") {
+      // PIN digits are a code, not an amount: a leading 0 is kept ("012345").
+      if (value.length < (maxPin ?? 6) && /^\d$/.test(k)) onChange(value + k);
+      return;
+    }
     if (k === "00")
       return onChange(
         value && value !== "0" ? value + "00" : value ? value : "0",

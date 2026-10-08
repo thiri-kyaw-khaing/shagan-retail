@@ -7,10 +7,6 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { usePos } from "@/components/custom/common/pos/pos-context";
 
-type ShiftHeaderNavProps = {
-  heldCount?: number;
-};
-
 const NAV_ITEMS = [
   { id: "sell", href: "/pos/sell", labelKey: "nav.sell", icon: ShoppingCart },
   { id: "held", href: "/pos/held", labelKey: "nav.held", icon: Pause },
@@ -22,8 +18,9 @@ const NAV_ITEMS = [
   },
 ] as const;
 
-export default function ShiftHeaderNav({ heldCount = 0 }: ShiftHeaderNavProps) {
+export default function ShiftHeaderNav() {
   const { heldSales } = usePos();
+  const heldCount = heldSales.length;
 
   const pathname = usePathname();
   const { t } = useTranslation();

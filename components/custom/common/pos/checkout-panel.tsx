@@ -23,11 +23,14 @@ export default function CheckoutPanel({
   cart,
   subtotal,
   discountAmount,
+  tax,
   total,
   locale,
   customer,
+  customers,
   onChangeCustomer,
   appliedDiscountPercent,
+  discountNeedsApproval,
   isDiscountPanelOpen,
   discountPercentInput,
   onDiscountInputChange,
@@ -63,6 +66,7 @@ export default function CheckoutPanel({
 
         <ChooseCustomerDialog
           isOpen={isCustomerDialogOpen}
+          customers={customers}
           onClose={() => setIsCustomerDialogOpen(false)}
           onSelect={onChangeCustomer}
         />
@@ -108,13 +112,25 @@ export default function CheckoutPanel({
             <span>{t("sell.subtotal")}</span>
             <span>{formatCurrency(subtotal, locale)}</span>
           </div>
-          {appliedDiscountPercent > 0 && (
+          {discountAmount > 0 && (
             <div className="flex justify-between text-rose-600">
               <span>
-                {t("sell.discountPrefix")} ({appliedDiscountPercent}%)
+                {t("sell.discountPrefix")}
+                {appliedDiscountPercent > 0 && ` (${appliedDiscountPercent}%)`}
               </span>
               <span>− {formatCurrency(discountAmount, locale)}</span>
             </div>
+          )}
+          {tax > 0 && (
+            <div className="flex justify-between text-slate-600">
+              <span>Tax</span>
+              <span>+ {formatCurrency(tax, locale)}</span>
+            </div>
+          )}
+          {discountNeedsApproval && (
+            <p className="text-xs text-amber-700">
+              This sale has a discount - a manager approves it at payment.
+            </p>
           )}
           <div className="flex justify-between border-t pt-3 text-xl font-bold">
             <span>{t("sell.total")}</span>

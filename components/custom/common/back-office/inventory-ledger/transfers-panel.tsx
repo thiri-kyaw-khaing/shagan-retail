@@ -58,6 +58,10 @@ export default function TransfersPanel({ transfers, onAction }: TransfersPanelPr
                 {STATUS_LABEL[transfer.status]}
               </span>
               <span className="text-xs text-ink-muted">{transfer.createdAtLabel}</span>
+              <span className="w-full text-xs text-ink-muted sm:w-auto">
+                {transfer.itemsLabel}
+                {transfer.note && ` · ${transfer.note}`}
+              </span>
             </div>
             <div className="flex gap-2">
               {transfer.status === "pending" && (

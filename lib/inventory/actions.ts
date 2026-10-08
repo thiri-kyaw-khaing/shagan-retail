@@ -31,6 +31,7 @@ export async function createTransferAction(input: {
   toBranch: number;
   productId: number;
   quantity: number;
+  note: string;
 }) {
   return mutate("/stock-transfers", {
     method: "POST",
@@ -38,6 +39,7 @@ export async function createTransferAction(input: {
       from_branch: input.fromBranch,
       to_branch: input.toBranch,
       items: [{ product_id: input.productId, qty: input.quantity }],
+      ...(input.note ? { note: input.note } : {}),
     },
   });
 }

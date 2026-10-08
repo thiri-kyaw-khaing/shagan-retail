@@ -15,6 +15,8 @@ export type ApiSession = {
   access_token: string;
   refresh_token: string;
   expires_at: string;
+  access_expires_at: string;
+  account_type: AccountType;
 };
 
 /** `GET /me`. The backend also sends `credential_hash`; server code strips it. */
@@ -142,7 +144,7 @@ export type ApiPurchaseOrderDetail = ApiPurchaseOrder & {
 
 export type ApiSaleStatus = "open" | "completed" | "voided" | "refunded";
 
-/** `GET /sales` - no items or payments (those come from `/sales/:id/receipt`). */
+/** A sale row. Items and payment amounts come from `/sales/:id/receipt`. */
 export type ApiSale = {
   id: string;
   org_id: number;
@@ -158,6 +160,14 @@ export type ApiSale = {
   status: ApiSaleStatus;
   completed_at: string | null;
   synced_at: string | null;
+};
+
+/** `GET /sales` - newest first, paginated. */
+export type ApiSalesPage = {
+  sales: (ApiSale & { payment_methods: ("cash" | "qr")[] })[];
+  page: number;
+  page_size: number;
+  total_count: number;
 };
 
 export type ApiSaleItem = {
@@ -185,14 +195,18 @@ export type ApiPayment = {
 
 export type ApiReceipt = { sale: ApiSale; items: ApiSaleItem[]; payments: ApiPayment[] };
 
-/** `date` is a calendar date sent as midnight UTC, e.g. "2026-10-08T00:00:00Z". `created_by` is a staff id. */
+/**
+ * `date` is a calendar date, serialized as midnight UTC (e.g. "2026-10-08T00:00:00Z").
+ * Exactly one of `created_by` (staff id) / `created_by_user_id` (owner) is set.
+ */
 export type ApiExpense = {
   id: number;
   branch_id: number;
   date: string;
   category: string;
   amount: Decimal;
-  created_by: number;
+  created_by: number | null;
+  created_by_user_id: number | null;
 };
 
 export type ApiLedgerType =
@@ -237,6 +251,8 @@ export type ApiAuditLog = {
   id: number;
   org_id: number;
   actor_id: number | null;
+  /** Set instead of actor_id when an org user (the owner) acted directly. */
+  actor_user_id: number | null;
   branch_id: number | null;
   entity: string;
   entity_id: string;
@@ -246,17 +262,18 @@ export type ApiAuditLog = {
   created_at: string;
 };
 
-/** `GET /combos` - the backend does not return the combo's items (backend recommendation #3). */
+/** `GET /combos` (and `/sync/catalog`). Create/update responses omit items. */
 export type ApiCombo = {
   id: number;
   org_id: number;
   name: string;
   price: Decimal;
   expires_at: string;
+  items: { product_id: number; qty: number }[];
   images: ApiProductImage[];
 };
 
-// --- Reports. All windows are UTC days (backend recommendation #9). ---
+// --- Reports. Days, hours and windows are in the org's timezone. ---
 
 export type ApiSalesTotals = {
   gross_sales: Decimal;
@@ -284,7 +301,7 @@ export type ApiProductRevenue = {
 export type ApiHomeSummary = ApiSalesTotals & { low_stock_count: number };
 
 export type ApiTodayReport = ApiSalesTotals & {
-  /** "HH:00" in UTC; only hours that had sales. */
+  /** "HH:00" in business time; only hours that had sales. */
   hourly_trend: { hour: string; net_sales: Decimal }[];
   payment_methods: ApiPaymentMethodBreakdown[];
   top_products: ApiProductRevenue[];
@@ -306,6 +323,7 @@ export type ApiTransactions = {
     total: Decimal;
     status: ApiSaleStatus;
     completed_at: string;
+    payment_methods: ("cash" | "qr")[];
   }[];
   page: number;
   page_size: number;
@@ -320,14 +338,15 @@ export type ApiSalesSummary = ApiSalesTotals & {
 
 export type ApiTransferStatus = "pending" | "in_transit" | "completed" | "cancelled";
 
-/** `GET /stock-transfers` - the backend doesn't return the items (backend recommendation #15). */
 export type ApiStockTransfer = {
   id: number;
   from_branch: number;
   to_branch: number;
   status: ApiTransferStatus;
   actor_id: number | null;
+  note: string;
   created_at: string;
+  items: { product_id: number; qty: number }[];
 };
 
 /** `GET /receipt-settings` - a branch's own row, or the org default (`is_global`). */
@@ -350,4 +369,63 @@ export type ApiPaymentQrCode = {
   is_active: boolean;
   created_at: string;
   image_url: string;
+};
+
+// --- POS till ---
+
+export type ApiShift = {
+  id: number;
+  branch_id: number;
+  staff_id: number;
+  device_id: number;
+  opened_at: string;
+  opening_cash: Decimal;
+  closed_at: string | null;
+  closed_by_staff_id: number | null;
+  status: "open" | "closed";
+};
+
+/** `GET /shifts/:id/summary`. `expected_cash` = opening cash + cash payment amounts (change excluded). */
+export type ApiShiftSummary = {
+  shift: ApiShift;
+  sales_count: number;
+  sales_total: Decimal;
+  /** Keyed by method; a method with no payments is absent. */
+  payment_totals: Partial<Record<"cash" | "qr", Decimal>>;
+  expected_cash: Decimal;
+};
+
+/** `POST /staff/:id/pin/verify` and `/manager-pin/verify`. `token` goes in X-Staff-Token / X-Manager-Approval-Token. */
+export type ApiPinVerifyResult = {
+  staff: ApiStaff;
+  token: string;
+  expires_at: string;
+};
+
+export type ApiCreateSaleItem = {
+  product_id: number;
+  name_snapshot: string;
+  unit_price: Decimal;
+  qty: number;
+  /** Line total discount (not per unit). */
+  discount: Decimal;
+  /** Line total tax (not per unit). */
+  tax: Decimal;
+};
+
+export type ApiCreatePayment = {
+  method: "cash" | "qr";
+  amount: Decimal;
+  amount_received: Decimal;
+  change_given: Decimal;
+};
+
+/** `POST /sales`. `id` is client-generated; resending the same id from this till returns the original sale. */
+export type ApiCreateSale = {
+  id: string;
+  shift_id: number;
+  device_id: number;
+  customer_id: number | null;
+  items: ApiCreateSaleItem[];
+  payments: ApiCreatePayment[];
 };

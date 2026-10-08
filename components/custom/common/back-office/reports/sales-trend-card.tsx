@@ -54,11 +54,10 @@ export default function SalesTrendCard({
   const showValues = buckets.length <= MAX_LABELLED_BUCKETS;
 
   const useWeekdays = view === "daily" && getRangeDays(range) <= 7;
-  // Hourly buckets are UTC hours, i.e. half past the hour in Myanmar time, so
-  // show minutes. Pinned to the business zone so server and browser agree.
+  // Pinned to the business zone so server and browser agree.
   const formatter = new Intl.DateTimeFormat(toBcp47(locale), {
     ...(view === "hourly"
-      ? { hour: "numeric", minute: "2-digit" }
+      ? { hour: "numeric" }
       : useWeekdays
         ? { weekday: "short" }
         : { day: "numeric", month: "short" }),

@@ -1,31 +1,26 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { useEffect, useState } from "react";
-import ShiftHeader from "@/components/custom/common/pos/shift-header";
-import { useLocale } from "@/lib/i18n/locale-context";
-import { formatTime } from "@/lib/i18n/format";
-import { PosProvider } from "@/components/custom/common/pos/pos-context";
+import ShiftShell from "@/components/custom/common/pos/shift-shell";
+import { requireTill } from "@/lib/pos/till-context";
 
-function ShiftLayout({ children }: { children: React.ReactNode }) {
-  const { locale } = useLocale();
-  const [now, setNow] = useState(() => new Date());
-
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
+// Every screen in this group needs a signed-in cashier with their own open
+// shift on this till.
+export default async function ShiftLayout({ children }: { children: React.ReactNode }) {
+  const till = await requireTill();
+  if (!till.shift) redirect("/pos/open-shift");
 
   return (
-    <PosProvider>
-      <div className="min-h-dvh bg-page">
-        <ShiftHeader
-          branchName="Main Street Branch"
-          time={formatTime(now, locale)}
-        />
-        {children}
-      </div>
-    </PosProvider>
+    <ShiftShell
+      till={{
+        shiftId: till.shift.id,
+        deviceId: till.deviceId,
+        branchId: till.branch.id,
+        branchName: till.branch.name,
+        staffName: till.staff.name,
+        canApplyDiscount: till.staff.permissions.includes("apply_manual_discount"),
+      }}
+    >
+      {children}
+    </ShiftShell>
   );
 }
-
-export default ShiftLayout;

@@ -1,9 +1,9 @@
 import AvatarInitials from "@/components/custom/common/avatar-initials";
-import type { Customer } from "@/lib/types/model/customers";
+import type { CustomerRow } from "@/lib/types/model/customers";
 
 type CustomerListItemProps = {
-  customer: Customer;
-  onSelect: (customer: Customer) => void;
+  customer: CustomerRow;
+  onSelect: (customer: CustomerRow) => void;
 };
 
 export default function CustomerListItem({

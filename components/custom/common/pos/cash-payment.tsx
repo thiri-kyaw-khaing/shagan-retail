@@ -10,6 +10,7 @@ import { formatCurrency } from "@/lib/i18n/format";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import type { CashPaymentProps } from "@/lib/types/model/payment";
 import { cn } from "@/lib/utils";
+import { useCustomerLabel } from "@/components/custom/common/pos/pos-context";
 
 export default function CashPayment({
   totalDue,
@@ -24,6 +25,7 @@ export default function CashPayment({
   onContinue,
 }: CashPaymentProps) {
   const { t } = useTranslation();
+  const customerLabel = useCustomerLabel(t("sell.walkIn"));
   const isShort = cashInput !== "" && !hasEnoughCash;
 
   return (
@@ -36,7 +38,7 @@ export default function CashPayment({
           />
           <p className="mt-2 text-sm text-slate-500">
             {t("payment.customerPrefix")}{" "}
-            <strong className="text-slate-900">{t("sell.walkIn")}</strong>
+            <strong className="text-slate-900">{customerLabel}</strong>
           </p>
         </div>
         <div className="text-right">

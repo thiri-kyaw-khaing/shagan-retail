@@ -10,15 +10,12 @@ import { PaymentMethodButton } from "@/components/custom/common/pos/payment-meth
 import QrBankPanel from "@/components/custom/common/pos/qr-bank-panel";
 import { formatCurrency } from "@/lib/i18n/format";
 import { useTranslation } from "@/lib/i18n/use-translation";
-import type { SplitPaymentProps } from "@/lib/types/model/payment";
-import { qrCodes, resolveSelectedQr } from "@/lib/types/model/qr-codes";
+import type { SplitLine, SplitPaymentProps } from "@/lib/types/model/payment";
+import { resolveSelectedQr } from "@/lib/types/model/qr-codes";
 import { cn } from "@/lib/utils";
+import { useCustomerLabel } from "@/components/custom/common/pos/pos-context";
 
-type PaymentLine = {
-  method: "cash" | "qr";
-  amount: number;
-  bankName?: string;
-};
+type PaymentLine = SplitLine;
 
 type TenderMethod = "cash" | "qr";
 
@@ -28,8 +25,10 @@ export default function SplitPayment({
   onBack,
   onSelectMethod,
   onCompleteSale,
+  qrCodes,
 }: SplitPaymentProps) {
   const { t } = useTranslation();
+  const customerLabel = useCustomerLabel(t("sell.walkIn"));
   const [paymentLines, setPaymentLines] = useState<PaymentLine[]>([]);
   const [activeTender, setActiveTender] = useState<TenderMethod | null>(null);
   const [cashInput, setCashInput] = useState("");
@@ -57,7 +56,6 @@ export default function SplitPayment({
 
     const amount = activeTender === "cash" ? cashAmount : remainingAmount;
     const bankName = activeTender === "qr" ? selectedQr?.bankName : undefined;
-    console.log("Payment - split line added:", activeTender, amount, bankName);
     setPaymentLines((current) => [
       ...current,
       { method: activeTender, amount, bankName },
@@ -78,7 +76,7 @@ export default function SplitPayment({
           />
           <p className="mt-3 text-sm text-slate-500">
             {t("payment.customerPrefix")}{" "}
-            <strong className="text-slate-900">{t("sell.walkIn")}</strong>
+            <strong className="text-slate-900">{customerLabel}</strong>
           </p>
           <p className="mt-1 text-sm text-slate-500">
             {t("payment.choosePaymentMethod")}
@@ -219,7 +217,7 @@ export default function SplitPayment({
 
       <CustomButton
         label={t("payment.completeSale")}
-        onClick={onCompleteSale}
+        onClick={() => onCompleteSale(paymentLines)}
         disabled={!isComplete}
         className="mt-5 min-h-14 w-full bg-brand text-lg font-bold text-white hover:bg-brand/90 disabled:bg-rose-200"
       />

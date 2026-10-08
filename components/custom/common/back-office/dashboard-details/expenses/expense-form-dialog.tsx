@@ -3,6 +3,7 @@
 import { useForm, useWatch } from "react-hook-form";
 
 import CustomButton from "@/components/custom/common/custom-button";
+import FormError from "@/components/custom/common/forms/form-error";
 import FormInput from "@/components/custom/common/forms/form-input";
 import {
   Dialog,
@@ -22,6 +23,8 @@ type ExpenseFormDialogProps = {
   values: ExpenseFormValues;
   onClose: () => void;
   onSave: (values: ExpenseFormValues) => void;
+  pending?: boolean;
+  error?: string | null;
 };
 
 const LABEL_CLASS = "text-xs font-bold tracking-wide text-slate-500 uppercase";
@@ -33,13 +36,15 @@ export default function ExpenseFormDialog({
   values,
   onClose,
   onSave,
+  pending = false,
+  error,
 }: ExpenseFormDialogProps) {
   const form = useForm<ExpenseFormValues>({ defaultValues: values });
   const [category, amount] = useWatch({
     control: form.control,
     name: ["category", "amount"],
   });
-  const canSubmit = category.trim().length > 0 && Number(amount) > 0;
+  const canSubmit = !pending && category.trim().length > 0 && Number(amount) > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -70,6 +75,8 @@ export default function ExpenseFormDialog({
               inputClassName={INPUT_CLASS}
             />
 
+            <FormError message={error} />
+
             <DialogFooter className="mt-2 flex-row justify-end gap-3">
               <CustomButton
                 label="Cancel"
@@ -77,7 +84,7 @@ export default function ExpenseFormDialog({
                 className="min-h-11 bg-slate-100 px-5 font-semibold text-ink shadow-none hover:bg-slate-200"
               />
               <CustomButton
-                label="Save"
+                label={pending ? "Saving..." : "Save"}
                 type="submit"
                 disabled={!canSubmit}
                 className={cn(

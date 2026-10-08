@@ -25,13 +25,16 @@ import type {
   ApiProductRevenue,
   ApiPurchaseOrder,
   ApiPaymentQrCode,
+  ApiPinVerifyResult,
   ApiPurchaseOrderDetail,
   ApiReceiptSettings,
   ApiReceipt,
   ApiRole,
-  ApiSale,
+  ApiSalesPage,
   ApiSalesSummary,
   ApiSalesTrend,
+  ApiShift,
+  ApiShiftSummary,
   ApiStaff,
   ApiStockLevel,
   ApiStockTransfer,
@@ -41,14 +44,31 @@ import type {
   ApiUser,
 } from "@/lib/api/types";
 
-async function authed<T>(path: string, init?: Parameters<typeof callBackend>[1]): Promise<T> {
+/** A 401 about the cashier's X-Staff-Token, not the device's login. */
+export function isStaffTokenError(err: unknown): boolean {
+  return err instanceof ApiError && err.status === 401 && /staff token/i.test(err.message);
+}
+
+/**
+ * `pinCheck`: the 401 means "wrong PIN", not a dead device session, so it's
+ * passed to the caller instead of sending the till back to login.
+ */
+async function authed<T>(
+  path: string,
+  init?: Parameters<typeof callBackend>[1],
+  { pinCheck = false }: { pinCheck?: boolean } = {},
+): Promise<T> {
   const accessToken = (await cookies()).get(ACCESS_COOKIE)?.value;
   if (!accessToken) redirect("/login");
   try {
     return await callBackend<T>(path, { ...init, accessToken });
   } catch (err) {
-    // Refresh failed or the session was revoked server-side.
-    if (err instanceof ApiError && err.status === 401) redirect("/login");
+    // A rejected staff token only ends the cashier's sign-in - callers send
+    // them back to the PIN screen. Any other 401 means the device session
+    // itself was refused or revoked.
+    if (err instanceof ApiError && err.status === 401 && !pinCheck && !isStaffTokenError(err)) {
+      redirect("/login");
+    }
     throw err;
   }
 }
@@ -69,17 +89,26 @@ function messageFor(err: unknown): string {
   return "Can't reach the server. Check your connection and try again.";
 }
 
-type MutateInit = { method: "POST" | "PUT" | "PATCH" | "DELETE"; json?: unknown; form?: FormData };
+type MutateInit = {
+  method: "POST" | "PUT" | "PATCH" | "DELETE";
+  json?: unknown;
+  form?: FormData;
+  /** Extra headers, e.g. X-Staff-Token / X-Manager-Approval-Token at the till. */
+  headers?: Record<string, string>;
+};
 
 /**
  * A write for a Server Function: on success re-renders the current route with
  * fresh data (all reads here are uncached); on failure returns the message
  * instead of throwing.
  */
-export async function mutate<T = undefined>(path: string, { method, json, form }: MutateInit): Promise<ActionResult<T>> {
+export async function mutate<T = undefined>(
+  path: string,
+  { method, json, form, headers }: MutateInit,
+): Promise<ActionResult<T>> {
   try {
     // A multipart body: fetch sets the Content-Type boundary itself.
-    const data = await authed<T>(path, { method, json, body: form });
+    const data = await authed<T>(path, { method, json, body: form, headers });
     refresh();
     return { ok: true, data };
   } catch (err) {
@@ -107,7 +136,7 @@ function withQuery(path: string, query: Query = {}) {
  * token's own branch always wins server-side.
  */
 type BranchScope = { branchId: number | null };
-/** Inclusive "YYYY-MM-DD" bounds, interpreted by the backend as UTC days. */
+/** Inclusive "YYYY-MM-DD" bounds, interpreted by the backend as org-local days. */
 type DateWindow = BranchScope & { from: string; to: string };
 
 const scoped = ({ branchId }: BranchScope) => ({ branch_id: branchId });
@@ -133,8 +162,19 @@ export const api = {
   purchaseOrders: () => authed<ApiPurchaseOrder[]>("/purchase-orders"),
   purchaseOrder: (id: number) => authed<ApiPurchaseOrderDetail>(`/purchase-orders/${id}`),
 
-  // Sales. /sales and /expenses ignore ?branch_id and return the whole org.
-  sales: () => authed<ApiSale[]>("/sales"),
+  // Sales. A POS token is always scoped to its own branch. /expenses ignores
+  // ?branch_id and returns the whole org.
+  /** Newest first; page_size is capped at 100. from/to are org-local days. */
+  sales: (query: BranchScope & { page?: number; pageSize?: number; from?: string; to?: string }) =>
+    authed<ApiSalesPage>(
+      withQuery("/sales", {
+        branch_id: query.branchId,
+        page: query.page ?? 1,
+        page_size: query.pageSize ?? 100,
+        from: query.from,
+        to: query.to,
+      }),
+    ),
   receipt: (saleId: string) => authed<ApiReceipt>(`/sales/${saleId}/receipt`),
   expenses: () => authed<ApiExpense[]>("/expenses"),
 
@@ -164,6 +204,36 @@ export const api = {
   },
   paymentQrCodes: (branchId: number) =>
     authed<ApiPaymentQrCode[]>(`/branches/${branchId}/payment-qr-codes`),
+
+  // --- POS till ---
+
+  /** The device's open shift, or null (404) if none is open. POS tokens only. */
+  currentShift: async () => {
+    try {
+      return await authed<ApiShift>("/shifts/current");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) return null;
+      throw err;
+    }
+  },
+  shiftSummary: (id: number) => authed<ApiShiftSummary>(`/shifts/${id}/summary`),
+  /** Throws ApiError: 401 wrong PIN (or staff not at this branch), 429 locked out. */
+  verifyStaffPin: (staffId: number, pin: string) =>
+    authed<ApiPinVerifyResult>(
+      `/staff/${staffId}/pin/verify`,
+      { method: "POST", json: { pin } },
+      { pinCheck: true },
+    ),
+  /** A 2-minute single-action approval token if the staff's role grants `permission`. */
+  verifyManagerPin: (staffId: number, pin: string, permission: string) =>
+    authed<ApiPinVerifyResult>(
+      `/staff/${staffId}/manager-pin/verify`,
+      { method: "POST", json: { pin, permission } },
+      { pinCheck: true },
+    ),
+  /** Staff whose role grants `permission` at a branch - the approver picker. */
+  approvers: (branchId: number, permission: string) =>
+    authed<ApiStaff[]>(withQuery(`/branches/${branchId}/managers`, { permission })),
 
   /** Newest first. */
   auditLog: (scope: BranchScope) => authed<ApiAuditLog[]>(withQuery("/audit-log", scoped(scope))),

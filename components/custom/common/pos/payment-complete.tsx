@@ -7,6 +7,7 @@ import CustomButton from "@/components/custom/common/custom-button";
 import { formatCurrency } from "@/lib/i18n/format";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import type { PaymentCompleteProps } from "@/lib/types/model/payment";
+import { useCustomerLabel } from "@/components/custom/common/pos/pos-context";
 
 export default function PaymentComplete({
   totalDue,
@@ -17,6 +18,7 @@ export default function PaymentComplete({
   onComplete,
 }: PaymentCompleteProps) {
   const { t } = useTranslation();
+  const customerLabel = useCustomerLabel(t("sell.walkIn"));
 
   return (
     <div className="p-5 sm:p-6">
@@ -28,7 +30,7 @@ export default function PaymentComplete({
           />
           <p className="mt-2 text-sm text-slate-500">
             {t("payment.customerPrefix")}{" "}
-            <strong className="text-slate-900">{t("sell.walkIn")}</strong>
+            <strong className="text-slate-900">{customerLabel}</strong>
           </p>
           <p className="mt-1 text-sm text-slate-500">
             {t("payment.giveChangeToCustomer")}

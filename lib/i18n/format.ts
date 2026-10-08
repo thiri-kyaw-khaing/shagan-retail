@@ -6,6 +6,12 @@ import { toBcp47, type Locale } from "./config";
  * the same time, and every till and the Back Office agree on what "8 Oct" is.
  */
 export const BUSINESS_TIME_ZONE = "Asia/Yangon";
+/**
+ * Its fixed UTC offset (Myanmar has no daylight saving), for turning the
+ * backend's local "YYYY-MM-DD" / "HH:00" report labels into instants. The org
+ * timezone isn't exposed to tenant endpoints, so it's pinned here too.
+ */
+export const BUSINESS_UTC_OFFSET = "+06:30";
 
 export function formatDate(date: Date, locale: Locale): string {
   return new Intl.DateTimeFormat(toBcp47(locale), {

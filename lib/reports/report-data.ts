@@ -2,7 +2,8 @@
 // responses into the view-models the report components render.
 import "server-only";
 
-import { decimalToNumber, nameById, shiftDay, utcToday } from "@/lib/api/mappers";
+import { businessToday, decimalToNumber, nameById, shiftDay } from "@/lib/api/mappers";
+import { BUSINESS_UTC_OFFSET } from "@/lib/i18n/format";
 import { api } from "@/lib/api/server";
 import type {
   ApiPaymentMethodBreakdown,
@@ -58,11 +59,11 @@ const one = (value: string | string[] | undefined) => (Array.isArray(value) ? va
 
 /**
  * Resolves the URL's search params into a valid query. Presets are computed
- * against today's UTC date - the same day boundaries the backend reports use
- * (backend recommendation #9). Invalid or missing values fall back to today.
+ * against today's business-time date - the same day boundaries the backend's
+ * reports use. Invalid or missing values fall back to today.
  */
 export function parseReportQuery(params: Record<string, string | string[] | undefined>): ReportQuery {
-  const today = utcToday();
+  const today = businessToday();
   const anchor = parseDateInput(today)!;
   const tab: ReportTab = one(params.tab) === "products" ? "products" : "summary";
 
@@ -112,7 +113,7 @@ function toPaymentRows(methods: ApiPaymentMethodBreakdown[]): PaymentBreakdownRo
   });
 }
 
-/** Monday of the UTC week containing `day` - the backend's weekly bucket start. */
+/** Monday of the week containing `day` - the backend's weekly bucket start. Pure date math. */
 function weekStart(day: string): string {
   const weekday = new Date(`${day}T00:00:00Z`).getUTCDay();
   return shiftDay(day, -((weekday + 6) % 7));
@@ -124,12 +125,12 @@ function toPeriodBuckets(trend: ApiSalesTrend, query: ReportQuery): TrendBucket[
   const step = query.view === "weekly" ? 7 : 1;
   const buckets: TrendBucket[] = [];
   for (let day = step === 7 ? weekStart(query.from) : query.from; day <= query.to; day = shiftDay(day, step)) {
-    buckets.push({ start: `${day}T00:00:00Z`, value: values.get(day) ?? 0 });
+    buckets.push({ start: `${day}T00:00:00${BUSINESS_UTC_OFFSET}`, value: values.get(day) ?? 0 });
   }
   return buckets;
 }
 
-/** UTC hours from the first to the last hour with sales. */
+/** Local hours from the first to the last hour with sales. */
 function toHourlyBuckets(report: ApiTodayReport, today: string): TrendBucket[] {
   const values = new Map(report.hourly_trend.map((h) => [Number(h.hour.slice(0, 2)), decimalToNumber(h.net_sales)]));
   if (values.size === 0) return [];
@@ -137,7 +138,7 @@ function toHourlyBuckets(report: ApiTodayReport, today: string): TrendBucket[] {
   const buckets: TrendBucket[] = [];
   for (let hour = Math.min(...hours); hour <= Math.max(...hours); hour++) {
     buckets.push({
-      start: `${today}T${String(hour).padStart(2, "0")}:00:00Z`,
+      start: `${today}T${String(hour).padStart(2, "0")}:00:00${BUSINESS_UTC_OFFSET}`,
       value: values.get(hour) ?? 0,
     });
   }
@@ -146,7 +147,7 @@ function toHourlyBuckets(report: ApiTodayReport, today: string): TrendBucket[] {
 
 export async function loadReportData(query: ReportQuery, branchId: number | null): Promise<ReportData> {
   const window = { branchId, from: query.from, to: query.to };
-  const today = utcToday();
+  const today = businessToday();
   const hourly = query.view === "hourly";
 
   const [summary, trend, todayReport, transactions, productSales, staff] = await Promise.all([

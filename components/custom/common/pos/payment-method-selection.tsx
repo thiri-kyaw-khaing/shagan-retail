@@ -11,6 +11,7 @@ import type {
   PaymentMethodButtonProps,
   PaymentMethodSelectionProps,
 } from "@/lib/types/model/payment";
+import { useCustomerLabel } from "@/components/custom/common/pos/pos-context";
 
 export default function PaymentMethodSelection({
   totalDue,
@@ -18,6 +19,7 @@ export default function PaymentMethodSelection({
   onSelect,
 }: PaymentMethodSelectionProps) {
   const { t } = useTranslation();
+  const customerLabel = useCustomerLabel(t("sell.walkIn"));
 
   return (
     <>
@@ -29,7 +31,7 @@ export default function PaymentMethodSelection({
           />
           <p className="mt-3 text-sm text-slate-500">
             {t("payment.customerPrefix")}{" "}
-            <strong className="text-slate-900">{t("sell.walkIn")}</strong>
+            <strong className="text-slate-900">{customerLabel}</strong>
           </p>
           <p className="mt-1 text-sm text-slate-500">
             {t("payment.choosePaymentMethod")}

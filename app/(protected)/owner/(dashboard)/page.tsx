@@ -3,7 +3,7 @@ import ChooseSectionActions from "@/components/custom/common/back-office/choose-
 import CurrentBranchCard from "@/components/custom/common/back-office/current-branch-card";
 import DashboardSummaryPreview from "@/components/custom/common/back-office/dashboard-summary-preview";
 import SectionCardGrid from "@/components/custom/common/back-office/section-card-grid";
-import { decimalToNumber, expensesTotalOn, utcToday } from "@/lib/api/mappers";
+import { decimalToNumber, expensesTotalOn, businessToday } from "@/lib/api/mappers";
 import { api } from "@/lib/api/server";
 import { getBranchSelection } from "@/lib/branch/selected-branch";
 
@@ -27,7 +27,7 @@ async function BackOffice() {
           salesToday={summary.transaction_count}
           revenue={decimalToNumber(summary.net_sales)}
           lowStockCount={summary.low_stock_count}
-          expensesToday={expensesTotalOn(expenses, utcToday(), branchId)}
+          expensesToday={expensesTotalOn(expenses, businessToday(), branchId)}
         />
         <SectionCardGrid />
       </div>

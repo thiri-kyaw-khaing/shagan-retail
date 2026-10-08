@@ -10,7 +10,7 @@ import {
   REFRESH_COOKIE,
   writeSessionCookies,
 } from "@/lib/api/session";
-import type { AccountType, ApiSession, ApiUser } from "@/lib/api/types";
+import type { AccountType, ApiSession } from "@/lib/api/types";
 
 /** Where each account type lands after login (WORKFLOWS §3: owner has no PIN gate). */
 const HOME: Record<AccountType, string> = {
@@ -23,14 +23,11 @@ export type LoginResult = { error: "invalid_credentials" | "unavailable" };
 
 export async function loginAction(email: string, password: string): Promise<LoginResult> {
   let session: ApiSession;
-  let user: ApiUser;
   try {
     session = await callBackend<ApiSession>("/auth/login", {
       method: "POST",
       json: { email, password },
     });
-    // The login response has no account_type, so ask /me where to route.
-    user = await callBackend<ApiUser>("/me", { accessToken: session.access_token });
   } catch (err) {
     // The backend answers 401 for a wrong password AND for a suspended user/org.
     if (err instanceof ApiError && err.status === 401) return { error: "invalid_credentials" };
@@ -38,8 +35,8 @@ export async function loginAction(email: string, password: string): Promise<Logi
     return { error: "unavailable" };
   }
 
-  writeSessionCookies(await cookies(), session, user.account_type);
-  redirect(HOME[user.account_type]);
+  writeSessionCookies(await cookies(), session, session.account_type);
+  redirect(HOME[session.account_type]);
 }
 
 export async function logoutAction() {

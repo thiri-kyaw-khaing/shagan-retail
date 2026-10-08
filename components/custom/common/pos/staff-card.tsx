@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import AvatarInitials from "@/components/custom/common/avatar-initials";
 import type { Staff } from "@/lib/types/model/staffs";
 
-export default function StaffCard({ staff }: { staff: Staff }) {
+export default function StaffCard({ staff }: { staff: Pick<Staff, "id" | "name" | "role"> }) {
   return (
     <Card className="transition hover:shadow-md">
       <Link href={`/pos/pin?staffId=${staff.id}`} className="block">

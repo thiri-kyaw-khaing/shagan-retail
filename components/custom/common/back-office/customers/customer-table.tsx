@@ -4,10 +4,9 @@ import DataTable, {
   type DataTableColumn,
 } from "@/components/custom/common/back-office/data-table";
 import AvatarInitials from "@/components/custom/common/avatar-initials";
-import type { Customer } from "@/lib/types/model/customers";
+import type { CustomerRow } from "@/lib/types/model/customers";
 
-/** The backend has no email, visit count or lifetime spend (decided 2026-10-06: hide them). */
-export type CustomerRow = Pick<Customer, "id" | "name" | "phone">;
+export type { CustomerRow };
 
 type CustomerTableProps = {
   customers: CustomerRow[];

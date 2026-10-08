@@ -140,4 +140,7 @@ export type SalesHistoryRow = {
   completedOn: string | null;
   status: "open" | "completed" | "voided" | "refunded";
   total: number;
+  method: PaymentMethod;
+  /** Open shift id - a sale can only be voided while its shift is open. */
+  shiftId: number;
 };

@@ -11,24 +11,25 @@ import {
   toMethodTotals,
   toRecentReceipts,
   toRevenueBars,
-  utcToday,
+  businessToday,
 } from "@/lib/api/mappers";
 import { api } from "@/lib/api/server";
 import { getBranchSelection } from "@/lib/branch/selected-branch";
 
-// "Today" is the backend's UTC day everywhere on this page, so the KPIs, the
-// chart and the expense total agree (backend recommendation #9).
+// "Today" is the business-time day everywhere on this page - the same day the
+// backend's reports use - so the KPIs, the chart and the expense total agree.
 export default async function DashboardDetailsPage() {
   const { branches, selected } = await getBranchSelection();
   const branchId = selected?.id ?? null;
-  const today = utcToday();
+  const today = businessToday();
 
-  const [report, trend, lowStock, products, sales, customers, expenses] = await Promise.all([
+  const [report, trend, lowStock, products, recent, customers, expenses] = await Promise.all([
     api.today({ branchId }),
     api.salesTrend({ branchId, from: shiftDay(today, -6), to: today, granularity: "daily" }),
     api.lowStock({ branchId }),
     api.products(),
-    api.sales(),
+    // A few extra so voided ones can be skipped.
+    api.sales({ branchId, pageSize: 10 }),
     api.customers(),
     api.expenses(),
   ]);
@@ -58,9 +59,9 @@ export default async function DashboardDetailsPage() {
             qr: toMethodTotals(report.payment_methods, "qr"),
           }}
           bars={toRevenueBars(trend, today)}
-          receipts={toRecentReceipts(inBranch(sales, branchId), nameById(customers))}
+          receipts={toRecentReceipts(recent.sales, nameById(customers))}
         />
-        <ExpensesSection expenses={branchExpenses} />
+        <ExpensesSection expenses={branchExpenses} branchId={branchId} today={today} />
       </div>
     </main>
   );
