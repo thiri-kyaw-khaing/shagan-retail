@@ -6,9 +6,17 @@ import { PosProvider, type TillInfo } from "@/components/custom/common/pos/pos-c
 import ShiftHeader from "@/components/custom/common/pos/shift-header";
 import { formatTime } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/i18n/locale-context";
+import type { HeldSale } from "@/lib/types/model/heldsale";
+
+type ShiftShellProps = {
+  till: TillInfo;
+  /** This branch's held sales when the shift screens load. */
+  heldSales: HeldSale[];
+  children: ReactNode;
+};
 
 /** The till's chrome during an open shift: live clock, header, and the till state. */
-export default function ShiftShell({ till, children }: { till: TillInfo; children: ReactNode }) {
+export default function ShiftShell({ till, heldSales, children }: ShiftShellProps) {
   const { locale } = useLocale();
   const [now, setNow] = useState(() => new Date());
 
@@ -18,7 +26,7 @@ export default function ShiftShell({ till, children }: { till: TillInfo; childre
   }, []);
 
   return (
-    <PosProvider till={till}>
+    <PosProvider till={till} initialHeldSales={heldSales}>
       <div className="min-h-dvh bg-page">
         <ShiftHeader branchName={till.branchName} time={formatTime(now, locale)} />
         {children}

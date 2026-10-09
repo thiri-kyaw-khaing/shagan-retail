@@ -8,16 +8,20 @@ import {
   getReceiptNumber,
   type Sale,
 } from "@/lib/types/model/sales";
-import { staffs } from "@/lib/types/model/staffs";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
-export default function ReceiptRow({ sale }: { sale: Sale }) {
+type ReceiptRowProps = {
+  sale: Sale;
+  cashierName?: string;
+  customerName?: string;
+};
+
+export default function ReceiptRow({ sale, cashierName, customerName }: ReceiptRowProps) {
   const { t } = useTranslation();
-  const cashier = staffs.find((staff) => staff.id === sale.staffId);
   const customerLabel =
     sale.customerId === null
       ? t("sell.walkIn")
-      : `Customer #${sale.customerId}`;
+      : (customerName ?? `Customer #${sale.customerId}`);
   const isVoided = sale.status === "voided";
   const time = formatSaleTime(sale.completedAt);
 
@@ -39,7 +43,7 @@ export default function ReceiptRow({ sale }: { sale: Sale }) {
 
             <p className="mt-1 truncate text-sm text-ink-muted">
               {customerLabel}
-              {cashier ? ` · ${cashier.name}` : ""}
+              {cashierName ? ` · ${cashierName}` : ""}
               {time ? ` · ${time}` : ""}
             </p>
           </div>

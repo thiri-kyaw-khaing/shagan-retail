@@ -21,7 +21,8 @@ export default async function CloseShiftPage() {
       openingCash={decimalToNumber(summary.shift.opening_cash)}
       cashSales={decimalToNumber(summary.payment_totals.cash ?? "0")}
       qrSales={decimalToNumber(summary.payment_totals.qr ?? "0")}
-      // Opening cash + cash payments (change handed back isn't counted).
+      // Opening cash + cash sales - cash refunds +/- cash exchange differences,
+      // all derived by the backend.
       expectedCash={decimalToNumber(summary.expected_cash)}
     />
   );

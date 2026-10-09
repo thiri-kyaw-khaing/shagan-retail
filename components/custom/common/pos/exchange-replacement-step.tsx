@@ -6,13 +6,14 @@ import CustomButton from "@/components/custom/common/custom-button";
 import ProductSearchBar from "@/components/custom/common/pos/search-bar";
 import ExchangeProductRow from "@/components/custom/common/pos/exchange-product-row";
 import ExchangeAddedItemCard from "@/components/custom/common/pos/exchange-added-item-card";
-import { products } from "@/lib/types/model/product";
 import type { CartItemData } from "@/lib/types/model/cart";
 import type { Product } from "@/lib/types/model/product";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { cn } from "@/lib/utils";
 
 type ExchangeReplacementStepProps = {
+  /** Replacement candidates, priced at what the customer pays per unit. */
+  products: Product[];
   returnedValue: number;
   cart: CartItemData[];
   onAdd: (product: Product) => void;
@@ -23,6 +24,7 @@ type ExchangeReplacementStepProps = {
 };
 
 export default function ExchangeReplacementStep({
+  products,
   returnedValue,
   cart,
   onAdd,
@@ -42,7 +44,7 @@ export default function ExchangeReplacementStep({
         product.isActive &&
         (query === "" || product.name.toLowerCase().includes(query)),
     );
-  }, [search]);
+  }, [products, search]);
 
   return (
     <>

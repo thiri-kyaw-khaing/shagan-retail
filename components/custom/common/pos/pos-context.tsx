@@ -9,6 +9,8 @@ import {
   type SetStateAction,
 } from "react";
 
+import { toHeldSale } from "@/lib/api/mappers";
+import { holdSaleAction, resumeHeldSaleAction, type PosResult } from "@/lib/pos/actions";
 import type { CartItemData } from "@/lib/types/model/cart";
 import type { HeldSale } from "@/lib/types/model/heldsale";
 import type { Product } from "@/lib/types/model/product";
@@ -41,18 +43,28 @@ type PosContextValue = {
   /** Clears the cart, discount and customer for the next sale. */
   resetOrder: () => void;
   heldSales: HeldSale[];
-  holdCurrentCart: (walkInLabel: string) => void;
-  resumeHeldSale: (heldSaleId: number) => boolean;
+  /** Parks the cart on the server and clears it for the next customer. */
+  holdCurrentCart: (walkInLabel: string) => Promise<PosResult>;
+  /** Loads a held sale back into the cart (it's removed from the server). */
+  resumeHeldSale: (heldSaleId: number) => Promise<PosResult>;
 };
 
 const PosContext = createContext<PosContextValue | null>(null);
 
-export function PosProvider({ till, children }: { till: TillInfo; children: ReactNode }) {
+type PosProviderProps = {
+  till: TillInfo;
+  /** This branch's held sales, loaded on the server. */
+  initialHeldSales: HeldSale[];
+  children: ReactNode;
+};
+
+export function PosProvider({ till, initialHeldSales, children }: PosProviderProps) {
   const [cart, setCart] = useState<CartItemData[]>([]);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [customer, setCustomer] = useState<SaleCustomer | null>(null);
-  // Held sales live on this till only for now (backend held-sales: Phase 5).
-  const [heldSales, setHeldSales] = useState<HeldSale[]>([]);
+  // Kept locally after load, so a hold/resume shows at once; the server copy
+  // is what other tills at the branch see.
+  const [heldSales, setHeldSales] = useState<HeldSale[]>(initialHeldSales);
 
   const addToCart = (product: Product) => {
     setCart((currentCart) => {
@@ -110,31 +122,38 @@ export function PosProvider({ till, children }: { till: TillInfo; children: Reac
     setCustomer(null);
   };
 
-  const holdCurrentCart = (walkInLabel: string) => {
-    if (cart.length === 0) return;
+  const holdCurrentCart = async (walkInLabel: string): Promise<PosResult> => {
+    if (cart.length === 0) return { ok: true, data: undefined };
 
-    const heldSale: HeldSale = {
-      id: Date.now(),
-      customerName: customer?.name ?? walkInLabel,
-      customer,
-      items: cart.map((item) => ({ ...item })),
-      discountPercent: discountPercent > 0 ? discountPercent : null,
-      heldAt: Date.now(),
-    };
+    const result = await holdSaleAction({
+      items: { lines: cart, customerName: customer?.name ?? walkInLabel },
+      customerId: customer?.id ?? null,
+      discountPercent,
+    });
+    if (!result.ok) return result;
 
-    setHeldSales((current) => [heldSale, ...current]);
+    const heldSale = toHeldSale(result.data);
+    if (heldSale) setHeldSales((current) => [heldSale, ...current]);
     resetOrder();
+    return { ok: true, data: undefined };
   };
 
-  const resumeHeldSale = (heldSaleId: number) => {
-    const selectedSale = heldSales.find((sale) => sale.id === heldSaleId);
-    if (!selectedSale) return false;
+  const resumeHeldSale = async (heldSaleId: number): Promise<PosResult> => {
+    const result = await resumeHeldSaleAction(heldSaleId);
+    if (!result.ok) {
+      // Gone from the server either way (e.g. resumed on another till).
+      if (!result.signedOut) setHeldSales((current) => current.filter((sale) => sale.id !== heldSaleId));
+      return result;
+    }
+
+    const selectedSale = toHeldSale(result.data);
+    setHeldSales((current) => current.filter((sale) => sale.id !== heldSaleId));
+    if (!selectedSale) return { ok: false, error: "This held sale can't be opened at this till." };
 
     setCart(selectedSale.items.map((item) => ({ ...item })));
     setDiscountPercent(selectedSale.discountPercent ?? 0);
     setCustomer(selectedSale.customer ?? null);
-    setHeldSales((current) => current.filter((sale) => sale.id !== heldSaleId));
-    return true;
+    return { ok: true, data: undefined };
   };
 
   return (

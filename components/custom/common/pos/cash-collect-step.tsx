@@ -27,7 +27,6 @@ export default function CashCollectStep({
   const isShort = cashInput !== "" && !hasEnough;
 
   const handleContinue = () => {
-    console.log("Cash collected:", { amountDue, customerGives, change: difference });
     onContinue();
   };
 

@@ -6,15 +6,18 @@ import { Check } from "lucide-react";
 import CustomButton from "@/components/custom/common/custom-button";
 import QrBankPanel from "@/components/custom/common/pos/qr-bank-panel";
 import { useTranslation } from "@/lib/i18n/use-translation";
-import { qrCodes, resolveSelectedQr } from "@/lib/types/model/qr-codes";
+import { resolveSelectedQr, type QrCode } from "@/lib/types/model/qr-codes";
 
 type QrCollectStepProps = {
+  /** This branch's payment QR codes. */
+  qrCodes: QrCode[];
   isConfirmed: boolean;
   onConfirmPayment: () => void;
   onContinue: () => void;
 };
 
 export default function QrCollectStep({
+  qrCodes,
   isConfirmed,
   onConfirmPayment,
   onContinue,
@@ -24,7 +27,6 @@ export default function QrCollectStep({
   const selectedQr = resolveSelectedQr(qrCodes, selectedQrId);
 
   const handleConfirm = () => {
-    console.log("Exchange - QR payment confirmed via:", selectedQr?.bankName);
     onConfirmPayment();
   };
 
