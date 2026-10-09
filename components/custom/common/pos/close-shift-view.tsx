@@ -11,7 +11,7 @@ import ShiftSummaryList from "@/components/custom/common/pos/shift-summary-list"
 import FormError from "@/components/custom/common/forms/form-error";
 import LabeledTextarea from "@/components/custom/common/labeled-textarea";
 import { useTranslation } from "@/lib/i18n/use-translation";
-import { closeShiftAction } from "@/lib/pos/actions";
+import { closeShiftAction, openDrawerAction } from "@/lib/pos/actions";
 
 const formatMoney = (amount: number) => `K ${amount.toLocaleString("en-US")}`;
 
@@ -59,6 +59,17 @@ export default function CloseShiftView({
     Number.isFinite(countedCash) &&
     (!needsReason || reason.trim().length > 0);
 
+  // Opening the drawer to count cash is logged as a no-sale drawer event.
+  const handleOpenDrawer = () => {
+    setError(null);
+    startTransition(async () => {
+      const result = await openDrawerAction(shiftId);
+      if (result.ok) return;
+      if (result.signedOut) router.push("/pos/select-staff");
+      else setError(result.error);
+    });
+  };
+
   const handleCloseShift = () => {
     if (!canClose) return;
     setError(null);
@@ -87,7 +98,7 @@ export default function CloseShiftView({
   return (
     <main className="min-h-full bg-rose-50 px-4 py-6 sm:px-6">
       <section className="mx-auto w-full max-w-5xl overflow-hidden rounded-2xl border border-rose-200 bg-white shadow-sm">
-        <CloseShiftHeader branchName={branchName} staffName={staffName} />
+        <CloseShiftHeader branchName={branchName} staffName={staffName} onOpenDrawer={handleOpenDrawer} />
 
         <div className="space-y-6 p-5 sm:p-6">
           <div className="grid items-stretch gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">

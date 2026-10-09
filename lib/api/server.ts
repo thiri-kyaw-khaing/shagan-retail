@@ -17,8 +17,10 @@ import type {
   ApiCategory,
   ApiCombo,
   ApiCustomer,
+  ApiExchange,
   ApiExpense,
   ApiGranularity,
+  ApiHeldSale,
   ApiHomeSummary,
   ApiLedgerEntry,
   ApiProduct,
@@ -29,6 +31,7 @@ import type {
   ApiPurchaseOrderDetail,
   ApiReceiptSettings,
   ApiReceipt,
+  ApiReturn,
   ApiRole,
   ApiSalesPage,
   ApiSalesSummary,
@@ -42,6 +45,7 @@ import type {
   ApiTodayReport,
   ApiTransactions,
   ApiUser,
+  ApiVoid,
 } from "@/lib/api/types";
 
 /** A 401 about the cashier's X-Staff-Token, not the device's login. */
@@ -234,6 +238,13 @@ export const api = {
   /** Staff whose role grants `permission` at a branch - the approver picker. */
   approvers: (branchId: number, permission: string) =>
     authed<ApiStaff[]>(withQuery(`/branches/${branchId}/managers`, { permission })),
+  /** Every held sale at this till's branch, whoever parked it. */
+  heldSales: () => authed<ApiHeldSale[]>("/held-sales"),
+
+  // After-sale. A POS token sees its own branch; owners can scope by branch.
+  voids: (scope: BranchScope) => authed<ApiVoid[]>(withQuery("/voids", scoped(scope))),
+  returns: (scope: BranchScope) => authed<ApiReturn[]>(withQuery("/returns", scoped(scope))),
+  exchanges: (scope: BranchScope) => authed<ApiExchange[]>(withQuery("/exchanges", scoped(scope))),
 
   /** Newest first. */
   auditLog: (scope: BranchScope) => authed<ApiAuditLog[]>(withQuery("/audit-log", scoped(scope))),

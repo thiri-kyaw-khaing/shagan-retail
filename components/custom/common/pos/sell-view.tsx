@@ -91,10 +91,13 @@ export default function SellView({ products, categories: apiCategories, customer
     setIsDiscountPanelOpen(false);
   };
 
-  const handleHold = () => {
+  const handleHold = async () => {
     if (cart.length === 0) return;
 
-    holdCurrentCart(t("sell.walkIn"));
+    const result = await holdCurrentCart(t("sell.walkIn"));
+    if (!result.ok && result.signedOut) router.push("/pos/select-staff");
+    // Any other failure leaves the cart as it was, so nothing is lost.
+    else if (!result.ok) console.error("hold failed:", result.error);
   };
 
   const handlePayment = () => {

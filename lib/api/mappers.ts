@@ -7,6 +7,8 @@ import type {
   ApiCategory,
   ApiCombo,
   ApiExpense,
+  ApiHeldSale,
+  ApiHeldSaleItems,
   ApiLedgerEntry,
   ApiLedgerType,
   ApiPaymentMethodBreakdown,
@@ -14,6 +16,7 @@ import type {
   ApiPurchaseOrder,
   ApiPurchaseOrderStatus,
   ApiSale,
+  ApiReceiptItem,
   ApiSalesTrend,
   ApiStaff,
   ApiStockLevel,
@@ -26,11 +29,13 @@ import type { Category } from "@/lib/types/model/categories";
 import type { Combo } from "@/lib/types/model/combos";
 import type { MethodTotals, RecentReceipt, RevenueBar } from "@/lib/types/model/dashboard";
 import type { Expense } from "@/lib/types/model/expenses";
+import type { HeldSale } from "@/lib/types/model/heldsale";
 import type { StockMovement, StockMovementType } from "@/lib/types/model/inventory-ledger";
 import type { Product } from "@/lib/types/model/product";
 import type { PurchaseOrder, PurchaseOrderStatus } from "@/lib/types/model/purchase-orders";
 import type { PaymentMethod } from "@/lib/types/model/payment";
-import { getReceiptNumber, type SalesHistoryRow } from "@/lib/types/model/sales";
+import type { SaleItem } from "@/lib/types/model/sale-items";
+import { getReceiptNumber, type Sale, type SalesHistoryRow } from "@/lib/types/model/sales";
 import type { StaffRow } from "@/lib/types/model/staffs";
 import type { Supplier } from "@/lib/types/model/suppliers";
 
@@ -219,6 +224,8 @@ const LEDGER_TYPE: Record<ApiLedgerType, StockMovementType> = {
   void: "void",
   exchange_in: "exchange",
   exchange_out: "exchange",
+  // Came back damaged/expired: listed as a return with no stock change.
+  return_writeoff: "return",
 };
 
 const LEDGER_REFERENCE_PREFIX: Record<ApiLedgerEntry["reference_type"], string> = {
@@ -447,4 +454,85 @@ export function toLowStockProducts(
       },
     ];
   });
+}
+
+// --- POS till: sales history and after-sale ---
+
+/**
+ * A sale for the till's receipt list and detail. The UI only tells
+ * completed from voided; a sale with a return stays "completed" on the
+ * backend too (returns are partial), and "open" never reaches the list.
+ */
+export function toTillSale(sale: ApiSale & { payment_methods?: ("cash" | "qr")[] }): Sale {
+  return {
+    id: sale.id,
+    orgId: sale.org_id,
+    branchId: sale.branch_id,
+    shiftId: sale.shift_id,
+    staffId: sale.staff_id,
+    deviceId: sale.device_id,
+    customerId: sale.customer_id,
+    subtotal: decimalToNumber(sale.subtotal),
+    discount: decimalToNumber(sale.discount),
+    tax: decimalToNumber(sale.tax),
+    total: decimalToNumber(sale.total),
+    paymentMethod: toPaymentMethod(sale.payment_methods ?? []),
+    status: sale.status === "voided" ? "voided" : sale.status === "open" ? "pending" : "completed",
+    completedAt: sale.completed_at,
+    syncedAt: sale.synced_at,
+  };
+}
+
+/**
+ * A receipt line for the return/exchange pickers. `quantity` is what can
+ * still come back (earlier returns and exchanges taken off), so the steppers
+ * can't offer more than the backend accepts. `unitPrice` is what the
+ * customer actually paid per unit (line total / original qty, so after its
+ * discount and tax) - the same figure the backend refunds or credits.
+ */
+export function toSaleItem(item: ApiReceiptItem, imageByProduct: Map<number, string>): SaleItem {
+  return {
+    id: item.id,
+    saleId: item.sale_id,
+    productId: item.product_id,
+    name: item.name_snapshot,
+    imageUrl: imageByProduct.get(item.product_id) ?? "",
+    unitPrice: Math.round((decimalToNumber(item.line_total) / item.qty) * 100) / 100,
+    quantity: item.returnable_qty,
+  };
+}
+
+/** Product id -> its first image's URL. */
+export function imageByProduct(products: ApiProduct[]): Map<number, string> {
+  return new Map(products.map((p) => [p.id, p.images[0]?.url ?? ""]));
+}
+
+/**
+ * A replacement product for an exchange, priced at what a customer pays per
+ * unit at the till (price - catalog discount + tax), which is the
+ * `unit_price` the exchange sends for it.
+ */
+export function toExchangeProduct(product: ApiProduct, stock: Map<number, number>): Product {
+  const base = toProduct(product, stock);
+  const unit = Math.max(base.price - Math.min(base.discount, base.price), 0) + base.tax;
+  return { ...base, price: Math.round(unit * 100) / 100, discount: 0, tax: 0 };
+}
+
+/**
+ * A held sale for the till. `null` for one whose `items` isn't the till's own
+ * shape (e.g. parked by another client) - it can't be resumed into this cart.
+ */
+export function toHeldSale(held: ApiHeldSale): HeldSale | null {
+  const items = held.items as Partial<ApiHeldSaleItems> | null;
+  if (!items || !Array.isArray(items.lines)) return null;
+  const customerName = items.customerName ?? "Walk-in";
+  const percent = decimalToNumber(held.discount);
+  return {
+    id: held.id,
+    customerName,
+    customer: held.customer_ref !== null ? { id: held.customer_ref, name: customerName } : null,
+    items: items.lines,
+    discountPercent: percent > 0 ? percent : null,
+    heldAt: new Date(held.held_at).getTime(),
+  };
 }

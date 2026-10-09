@@ -4,7 +4,19 @@ import { redirect, unstable_rethrow } from "next/navigation";
 
 import { ApiError } from "@/lib/api/backend";
 import { api, isStaffTokenError, mutate } from "@/lib/api/server";
-import type { ApiCreateSale, ApiSale } from "@/lib/api/types";
+import type {
+  ApiCreateExchangeItem,
+  ApiCreateReturn,
+  ApiCreateSale,
+  ApiDrawerEvent,
+  ApiExchange,
+  ApiHeldSale,
+  ApiHeldSaleItems,
+  ApiReturn,
+  ApiSale,
+  ApiVoid,
+  ApiVoidReason,
+} from "@/lib/api/types";
 import { clearStaffSession, getStaffSession, setStaffSession } from "@/lib/pos/staff-session";
 
 /**
@@ -202,4 +214,122 @@ export async function approveAction(
     console.error("approval failed", err);
     return { ok: false, error: "Can't reach the server. Check the connection and try again." };
   }
+}
+
+/** Sends a 2-minute manager approval token along with one till write. */
+const approval = (token?: string) => (token ? { "X-Manager-Approval-Token": token } : undefined);
+
+// --- After-sale ---
+
+/**
+ * Voids the whole sale and puts its stock back. Needs `approve_void` - the
+ * cashier's own or a manager's approval token. `explanation` is optional. 409 when the sale's shift has
+ * closed (refund it with a Return instead), it's already voided, or it has a
+ * return/exchange.
+ */
+export async function voidTillSaleAction(
+  saleId: string,
+  reason: ApiVoidReason,
+  explanation: string,
+  approvalToken?: string,
+): Promise<PosResult> {
+  const result = await asStaff<ApiVoid>(`/sales/${saleId}/void`, {
+    method: "POST",
+    json: { reason, explanation: explanation.trim() },
+    headers: approval(approvalToken),
+  });
+  return result.ok ? { ok: true, data: undefined } : result;
+}
+
+/**
+ * Refunds some or all of a completed sale's items. The refund is derived
+ * server-side from each line's own price (after its discount and tax), so
+ * the amount to pay out is the one returned here. 400 when a quantity is more
+ * than is still returnable (earlier returns/exchanges count).
+ */
+export async function createReturnAction(
+  input: ApiCreateReturn,
+  approvalToken?: string,
+): Promise<PosResult<{ refundTotal: string }>> {
+  const result = await asStaff<ApiReturn>("/returns", {
+    method: "POST",
+    json: input,
+    headers: approval(approvalToken),
+  });
+  return result.ok ? { ok: true, data: { refundTotal: result.data.refund_total } } : result;
+}
+
+/**
+ * Swaps items from a completed sale for replacements in one transaction.
+ * `netDifference` > 0 is what the customer still pays; < 0 is their refund.
+ * `settledBy` (cash/QR) is required by the backend whenever the difference
+ * isn't zero - Close Shift's expected cash counts the cash ones (400 without it).
+ */
+export async function createExchangeAction(
+  saleId: string,
+  items: ApiCreateExchangeItem[],
+  settledBy: "cash" | "qr" | null,
+  approvalToken?: string,
+): Promise<PosResult<{ netDifference: string }>> {
+  const result = await asStaff<ApiExchange>("/exchanges", {
+    method: "POST",
+    json: { sale_id: saleId, items, ...(settledBy && { method: settledBy }) },
+    headers: approval(approvalToken),
+  });
+  return result.ok ? { ok: true, data: { netDifference: result.data.net_difference } } : result;
+}
+
+/** Re-issues a receipt. The backend only simulates printing, so this just confirms the sale exists. */
+export async function reprintReceiptAction(saleId: string): Promise<PosResult> {
+  const result = await mutate(`/sales/${saleId}/reprint`, { method: "POST" });
+  return result.ok ? { ok: true, data: undefined } : result;
+}
+
+// --- Held sales ---
+
+/** Parks the current cart on the server, so any cashier at this branch can resume it. */
+export async function holdSaleAction(input: {
+  items: ApiHeldSaleItems;
+  customerId: number | null;
+  discountPercent: number;
+}): Promise<PosResult<ApiHeldSale<ApiHeldSaleItems>>> {
+  return asStaff<ApiHeldSale<ApiHeldSaleItems>>("/held-sales", {
+    method: "POST",
+    json: {
+      items: input.items,
+      customer_ref: input.customerId,
+      discount: String(input.discountPercent),
+    },
+  });
+}
+
+/** Resume = delete-and-return, atomically. 404 when another till already resumed it. */
+export async function resumeHeldSaleAction(
+  heldSaleId: number,
+): Promise<PosResult<ApiHeldSale<ApiHeldSaleItems>>> {
+  const result = await mutate<ApiHeldSale<ApiHeldSaleItems>>(`/held-sales/${heldSaleId}`, {
+    method: "DELETE",
+  });
+  if (!result.ok && /not found/i.test(result.error)) {
+    return { ok: false, error: "This held sale was already resumed on another till." };
+  }
+  return result;
+}
+
+// --- Drawer ---
+
+/**
+ * Logs opening the cash drawer with no sale (e.g. to count cash at close).
+ * Needs `open_drawer_no_sale` (super_staff and manager roles); a plain
+ * cashier gets 403.
+ */
+export async function openDrawerAction(shiftId: number): Promise<PosResult> {
+  const result = await asStaff<ApiDrawerEvent>("/drawer-events", {
+    method: "POST",
+    json: { shift_id: shiftId, reason: "No sale" },
+  });
+  if (!result.ok && /permission/i.test(result.error)) {
+    return { ok: false, error: "Only a manager or super staff member can open the drawer without a sale." };
+  }
+  return result.ok ? { ok: true, data: undefined } : result;
 }

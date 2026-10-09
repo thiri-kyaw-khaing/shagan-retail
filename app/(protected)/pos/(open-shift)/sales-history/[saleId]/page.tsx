@@ -1,108 +1,61 @@
-"use client";
+import ReceiptDetailView from "@/components/custom/common/pos/receipt-detail-view";
+import { decimalToNumber, nameById, toTillSale } from "@/lib/api/mappers";
+import { api } from "@/lib/api/server";
+import { requireReceipt } from "@/lib/pos/after-sale";
 
-import { use } from "react";
-import { notFound } from "next/navigation";
-
-import BackButton from "@/components/custom/common/back-button";
-import NoticeBanner from "@/components/custom/common/notice-banner";
-import StatusBadge from "@/components/custom/common/status-badge";
-import SummaryCard from "@/components/custom/common/summary-card";
-import Header from "@/components/custom/common/pos/header";
-import ReceiptActions from "@/components/custom/common/pos/receipt-actions";
-import SaleTotals from "@/components/custom/common/pos/sale-totals";
-import {
-  formatSaleDateTime,
-  getReceiptNumber,
-  sales,
-} from "@/lib/types/model/sales";
-import { voids } from "@/lib/types/model/voids";
-import { returns } from "@/lib/types/model/returns";
-import { staffs } from "@/lib/types/model/staffs";
-import { useTranslation } from "@/lib/i18n/use-translation";
-
-type ReceiptDetailPageProps = {
-  params: Promise<{ saleId: string }>;
+/** "duplicate_transaction" -> "Duplicate transaction". */
+const humanize = (code: string) => {
+  const words = code.replace(/_/g, " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
 };
 
-export default function ReceiptDetailPage({ params }: ReceiptDetailPageProps) {
-  const { saleId } = use(params);
-  const { t } = useTranslation();
-  const sale = sales.find((item) => item.id === saleId);
+export default async function ReceiptDetailPage({
+  params,
+}: {
+  params: Promise<{ saleId: string }>;
+}) {
+  const { saleId } = await params;
+  const receipt = await requireReceipt(saleId);
 
-  if (!sale) notFound();
-
-  const cashier = staffs.find((staff) => staff.id === sale.staffId);
-  const customerLabel =
-    sale.customerId === null
-      ? t("sell.walkIn")
-      : `Customer #${sale.customerId}`;
-  const isVoided = sale.status === "voided";
-  const relatedVoid = voids.find((item) => item.saleId === sale.id);
-  const relatedReturn = returns.find((item) => item.saleId === sale.id);
+  // /voids, /returns and /exchanges are branch-wide lists; this receipt's own
+  // are picked out here. A sale stays "completed" after returns/exchanges
+  // (they can be partial), so these banners are where they show up.
+  const [staff, customers, voids, returns, exchanges] = await Promise.all([
+    api.staff(),
+    api.customers(),
+    api.voids({ branchId: null }),
+    api.returns({ branchId: null }),
+    api.exchanges({ branchId: null }),
+  ]);
+  const { sale } = receipt;
+  const voided = voids.find((v) => v.sale_id === sale.id);
+  const saleReturns = returns.filter((r) => r.sale_id === sale.id);
+  const saleExchanges = exchanges.filter((e) => e.sale_id === sale.id);
 
   return (
-    <>
-      <Header
-        title={`${t("receiptDetail.receipt")} #${getReceiptNumber(sale.id)}`}
-        right={
-          <div className="text-right">
-            <p className="text-sm font-medium text-white/90">
-              {customerLabel}
-            </p>
-            <p className="text-lg font-bold">
-              K {sale.total.toLocaleString()}
-            </p>
-          </div>
-        }
-      >
-        <BackButton href="/pos/sales-history" className="text-white" />
-      </Header>
-
-      <div className="mx-4 space-y-4 rounded-2xl bg-white p-4">
-        <SummaryCard
-          rows={[
-            {
-              label: t("receiptDetail.receipt"),
-              value: `#${getReceiptNumber(sale.id)}`,
-            },
-            {
-              label: t("receiptDetail.dateTime"),
-              value: formatSaleDateTime(sale.completedAt),
-            },
-            { label: t("receiptDetail.customer"), value: customerLabel },
-            {
-              label: t("receiptDetail.cashier"),
-              value: cashier?.name ?? "—",
-            },
-            {
-              label: t("receiptDetail.status"),
-              value: <StatusBadge isVoided={isVoided} />,
-            },
-          ]}
-        />
-
-        <SaleTotals
-          subtotal={sale.subtotal}
-          discount={sale.discount}
-          tax={sale.tax}
-          total={sale.total}
-        />
-
-        {relatedVoid && (
-          <NoticeBanner tone="rose" title={t("receiptDetail.voidedTitle")}>
-            {relatedVoid.explanation ?? relatedVoid.reason}
-          </NoticeBanner>
-        )}
-
-        {relatedReturn && (
-          <NoticeBanner
-            tone="amber"
-            title={`${t("receiptDetail.returnedPrefix")} · K ${relatedReturn.refundTotal.toLocaleString()} ${t("receiptDetail.viaConnector")} ${relatedReturn.refundMethod}`}
-          />
-        )}
-
-        {!isVoided && <ReceiptActions saleId={sale.id} />}
-      </div>
-    </>
+    <ReceiptDetailView
+      sale={toTillSale(sale)}
+      cashierName={nameById(staff).get(sale.staff_id) ?? null}
+      customerName={sale.customer_id !== null ? (nameById(customers).get(sale.customer_id) ?? null) : null}
+      // The till sends no explanation, only its reason code ("duplicate_transaction").
+      voidNote={voided ? voided.explanation || humanize(voided.reason) : null}
+      returned={
+        saleReturns.length > 0
+          ? {
+              refundTotal: saleReturns.reduce((sum, r) => sum + decimalToNumber(r.refund_total), 0),
+              refundMethods: [...new Set(saleReturns.map((r) => r.refund_method))],
+            }
+          : null
+      }
+      exchanged={
+        saleExchanges.length > 0
+          ? { netDifference: saleExchanges.reduce((sum, e) => sum + decimalToNumber(e.net_difference), 0) }
+          : null
+      }
+      // Only a completed sale with something left to bring back can be returned or
+      // exchanged; once it has either, the backend refuses a whole-sale void.
+      canReturn={sale.status === "completed" && receipt.items.some((item) => item.returnable_qty > 0)}
+      canVoid={!sale.has_return && !sale.has_exchange}
+    />
   );
 }

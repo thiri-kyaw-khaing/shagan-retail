@@ -1,11 +1,13 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BackButton from "@/components/custom/common/back-button";
 import CustomButton from "@/components/custom/common/custom-button";
+import FormError from "@/components/custom/common/forms/form-error";
 import { usePos } from "./pos-context";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
@@ -13,13 +15,17 @@ export default function HeldSaleComponent() {
   const router = useRouter();
   const { t } = useTranslation();
   const { heldSales, resumeHeldSale } = usePos();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const handleResume = (heldSaleId: number) => {
-    const resumed = resumeHeldSale(heldSaleId);
-
-    if (resumed) {
-      router.push("/pos/sell");
-    }
+    setError(null);
+    startTransition(async () => {
+      const result = await resumeHeldSale(heldSaleId);
+      if (result.ok) router.push("/pos/sell");
+      else if (result.signedOut) router.push("/pos/select-staff");
+      else setError(result.error);
+    });
   };
 
   return (
@@ -44,6 +50,11 @@ export default function HeldSaleComponent() {
         </CardHeader>
 
         <CardContent className="p-0">
+          {error && (
+            <div className="px-4 pt-4 sm:px-8">
+              <FormError message={error} />
+            </div>
+          )}
           {heldSales.length === 0 ? (
             <div className="flex min-h-64 flex-col items-center justify-center p-4 text-center">
               <h2 className="font-semibold text-slate-800">
@@ -114,6 +125,7 @@ export default function HeldSaleComponent() {
                         label={t("held.resume")}
                         icon={ArrowRight}
                         onClick={() => handleResume(sale.id)}
+                        disabled={isPending}
                         className="mt-1 min-h-11 bg-transparent p-0 font-semibold text-rose-800 shadow-none hover:bg-transparent hover:text-rose-600"
                       />
                     </div>

@@ -1,65 +1,28 @@
-"use client";
-import { useMemo, useState } from "react";
+import ReceiptListView from "@/components/custom/common/pos/receipt-list-view";
+import { nameById, toTillSale } from "@/lib/api/mappers";
+import { api } from "@/lib/api/server";
 
-import BackButton from "@/components/custom/common/back-button";
-import Header from "@/components/custom/common/pos/header";
-import ProductSearchBar from "@/components/custom/common/pos/search-bar";
-import ReceiptRow from "@/components/custom/common/pos/receipt-row";
-import SalesStatusTabs, {
-  type SalesStatusFilter,
-} from "@/components/custom/common/pos/sales-status-tabs";
-import { getReceiptNumber, sales } from "@/lib/types/model/sales";
-import { useTranslation } from "@/lib/i18n/use-translation";
-
-function SalesHistoryPage() {
-  const { t } = useTranslation();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<SalesStatusFilter>("all");
-
-  const filteredSales = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    return sales.filter((sale) => {
-      const statusMatches =
-        statusFilter === "all" || sale.status === statusFilter;
-
-      const searchMatches =
-        query === "" ||
-        getReceiptNumber(sale.id).toLowerCase().includes(query) ||
-        sale.total.toString().includes(query);
-
-      return statusMatches && searchMatches;
-    });
-  }, [search, statusFilter]);
+// A POS token only sees its own branch's sales. The latest 100 receipts (the
+// backend's page cap), newest first; older ones are in the Back Office.
+export default async function SalesHistoryPage() {
+  const [page, staff, customers] = await Promise.all([
+    api.sales({ branchId: null, pageSize: 100 }),
+    api.staff(),
+    api.customers(),
+  ]);
+  const staffNames = nameById(staff);
+  const customerNames = nameById(customers);
 
   return (
-    <>
-      <Header
-        title={t("salesHistory.title")}
-        description={t("salesHistory.description")}
-      >
-        <BackButton href="/pos/sell" className="text-white" />
-      </Header>
-
-      <ProductSearchBar
-        value={search}
-        onChange={setSearch}
-        placeholder={t("salesHistory.searchPlaceholder")}
-      />
-
-      <SalesStatusTabs selected={statusFilter} onSelect={setStatusFilter} />
-
-      <div className="mx-4 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100 bg-white">
-        {filteredSales.length === 0 ? (
-          <p className="p-6 text-center text-sm text-ink-muted">
-            {t("salesHistory.noReceipts")}
-          </p>
-        ) : (
-          filteredSales.map((sale) => <ReceiptRow key={sale.id} sale={sale} />)
-        )}
-      </div>
-    </>
+    <ReceiptListView
+      rows={page.sales
+        // An "open" sale is mid-checkout, not a receipt yet.
+        .filter((sale) => sale.status !== "open")
+        .map((sale) => ({
+          sale: toTillSale(sale),
+          cashierName: staffNames.get(sale.staff_id),
+          customerName: sale.customer_id !== null ? customerNames.get(sale.customer_id) : undefined,
+        }))}
+    />
   );
 }
-
-export default SalesHistoryPage;

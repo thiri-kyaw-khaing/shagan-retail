@@ -6,6 +6,8 @@
 // (shopspring/decimal, trailing zeros dropped). Keep it a string until it's
 // displayed or fed to decimal arithmetic.
 
+import type { CartItemData } from "@/lib/types/model/cart";
+
 export type Decimal = string;
 
 export type AccountType = "owner" | "service_center" | "pos";
@@ -160,6 +162,11 @@ export type ApiSale = {
   status: ApiSaleStatus;
   completed_at: string | null;
   synced_at: string | null;
+  /** On `GET /sales` rows and the receipt's `sale`; a sale stays "completed" after a partial return. */
+  has_return?: boolean;
+  has_exchange?: boolean;
+  /** Sum of the sale's return refunds (exchange differences aren't in it). */
+  refunded_total?: Decimal;
 };
 
 /** `GET /sales` - newest first, paginated. */
@@ -193,7 +200,10 @@ export type ApiPayment = {
   change_given: Decimal;
 };
 
-export type ApiReceipt = { sale: ApiSale; items: ApiSaleItem[]; payments: ApiPayment[] };
+/** A receipt line plus how much has already come back (returns + exchanges) and what's left. */
+export type ApiReceiptItem = ApiSaleItem & { returned_qty: number; returnable_qty: number };
+
+export type ApiReceipt = { sale: ApiSale; items: ApiReceiptItem[]; payments: ApiPayment[] };
 
 /**
  * `date` is a calendar date, serialized as midnight UTC (e.g. "2026-10-08T00:00:00Z").
@@ -218,7 +228,9 @@ export type ApiLedgerType =
   | "adjustment"
   | "transfer_in"
   | "transfer_out"
-  | "purchase_receipt";
+  | "purchase_receipt"
+  /** Goods that came back (return / exchange) but weren't restocked: qty 0. */
+  | "return_writeoff";
 
 /**
  * `qty` is signed. `actor_id` is a STAFF id for till movements (sale, return,
@@ -392,7 +404,14 @@ export type ApiShiftSummary = {
   sales_total: Decimal;
   /** Keyed by method; a method with no payments is absent. */
   payment_totals: Partial<Record<"cash" | "qr", Decimal>>;
+  /** Opening cash + cash sales - cash_refunds + exchange_cash_in - exchange_cash_out. */
   expected_cash: Decimal;
+  /** Cash paid back on this shift's returns. */
+  cash_refunds: Decimal;
+  /** Cash a customer paid on this shift's exchanges. */
+  exchange_cash_in: Decimal;
+  /** Cash paid out to customers on this shift's exchanges. */
+  exchange_cash_out: Decimal;
 };
 
 /** `POST /staff/:id/pin/verify` and `/manager-pin/verify`. `token` goes in X-Staff-Token / X-Manager-Approval-Token. */
@@ -428,4 +447,120 @@ export type ApiCreateSale = {
   customer_id: number | null;
   items: ApiCreateSaleItem[];
   payments: ApiCreatePayment[];
+};
+
+// --- After-sale (void / return / exchange) ---
+
+/** The first five are the back office's; the next four are the till's own. */
+export type ApiVoidReason =
+  | "customer_request"
+  | "price_error"
+  | "item_error"
+  | "staff_error"
+  | "other"
+  | "duplicate_transaction"
+  | "wrong_order"
+  | "incorrect_payment"
+  | "cashier_mistake";
+
+/**
+ * `GET /voids`, `POST /sales/:id/void`. Always the whole sale (no partial
+ * voids). Exactly one of `approved_by` (staff) / `approved_by_user_id` (owner) is set.
+ */
+export type ApiVoid = {
+  id: number;
+  sale_id: string;
+  sale_item_id: number | null;
+  qty: number;
+  reason: ApiVoidReason;
+  explanation: string;
+  approved_by: number | null;
+  approved_by_user_id: number | null;
+  created_at: string;
+};
+
+/** Only "sellable" goes back into stock; the rest are written off. */
+export type ApiItemCondition = "sellable" | "damaged" | "opened" | "defective" | "expired" | "other";
+export type ApiReturnReason = "defective" | "wrong_item" | "changed_mind" | "other";
+
+/** `GET /returns`, `POST /returns`. `refund_total` is derived server-side from each line's own price. */
+export type ApiReturn = {
+  id: number;
+  sale_id: string;
+  reason_code: ApiReturnReason;
+  refund_method: "cash" | "qr";
+  refund_total: Decimal;
+  /** The cashier's typed reason for the return. */
+  explanation: string;
+  approved_by: number;
+  /** The till's open shift when it was processed (null for older rows). */
+  shift_id: number | null;
+  created_at: string;
+};
+
+/** `POST /returns`. Only `sellable` items go back into stock. */
+export type ApiCreateReturn = {
+  sale_id: string;
+  items: { sale_item_id: number; qty: number; condition: ApiItemCondition }[];
+  reason_code: ApiReturnReason;
+  refund_method: "cash" | "qr";
+  explanation?: string;
+};
+
+/** `POST /exchanges`. `net_difference` > 0: the customer pays it; < 0: they're refunded. */
+export type ApiExchange = {
+  id: number;
+  sale_id: string;
+  net_difference: Decimal;
+  /** How a non-zero difference was settled; null for an even swap (and older rows). */
+  method: "cash" | "qr" | null;
+  /** The till's open shift when it was processed (null for older rows). */
+  shift_id: number | null;
+  approved_by: number;
+  created_at: string;
+};
+
+/**
+ * `POST /exchanges`. "in" lines come back from the sale (priced from the
+ * original line); "out" lines are replacements at the `unit_price` we send.
+ */
+export type ApiCreateExchangeItem =
+  | { direction: "in"; sale_item_id: number; qty: number; condition?: ApiItemCondition }
+  | { direction: "out"; product_id: number; unit_price: Decimal; qty: number };
+
+// --- Held sales / drawer ---
+
+/**
+ * `GET/POST /held-sales`, `DELETE /held-sales/:id` (= resume). `items` is
+ * opaque to the backend - the till stores its own cart lines there.
+ * Branch-scoped: any cashier at the branch can resume any held sale.
+ */
+export type ApiHeldSale<Items = unknown> = {
+  id: number;
+  branch_id: number;
+  staff_id: number;
+  customer_ref: number | null;
+  items: Items;
+  discount: Decimal;
+  held_at: string;
+};
+
+/** `POST /drawer-events`. A drawer opened without `sale_id` needs `open_drawer_no_sale`. */
+export type ApiDrawerEvent = {
+  id: number;
+  shift_id: number;
+  staff_id: number;
+  reason: string;
+  sale_id: string | null;
+  created_at: string;
+};
+
+/**
+ * What the till stores in a held sale's opaque `items`: its own cart lines
+ * plus the customer's name, so resuming needs no customer lookup. The order
+ * discount travels in the held sale's `discount` field as a percent (0-100).
+ */
+export type ApiHeldSaleItems = {
+  lines: CartItemData[];
+  customerName: string | null;
 };

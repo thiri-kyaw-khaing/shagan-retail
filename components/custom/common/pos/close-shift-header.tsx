@@ -7,11 +7,14 @@ import { useTranslation } from "@/lib/i18n/use-translation";
 type CloseShiftHeaderProps = {
   branchName: string;
   staffName: string;
+  /** Runs when the cashier confirms opening the drawer (no sale). */
+  onOpenDrawer?: () => void;
 };
 
 export default function CloseShiftHeader({
   branchName,
   staffName,
+  onOpenDrawer,
 }: CloseShiftHeaderProps) {
   const { t } = useTranslation();
 
@@ -39,6 +42,7 @@ export default function CloseShiftHeader({
       </div>
 
       <OpenDrawer
+        onConfirm={onOpenDrawer}
         trigger={
           <CustomButton
             label={t("closeShift.openDrawer")}
