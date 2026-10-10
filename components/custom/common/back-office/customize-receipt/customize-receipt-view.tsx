@@ -18,9 +18,11 @@ type CustomizeReceiptViewProps = {
   branchOptions: { value: string; label: string }[];
   qrByBranch: Record<string, QrCode[]>;
   initialBranchId: string;
+  /** False for a manager: payment QR codes are the Owner's to manage. */
+  showQrPayment?: boolean;
 };
 
-export default function CustomizeReceiptView(props: CustomizeReceiptViewProps) {
+export default function CustomizeReceiptView({ showQrPayment = true, ...props }: CustomizeReceiptViewProps) {
   const [activeTab, setActiveTab] = useState<CustomizeReceiptTab>("receipt");
 
   // Both tabs stay mounted (just hidden) so unsaved edits survive switching.
@@ -32,7 +34,7 @@ export default function CustomizeReceiptView(props: CustomizeReceiptViewProps) {
         backHref="/owner"
       />
 
-      <CustomizeReceiptTabs activeTab={activeTab} onChange={setActiveTab} />
+      {showQrPayment && <CustomizeReceiptTabs activeTab={activeTab} onChange={setActiveTab} />}
 
       <div hidden={activeTab !== "receipt"}>
         <ReceiptFormTab
@@ -41,17 +43,19 @@ export default function CustomizeReceiptView(props: CustomizeReceiptViewProps) {
           initialTarget={props.initialTarget}
         />
       </div>
-      <div hidden={activeTab !== "qr"}>
-        {props.branchOptions.length > 0 ? (
-          <QrPaymentTab
-            branchOptions={props.branchOptions}
-            qrByBranch={props.qrByBranch}
-            initialBranchId={props.initialBranchId}
-          />
-        ) : (
-          <p className="mt-6 text-sm text-ink-muted">Add a branch first - QR codes belong to a branch.</p>
-        )}
-      </div>
+      {showQrPayment && (
+        <div hidden={activeTab !== "qr"}>
+          {props.branchOptions.length > 0 ? (
+            <QrPaymentTab
+              branchOptions={props.branchOptions}
+              qrByBranch={props.qrByBranch}
+              initialBranchId={props.initialBranchId}
+            />
+          ) : (
+            <p className="mt-6 text-sm text-ink-muted">Add a branch first - QR codes belong to a branch.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

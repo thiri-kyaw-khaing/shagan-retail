@@ -249,13 +249,14 @@ const en = {
   "void.approvingVoidPrefix": "Approving void of",
   "void.processedPrefix": "Sale voided —",
 
-  "ownerPin.title": "Owner access",
-  "ownerPin.subtitle": "Enter owner PIN to open Back Office",
+  "managerPin.title": "Manager access",
+  "managerPin.subtitle": "A manager enters their PIN to open Back Office",
 
   "backOffice.subtitle": "Back Office v0.1",
   "backOffice.exitToPortal": "Exit to Portal",
   "backOffice.signOut": "Sign out",
   "backOffice.ownerRole": "Owner",
+  "backOffice.managerRole": "Manager",
   "backOffice.allBranches": "All branches",
   "backOffice.branchFilter": "Branch",
 

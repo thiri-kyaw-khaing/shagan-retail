@@ -245,13 +245,14 @@ const zh: typeof en = {
   "void.approvingVoidPrefix": "正在批准作废",
   "void.processedPrefix": "销售已作废 —",
 
-  "ownerPin.title": "店主权限",
-  "ownerPin.subtitle": "输入店主密码以打开后台管理",
+  "managerPin.title": "经理权限",
+  "managerPin.subtitle": "经理输入密码以打开后台管理",
 
   "backOffice.subtitle": "后台管理 v0.1",
   "backOffice.exitToPortal": "返回门户",
   "backOffice.signOut": "退出登录",
   "backOffice.ownerRole": "店主",
+  "backOffice.managerRole": "经理",
   "backOffice.allBranches": "所有分店",
   "backOffice.branchFilter": "分店",
 

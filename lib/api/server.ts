@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 
 import type { ActionResult } from "@/lib/api/action-result";
 import { ApiError, callBackend } from "@/lib/api/backend";
-import { ACCESS_COOKIE } from "@/lib/api/session";
+import { ACCESS_COOKIE, ACCOUNT_TYPE_COOKIE, BACKOFFICE_COOKIE, jwtExpiry } from "@/lib/api/session";
 import type {
   ApiAuditLog,
   ApiBranch,
@@ -62,10 +62,20 @@ async function authed<T>(
   init?: Parameters<typeof callBackend>[1],
   { pinCheck = false }: { pinCheck?: boolean } = {},
 ): Promise<T> {
-  const accessToken = (await cookies()).get(ACCESS_COOKIE)?.value;
+  const store = await cookies();
+  const accessToken = store.get(ACCESS_COOKIE)?.value;
   if (!accessToken) redirect("/login");
+  // A manager with Back Office open at a till: their staff token is what the
+  // backend's back-office routes (catalog, suppliers, POs, stock, settings,
+  // expenses) check, and what records them as the actor. A till write that
+  // passes its own cashier X-Staff-Token (asStaff) still wins.
+  const managerToken = store.get(ACCOUNT_TYPE_COOKIE)?.value === "pos" ? store.get(BACKOFFICE_COOKIE)?.value : undefined;
+  const headers =
+    managerToken && jwtExpiry(managerToken) > Date.now() / 1000
+      ? { "X-Staff-Token": managerToken, ...(init?.headers as Record<string, string> | undefined) }
+      : init?.headers;
   try {
-    return await callBackend<T>(path, { ...init, accessToken });
+    return await callBackend<T>(path, { ...init, headers, accessToken });
   } catch (err) {
     // A rejected staff token only ends the cashier's sign-in - callers send
     // them back to the PIN screen. Any other 401 means the device session
@@ -144,6 +154,17 @@ type BranchScope = { branchId: number | null };
 type DateWindow = BranchScope & { from: string; to: string };
 
 const scoped = ({ branchId }: BranchScope) => ({ branch_id: branchId });
+
+/**
+ * The reports send an empty list as `null` (Go nil slice) when a branch has
+ * nothing in the period - e.g. a quiet branch "today". Turn those back into
+ * `[]` so the screens can treat every list as a list (recommendation.md R18).
+ */
+async function withLists<T extends object>(report: Promise<T>, keys: (keyof T)[]): Promise<T> {
+  const data: T = await report;
+  for (const key of keys) data[key] ??= [] as T[keyof T];
+  return data;
+}
 const windowed = ({ branchId, from, to }: DateWindow) => ({ branch_id: branchId, from, to });
 
 export const api = {
@@ -252,22 +273,37 @@ export const api = {
   // Reports
   homeSummary: (scope: BranchScope) =>
     authed<ApiHomeSummary>(withQuery("/reports/home-summary", scoped(scope))),
-  today: (scope: BranchScope) => authed<ApiTodayReport>(withQuery("/reports/today", scoped(scope))),
+  today: (scope: BranchScope) =>
+    withLists(authed<ApiTodayReport>(withQuery("/reports/today", scoped(scope))), [
+      "hourly_trend",
+      "payment_methods",
+      "top_products",
+    ]),
   salesSummary: (window: DateWindow) =>
-    authed<ApiSalesSummary>(withQuery("/reports/sales-summary", windowed(window))),
+    withLists(authed<ApiSalesSummary>(withQuery("/reports/sales-summary", windowed(window))), [
+      "by_branch",
+      "by_payment_method",
+      "by_category",
+    ]),
   salesTrend: (window: DateWindow & { granularity: ApiGranularity }) =>
     authed<ApiSalesTrend>(
       withQuery("/reports/sales-trend", { ...windowed(window), granularity: window.granularity }),
     ),
   /** Newest first; page_size is capped at 100 by the backend. */
   transactions: (window: DateWindow & { page: number; pageSize: number }) =>
-    authed<ApiTransactions>(
-      withQuery("/reports/transactions", {
-        ...windowed(window),
-        page: window.page,
-        page_size: window.pageSize,
-      }),
+    withLists(
+      authed<ApiTransactions>(
+        withQuery("/reports/transactions", {
+          ...windowed(window),
+          page: window.page,
+          page_size: window.pageSize,
+        }),
+      ),
+      ["transactions"],
     ),
   productSales: (window: DateWindow) =>
-    authed<{ products: ApiProductRevenue[] }>(withQuery("/reports/product-sales", windowed(window))),
+    withLists(
+      authed<{ products: ApiProductRevenue[] }>(withQuery("/reports/product-sales", windowed(window))),
+      ["products"],
+    ),
 };

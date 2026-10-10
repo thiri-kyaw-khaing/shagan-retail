@@ -1,5 +1,7 @@
-function ManagerPage() {
-  return <div>Manager Dashboard Page</div>;
-}
+import { redirect } from "next/navigation";
 
-export default ManagerPage;
+// The manager's Back Office is the Owner's screens (scoped to the till's
+// branch) - this route is only the PIN entry.
+export default function ManagerPage() {
+  redirect("/manager/pin");
+}

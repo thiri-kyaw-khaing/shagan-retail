@@ -11,6 +11,8 @@ type BackOfficeHeaderProps = {
   branchName: string;
   branchSlot?: ReactNode;
   showExitToPortal?: boolean;
+  onExitToPortal?: () => void;
+  onSignOut?: () => void;
 };
 
 export default function BackOfficeHeader({
@@ -21,6 +23,8 @@ export default function BackOfficeHeader({
   branchName,
   branchSlot,
   showExitToPortal,
+  onExitToPortal,
+  onSignOut,
 }: BackOfficeHeaderProps) {
   return (
     <header className="flex flex-col gap-3 bg-brand px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
@@ -31,6 +35,8 @@ export default function BackOfficeHeader({
         branchName={branchName}
         branchSlot={branchSlot}
         showExitToPortal={showExitToPortal}
+        onExitToPortal={onExitToPortal}
+        onSignOut={onSignOut}
       />
     </header>
   );

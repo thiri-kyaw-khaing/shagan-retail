@@ -7,6 +7,7 @@ import { ApiError, callBackend } from "@/lib/api/backend";
 import {
   ACCESS_COOKIE,
   ACCOUNT_TYPE_COOKIE,
+  BACKOFFICE_COOKIE,
   REFRESH_COOKIE,
   writeSessionCookies,
 } from "@/lib/api/session";
@@ -35,7 +36,10 @@ export async function loginAction(email: string, password: string): Promise<Logi
     return { error: "unavailable" };
   }
 
-  writeSessionCookies(await cookies(), session, session.account_type);
+  const store = await cookies();
+  writeSessionCookies(store, session, session.account_type);
+  // A new login never inherits a manager's Back Office left open in this browser.
+  store.delete(BACKOFFICE_COOKIE);
   redirect(HOME[session.account_type]);
 }
 
@@ -53,6 +57,6 @@ export async function logoutAction() {
     }).catch((err) => console.error("logout: revoke failed", err));
   }
 
-  for (const name of [ACCESS_COOKIE, REFRESH_COOKIE, ACCOUNT_TYPE_COOKIE]) store.delete(name);
+  for (const name of [ACCESS_COOKIE, REFRESH_COOKIE, ACCOUNT_TYPE_COOKIE, BACKOFFICE_COOKIE]) store.delete(name);
   redirect("/login");
 }

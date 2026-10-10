@@ -259,13 +259,14 @@ const mm: typeof en = {
   "void.approvingVoidPrefix": "ပယ်ဖျက်ခြင်း အတည်ပြုနေသည်",
   "void.processedPrefix": "ရောင်းချမှု ပယ်ဖျက်ပြီးပါပြီ —",
 
-  "ownerPin.title": "ပိုင်ရှင် အသုံးပြုခွင့်",
-  "ownerPin.subtitle": "Back Office ကို ဖွင့်ရန် ပိုင်ရှင် PIN ရိုက်ထည့်ပါ",
+  "managerPin.title": "မန်နေဂျာ အသုံးပြုခွင့်",
+  "managerPin.subtitle": "Back Office ကို ဖွင့်ရန် မန်နေဂျာ PIN ရိုက်ထည့်ပါ",
 
   "backOffice.subtitle": "Back Office v0.1",
   "backOffice.exitToPortal": "Portal သို့ ထွက်ရန်",
   "backOffice.signOut": "ထွက်ရန်",
   "backOffice.ownerRole": "ပိုင်ရှင်",
+  "backOffice.managerRole": "မန်နေဂျာ",
   "backOffice.allBranches": "ဆိုင်ခွဲအားလုံး",
   "backOffice.branchFilter": "ဆိုင်ခွဲ",
 

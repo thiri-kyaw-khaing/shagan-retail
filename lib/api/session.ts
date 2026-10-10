@@ -7,6 +7,11 @@ export const ACCESS_COOKIE = "shagan_access";
 export const REFRESH_COOKIE = "shagan_refresh";
 /** Not a secret - lets proxy.ts route by account type without a /me call. */
 export const ACCOUNT_TYPE_COOKIE = "shagan_account_type";
+/**
+ * A manager's staff token while they have Back Office open at a till (see
+ * lib/backoffice/session.ts). Kept apart from the cashier's till sign-in.
+ */
+export const BACKOFFICE_COOKIE = "shagan_backoffice";
 
 const baseCookie = {
   httpOnly: true,
