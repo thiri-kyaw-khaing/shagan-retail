@@ -23,6 +23,8 @@ type StaffDirectoryProps = {
   /** Pre-selected for a new staff member. */
   defaultRoleId: string;
   defaultBranchId: string;
+  /** A manager sees staff but can't add or edit them (WORKFLOWS §4). */
+  readOnly?: boolean;
 };
 
 type StaffDialog = { type: "add" } | { type: "edit"; staff: StaffRow } | null;
@@ -33,6 +35,7 @@ export default function StaffDirectory({
   branchOptions,
   defaultRoleId,
   defaultBranchId,
+  readOnly = false,
 }: StaffDirectoryProps) {
   const [search, setSearch] = useState("");
   const [dialog, setDialog] = useState<StaffDialog>(null);
@@ -100,12 +103,14 @@ export default function StaffDirectory({
         subtitle={`${filteredStaffs.length} of ${staffs.length} staff members · ${activeCount} active`}
         backHref="/owner"
         action={
-          <CustomButton
-            label="Add staff"
-            icon={Plus}
-            onClick={() => setDialog({ type: "add" })}
-            className="min-h-11 bg-brand px-4 font-semibold text-white hover:bg-brand/90"
-          />
+          readOnly ? undefined : (
+            <CustomButton
+              label="Add staff"
+              icon={Plus}
+              onClick={() => setDialog({ type: "add" })}
+              className="min-h-11 bg-brand px-4 font-semibold text-white hover:bg-brand/90"
+            />
+          )
         }
       />
 
@@ -119,7 +124,10 @@ export default function StaffDirectory({
       </div>
 
       <div className="mt-5">
-        <StaffTable staffs={filteredStaffs} onEdit={(staff) => setDialog({ type: "edit", staff })} />
+        <StaffTable
+          staffs={filteredStaffs}
+          onEdit={readOnly ? undefined : (staff) => setDialog({ type: "edit", staff })}
+        />
       </div>
 
       {dialog && (

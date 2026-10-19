@@ -4,7 +4,7 @@ import { api } from "@/lib/api/server";
 import { getBranchSelection } from "@/lib/branch/selected-branch";
 
 export default async function StaffManagementPage() {
-  const [{ branches, selected }, staff, roles] = await Promise.all([
+  const [{ branches, selected, locked }, staff, roles] = await Promise.all([
     getBranchSelection(),
     api.staff(),
     api.roles(),
@@ -22,6 +22,8 @@ export default async function StaffManagementPage() {
       branchOptions={branches.map((branch) => ({ value: String(branch.id), label: branch.name }))}
       defaultRoleId={String(roles.find((role) => role.code === "staff")?.id ?? roles[0]?.id ?? "")}
       defaultBranchId={String(selected?.id ?? branches[0]?.id ?? "")}
+      // Staff, branch and device management stay owner-only.
+      readOnly={locked}
     />
   );
 }

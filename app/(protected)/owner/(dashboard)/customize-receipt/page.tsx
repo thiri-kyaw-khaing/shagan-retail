@@ -13,14 +13,19 @@ const toSettings = (row: ApiReceiptSettings | null) =>
   };
 
 export default async function CustomizeReceiptPage() {
-  const { branches, selected } = await getBranchSelection();
+  const selection = await getBranchSelection();
+  const { selected, locked } = selection;
+  // A manager edits only their own branch's receipt (the backend pins a till's
+  // reads and writes to it); the org-wide default and payment QR codes stay
+  // the Owner's.
+  const branches = locked ? (selected ? [selected] : []) : selection.branches;
 
   // One request per branch, plus the default and each branch's QR codes:
   // there's no bulk endpoint, and an org has only a handful of branches.
   const [defaultRow, branchRows, qrLists] = await Promise.all([
     api.receiptSettings({ branchId: null }),
     Promise.all(branches.map((b) => api.receiptSettings({ branchId: b.id }))),
-    Promise.all(branches.map((b) => api.paymentQrCodes(b.id))),
+    locked ? Promise.resolve([]) : Promise.all(branches.map((b) => api.paymentQrCodes(b.id))),
   ]);
 
   const settings: Record<ReceiptTarget, ReceiptSettingsEntry> = {
@@ -36,7 +41,7 @@ export default async function CustomizeReceiptPage() {
     <CustomizeReceiptView
       settings={settings}
       targetOptions={[
-        { value: "default", label: "Default (all branches)" },
+        ...(locked ? [] : [{ value: "default" as ReceiptTarget, label: "Default (all branches)" }]),
         ...branches.map((b) => ({ value: `${b.id}` as ReceiptTarget, label: b.name })),
       ]}
       initialTarget={selected ? `${selected.id}` : "default"}
@@ -44,10 +49,11 @@ export default async function CustomizeReceiptPage() {
       qrByBranch={Object.fromEntries(
         branches.map((branch, index) => [
           String(branch.id),
-          qrLists[index].map((qr) => ({ id: qr.id, bankName: qr.bank_name, imageUrl: qr.image_url })),
+          (qrLists[index] ?? []).map((qr) => ({ id: qr.id, bankName: qr.bank_name, imageUrl: qr.image_url })),
         ]),
       )}
       initialBranchId={String(selected?.id ?? branches[0]?.id ?? "")}
+      showQrPayment={!locked}
     />
   );
 }

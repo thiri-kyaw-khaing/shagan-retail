@@ -17,6 +17,10 @@ type BackOfficeHeaderActionsProps = {
   branchSlot?: ReactNode;
   /** Owners have no POS portal to return to (WORKFLOWS §3). */
   showExitToPortal?: boolean;
+  /** Replaces the default "go to /portal" (a manager also closes their Back Office). */
+  onExitToPortal?: () => void;
+  /** Replaces the default device logout (a manager only leaves the Back Office). */
+  onSignOut?: () => void;
 };
 
 export default function BackOfficeHeaderActions({
@@ -25,6 +29,8 @@ export default function BackOfficeHeaderActions({
   branchName,
   branchSlot,
   showExitToPortal = false,
+  onExitToPortal,
+  onSignOut,
 }: BackOfficeHeaderActionsProps) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -48,7 +54,7 @@ export default function BackOfficeHeaderActions({
         <CustomButton
           label={t("backOffice.exitToPortal")}
           icon={Home}
-          onClick={() => router.push("/portal")}
+          onClick={onExitToPortal ?? (() => router.push("/portal"))}
           className="bg-white h-10 font-semibold text-brand hover:bg-white/90"
         />
       )}
@@ -56,7 +62,7 @@ export default function BackOfficeHeaderActions({
       <CustomButton
         label={t("backOffice.signOut")}
         icon={LogOut}
-        onClick={() => logoutAction()}
+        onClick={onSignOut ?? (() => logoutAction())}
         className="bg-white h-10 font-semibold text-brand hover:bg-white/90"
       />
     </div>

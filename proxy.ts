@@ -12,8 +12,10 @@ import { ApiError, callBackend } from "@/lib/api/backend";
 import {
   ACCESS_COOKIE,
   ACCOUNT_TYPE_COOKIE,
+  BACKOFFICE_COOKIE,
   REFRESH_COOKIE,
   isExpiring,
+  jwtExpiry,
   writeSessionCookies,
 } from "@/lib/api/session";
 import type { AccountType, ApiSession } from "@/lib/api/types";
@@ -56,9 +58,15 @@ function refreshOnce(refreshToken: string): Promise<ApiSession | null> {
   return pending;
 }
 
+/** Optimistic: the pages re-check the claims, and the backend verifies the token. */
+function hasBackOfficeSession(request: NextRequest) {
+  const token = request.cookies.get(BACKOFFICE_COOKIE)?.value;
+  return !!token && jwtExpiry(token) > Date.now() / 1000;
+}
+
 function toLogin(request: NextRequest) {
   const response = NextResponse.redirect(new URL("/login", request.url));
-  for (const name of [ACCESS_COOKIE, REFRESH_COOKIE, ACCOUNT_TYPE_COOKIE]) {
+  for (const name of [ACCESS_COOKIE, REFRESH_COOKIE, ACCOUNT_TYPE_COOKIE, BACKOFFICE_COOKIE]) {
     response.cookies.delete(name);
   }
   return response;
@@ -71,8 +79,14 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const portal = PORTAL_OWNER.find(([prefix]) => pathname === prefix || pathname.startsWith(`${prefix}/`));
-  if (portal && portal[1] !== accountType) {
-    return NextResponse.redirect(new URL(HOME[accountType], request.url));
+  // A till reaches the Owner's Back Office screens only while a manager has
+  // unlocked it with their PIN (WORKFLOWS §4); the pages scope it to the
+  // till's branch. Without that, the manager PIN screen.
+  const managerAtTill =
+    portal?.[1] === "owner" && accountType === "pos" && hasBackOfficeSession(request);
+  if (portal && portal[1] !== accountType && !managerAtTill) {
+    const home = portal[1] === "owner" && accountType === "pos" ? "/manager/pin" : HOME[accountType];
+    return NextResponse.redirect(new URL(home, request.url));
   }
 
   if (!isExpiring(request.cookies.get(ACCESS_COOKIE)?.value)) return NextResponse.next();

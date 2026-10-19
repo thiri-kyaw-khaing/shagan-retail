@@ -17,6 +17,7 @@ import type {
   ApiVoid,
   ApiVoidReason,
 } from "@/lib/api/types";
+import { clearBackOfficeSession } from "@/lib/backoffice/session";
 import { clearStaffSession, getStaffSession, setStaffSession } from "@/lib/pos/staff-session";
 
 /**
@@ -95,6 +96,8 @@ export async function signInStaffAction(
   }
 
   await setStaffSession(token);
+  // Whoever signs in at the till next closes a manager's Back Office left open here.
+  await clearBackOfficeSession();
   return { ok: true, data: { next: shift ? "/pos/sell" : "/pos/open-shift" } };
 }
 

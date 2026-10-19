@@ -18,7 +18,8 @@ export type StaffSession = {
   permissions: string[];
 };
 
-function decode(token: string): Omit<StaffSession, "token"> | null {
+/** A staff token's claims (no signature check - the backend verifies it). */
+export function decodeStaffToken(token: string): Omit<StaffSession, "token"> | null {
   try {
     const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
     return {
@@ -36,7 +37,7 @@ function decode(token: string): Omit<StaffSession, "token"> | null {
 export async function getStaffSession(): Promise<StaffSession | null> {
   const token = (await cookies()).get(STAFF_COOKIE)?.value;
   if (!token || jwtExpiry(token) <= Date.now() / 1000) return null;
-  const claims = decode(token);
+  const claims = decodeStaffToken(token);
   return claims && { token, ...claims };
 }
 
