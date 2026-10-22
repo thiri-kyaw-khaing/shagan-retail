@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { toHeldSale } from "@/lib/api/mappers";
+import type { ReceiptShop } from "@/lib/printer/from-sale";
 import { holdSaleAction, resumeHeldSaleAction, type PosResult } from "@/lib/pos/actions";
 import type { CartItemData } from "@/lib/types/model/cart";
 import type { HeldSale } from "@/lib/types/model/heldsale";
@@ -24,6 +25,8 @@ export type TillInfo = {
   staffName: string;
   /** The cashier's own permission; without it a discounted sale needs a manager. */
   canApplyDiscount: boolean;
+  /** The branch's receipt header and footer (Customize Receipt); null if none is set up. */
+  receiptShop: ReceiptShop | null;
 };
 
 export type SaleCustomer = { id: number; name: string };

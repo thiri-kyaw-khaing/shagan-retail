@@ -9,10 +9,13 @@ import NoticeBanner from "@/components/custom/common/notice-banner";
 import StatusBadge from "@/components/custom/common/status-badge";
 import SummaryCard from "@/components/custom/common/summary-card";
 import Header from "@/components/custom/common/pos/header";
+import { usePos } from "@/components/custom/common/pos/pos-context";
+import { usePrinter } from "@/components/custom/common/printer-context";
 import ReceiptActions from "@/components/custom/common/pos/receipt-actions";
 import SaleTotals from "@/components/custom/common/pos/sale-totals";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { reprintReceiptAction } from "@/lib/pos/actions";
+import { receiptFromApi } from "@/lib/printer/from-sale";
 import { formatSaleDateTime, getReceiptNumber, type Sale } from "@/lib/types/model/sales";
 
 type ReceiptDetailViewProps = {
@@ -41,6 +44,8 @@ export default function ReceiptDetailView({
 }: ReceiptDetailViewProps) {
   const router = useRouter();
   const { t } = useTranslation();
+  const { till } = usePos();
+  const { printReceipt } = usePrinter();
   const [reprinted, setReprinted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -56,9 +61,23 @@ export default function ReceiptDetailView({
     setReprinted(false);
     startTransition(async () => {
       const result = await reprintReceiptAction(sale.id);
-      if (result.ok) setReprinted(true);
-      else if (result.signedOut) router.push("/pos/select-staff");
-      else setError(result.error);
+      if (!result.ok) {
+        if (result.signedOut) router.push("/pos/select-staff");
+        else setError(result.error);
+        return;
+      }
+      const doc = receiptFromApi(
+        {
+          shop: till.receiptShop,
+          branchName: till.branchName,
+          cashier: cashierName,
+          customer: sale.customerId === null ? null : customerLabel,
+        },
+        result.data,
+      );
+      const printError = await printReceipt(doc);
+      if (printError) setError(printError);
+      else setReprinted(true);
     });
   };
 
@@ -134,7 +153,7 @@ export default function ReceiptDetailView({
           />
         )}
 
-        {reprinted && <NoticeBanner tone="amber" title="Receipt sent to the printer." />}
+        {reprinted && <NoticeBanner tone="amber" title="Receipt printed." />}
         <FormError message={error} />
 
         {!isVoided && (

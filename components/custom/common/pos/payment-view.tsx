@@ -18,6 +18,8 @@ import type { ApiCreatePayment } from "@/lib/api/types";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { approveAction, createSaleAction } from "@/lib/pos/actions";
 import { centsToDecimal, fromCents, priceCart, toCents, toSaleItems } from "@/lib/pos/pricing";
+import { receiptFromCheckout } from "@/lib/printer/from-sale";
+import type { ReceiptDoc } from "@/lib/printer/receipt";
 import type { PaymentMethod, SplitLine } from "@/lib/types/model/payment";
 import type { QrCode } from "@/lib/types/model/qr-codes";
 import { getReceiptNumber } from "@/lib/types/model/sales";
@@ -28,7 +30,7 @@ type PaymentViewProps = {
   approvers: { id: number; name: string }[];
 };
 
-type Done = { receiptNo: string; total: number; change: number | null };
+type Done = { receiptNo: string; total: number; change: number | null; receipt: ReceiptDoc };
 
 const payment = (method: "cash" | "qr", amountCents: number, receivedCents = amountCents): ApiCreatePayment => ({
   method,
@@ -85,6 +87,17 @@ export default function PaymentView({ qrCodes, approvers }: PaymentViewProps) {
           receiptNo: getReceiptNumber(result.data.id),
           total: totalDue,
           change: cash ? Number(cash.change_given) : null,
+          receipt: receiptFromCheckout(
+            {
+              shop: till.receiptShop,
+              branchName: till.branchName,
+              cashier: till.staffName,
+              customer: customer?.name ?? null,
+            },
+            result.data.id,
+            checkout,
+            payments,
+          ),
         });
       } else if (result.signedOut) {
         router.push("/pos/select-staff");
@@ -156,6 +169,7 @@ export default function PaymentView({ qrCodes, approvers }: PaymentViewProps) {
             total={done.total}
             change={done.change}
             receiptNo={done.receiptNo}
+            receipt={done.receipt}
             locale={locale}
             onNewSale={handleNewSale}
           />
