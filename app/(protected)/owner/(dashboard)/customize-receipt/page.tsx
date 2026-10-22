@@ -1,6 +1,7 @@
 import CustomizeReceiptView from "@/components/custom/common/back-office/customize-receipt/customize-receipt-view";
 import { api } from "@/lib/api/server";
 import type { ApiReceiptSettings } from "@/lib/api/types";
+import { requireBackOfficeAccess } from "@/lib/backoffice/session";
 import { getBranchSelection } from "@/lib/branch/selected-branch";
 import type { ReceiptSettingsEntry, ReceiptTarget } from "@/lib/types/model/receipt-settings";
 
@@ -13,6 +14,7 @@ const toSettings = (row: ApiReceiptSettings | null) =>
   };
 
 export default async function CustomizeReceiptPage() {
+  await requireBackOfficeAccess("manage_receipt_settings");
   const selection = await getBranchSelection();
   const { selected, locked } = selection;
   // A manager edits only their own branch's receipt (the backend pins a till's

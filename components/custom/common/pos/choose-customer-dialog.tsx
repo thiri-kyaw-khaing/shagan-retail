@@ -12,7 +12,7 @@ import CustomButton from "@/components/custom/common/custom-button";
 import CustomerListItem from "@/components/custom/common/pos/customer-list-item";
 import CreateCustomerForm from "@/components/custom/common/pos/create-customer-form";
 import { useAction } from "@/lib/api/use-action";
-import { createCustomerAction } from "@/lib/customers/actions";
+import { createTillCustomerAction } from "@/lib/pos/actions";
 import type { CustomerRow } from "@/lib/types/model/customers";
 import { useTranslation } from "@/lib/i18n/use-translation";
 
@@ -64,7 +64,7 @@ export default function ChooseCustomerDialog({
           <CreateCustomerForm
             onSave={(values) =>
               run(
-                () => createCustomerAction(values),
+                () => createTillCustomerAction(values),
                 (created) => handleSelect({ id: created.id, name: created.name, phone: created.phone }),
               )
             }

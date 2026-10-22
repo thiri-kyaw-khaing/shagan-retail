@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Plus } from "lucide-react";
 
 import PageHeader from "@/components/custom/common/back-office/page-header";
@@ -25,6 +25,8 @@ type StaffDirectoryProps = {
   defaultBranchId: string;
   /** A manager sees staff but can't add or edit them (WORKFLOWS §4). */
   readOnly?: boolean;
+  /** The Owner's Staff | Roles & Access tabs, shown under the header. */
+  tabs?: ReactNode;
 };
 
 type StaffDialog = { type: "add" } | { type: "edit"; staff: StaffRow } | null;
@@ -36,6 +38,7 @@ export default function StaffDirectory({
   defaultRoleId,
   defaultBranchId,
   readOnly = false,
+  tabs,
 }: StaffDirectoryProps) {
   const [search, setSearch] = useState("");
   const [dialog, setDialog] = useState<StaffDialog>(null);
@@ -113,6 +116,8 @@ export default function StaffDirectory({
           )
         }
       />
+
+      {tabs}
 
       <div className="mt-5">
         <SearchBar

@@ -16,7 +16,7 @@ export default async function StaffPinPage({
     api.lowStock({ branchId: null }),
     api.products(),
     // Who can force-close a shift another cashier left open on this till.
-    api.approvers(me.branch_id!, "access_backoffice"),
+    api.approvers(me.branch_id!, "force_close_shift"),
   ]);
   const member = staff.find((s) => s.id === staffId && s.status === "active");
   if (!member) notFound();

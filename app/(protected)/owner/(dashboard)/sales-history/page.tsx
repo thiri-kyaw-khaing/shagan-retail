@@ -1,9 +1,11 @@
 import SalesHistoryView from "@/components/custom/common/back-office/sales-history/sales-history-view";
 import { nameById, toSalesHistoryRow } from "@/lib/api/mappers";
 import { api } from "@/lib/api/server";
+import { requireBackOfficeAccess } from "@/lib/backoffice/session";
 import { getBranchSelection } from "@/lib/branch/selected-branch";
 
 export default async function SalesHistoryPage() {
+  await requireBackOfficeAccess("view_sales");
   const { branches, selected } = await getBranchSelection();
   // The latest 100 receipts (the backend's page cap); older ones need
   // paging, which this screen doesn't offer yet.

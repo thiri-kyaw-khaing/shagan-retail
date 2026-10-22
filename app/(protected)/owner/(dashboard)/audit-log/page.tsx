@@ -1,9 +1,11 @@
 import AuditLogView from "@/components/custom/common/back-office/audit-log/audit-log-view";
 import { nameById, toAuditLogEntry } from "@/lib/api/mappers";
 import { api } from "@/lib/api/server";
+import { requireBackOfficeAccess } from "@/lib/backoffice/session";
 import { getBranchSelection } from "@/lib/branch/selected-branch";
 
 export default async function AuditLogPage() {
+  await requireBackOfficeAccess("view_audit_log");
   const { selected } = await getBranchSelection();
   // "All branches" also includes org-level events that have no branch.
   const [logs, staff, roles, me] = await Promise.all([

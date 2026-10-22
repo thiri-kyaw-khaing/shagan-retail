@@ -27,6 +27,8 @@ import type {
   ApiProductRevenue,
   ApiPurchaseOrder,
   ApiPaymentQrCode,
+  ApiPermission,
+  ApiPermissionGroup,
   ApiPinVerifyResult,
   ApiPurchaseOrderDetail,
   ApiReceiptSettings,
@@ -66,10 +68,16 @@ async function authed<T>(
   const accessToken = store.get(ACCESS_COOKIE)?.value;
   if (!accessToken) redirect("/login");
   // A manager with Back Office open at a till: their staff token is what the
-  // backend's back-office routes (catalog, suppliers, POs, stock, settings,
-  // expenses) check, and what records them as the actor. A till write that
+  // backend's back-office *writes* check (catalog, suppliers, POs, stock,
+  // settings, expenses) and what records them as the actor. Reads go without
+  // it on purpose: the backend only restricts a read when that token is sent
+  // (view_* permissions), so attaching it would let a role change break the
+  // till's own reads (staff picker, receipts) - the Back Office pages check
+  // view access themselves (requireBackOfficeAccess). A till write that
   // passes its own cashier X-Staff-Token (asStaff) still wins.
-  const managerToken = store.get(ACCOUNT_TYPE_COOKIE)?.value === "pos" ? store.get(BACKOFFICE_COOKIE)?.value : undefined;
+  const isWrite = !!init?.method && init.method !== "GET";
+  const managerToken =
+    isWrite && store.get(ACCOUNT_TYPE_COOKIE)?.value === "pos" ? store.get(BACKOFFICE_COOKIE)?.value : undefined;
   const headers =
     managerToken && jwtExpiry(managerToken) > Date.now() / 1000
       ? { "X-Staff-Token": managerToken, ...(init?.headers as Record<string, string> | undefined) }
@@ -178,7 +186,22 @@ export const api = {
   // Identity (org-wide; filter staff by branch_id client-side - /staff ignores ?branch_id)
   branches: () => authed<ApiBranch[]>("/branches"),
   staff: () => authed<ApiStaff[]>("/staff"),
-  roles: () => authed<ApiRole[]>("/roles"),
+  /**
+   * The org's roles. Owner / Service Center only since Access rights V1 - a
+   * till or a manager gets `[]` (403), so screens just show no role label.
+   */
+  roles: async () => {
+    try {
+      return await authed<ApiRole[]>("/roles");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 403) return [];
+      throw err;
+    }
+  },
+  /** Owner only: the permission catalogue, grouped by POS / Back office. */
+  permissionGroups: () => authed<ApiPermissionGroup[]>("/permissions"),
+  /** Owner only: one role's grants. */
+  rolePermissions: (roleId: number) => authed<ApiPermission[]>(`/roles/${roleId}/permissions`),
 
   customers: () => authed<ApiCustomer[]>("/customers"),
 

@@ -8,6 +8,7 @@ import type {
   ApiCreateExchangeItem,
   ApiCreateReturn,
   ApiCreateSale,
+  ApiCustomer,
   ApiDrawerEvent,
   ApiExchange,
   ApiHeldSale,
@@ -137,7 +138,7 @@ export async function closeShiftAction(shiftId: number, closingCash: string, rea
 /**
  * A manager force-closes a shift someone else left open on this till, so the
  * next cashier can sign in. The backend wants the manager's own staff token
- * with `access_backoffice` (an approval token isn't accepted), so their PIN is
+ * with `force_close_shift` (an approval token isn't accepted), so their PIN is
  * verified here and that token is used for this one request only - it never
  * becomes the till's signed-in cashier. A reason is always required.
  */
@@ -167,7 +168,7 @@ export async function forceCloseShiftAction(
     headers: { "X-Staff-Token": token },
   });
   if (!result.ok && /insufficient permission/i.test(result.error)) {
-    return { ok: false, error: "Only a manager can force-close a shift." };
+    return { ok: false, error: "Your role can't force-close shifts." };
   }
   return result.ok ? { ok: true, data: undefined } : result;
 }
@@ -282,10 +283,34 @@ export async function createExchangeAction(
   return result.ok ? { ok: true, data: { netDifference: result.data.net_difference } } : result;
 }
 
-/** Re-issues a receipt. The backend only simulates printing, so this just confirms the sale exists. */
+/**
+ * Re-issues a receipt. The backend only simulates printing, so this just
+ * confirms the sale exists. Needs the cashier's `reprint_receipt`.
+ */
 export async function reprintReceiptAction(saleId: string): Promise<PosResult> {
-  const result = await mutate(`/sales/${saleId}/reprint`, { method: "POST" });
+  const result = await asStaff(`/sales/${saleId}/reprint`, { method: "POST", json: {} });
+  if (!result.ok && /permission/i.test(result.error)) {
+    return { ok: false, error: "Your role can't reprint receipts." };
+  }
   return result.ok ? { ok: true, data: undefined } : result;
+}
+
+// --- Customers ---
+
+/**
+ * Adds a customer from the till's checkout. Needs the cashier's
+ * `add_customers` (sent as their staff token). 409 if the phone number is
+ * already a customer in this org.
+ */
+export async function createTillCustomerAction(values: { name: string; phone: string }): Promise<PosResult<ApiCustomer>> {
+  const result = await asStaff<ApiCustomer>("/customers", {
+    method: "POST",
+    json: { name: values.name.trim(), phone: values.phone.trim() },
+  });
+  if (!result.ok && /permission/i.test(result.error)) {
+    return { ok: false, error: "Your role can't add customers." };
+  }
+  return result;
 }
 
 // --- Held sales ---

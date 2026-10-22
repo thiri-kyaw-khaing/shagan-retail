@@ -1,11 +1,13 @@
 import SupplierDirectory from "@/components/custom/common/back-office/suppliers/supplier-directory";
 import { inBranch, nameById, toPurchaseOrder, toSupplier } from "@/lib/api/mappers";
 import { api } from "@/lib/api/server";
+import { requireBackOfficeAccess } from "@/lib/backoffice/session";
 import { getBranchSelection } from "@/lib/branch/selected-branch";
 
 // Suppliers are shared org-wide (WORKFLOWS §7); purchase orders belong to a
 // branch, so they follow the header's branch filter.
 export default async function SuppliersPage() {
+  await requireBackOfficeAccess("manage_suppliers", "manage_purchase_orders", "receive_stock");
   const [{ branches, selected }, suppliers, orders, products] = await Promise.all([
     getBranchSelection(),
     api.suppliers(),

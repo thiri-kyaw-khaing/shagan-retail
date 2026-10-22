@@ -14,11 +14,13 @@ import {
   businessToday,
 } from "@/lib/api/mappers";
 import { api } from "@/lib/api/server";
+import { requireBackOfficeAccess } from "@/lib/backoffice/session";
 import { getBranchSelection } from "@/lib/branch/selected-branch";
 
 // "Today" is the business-time day everywhere on this page - the same day the
 // backend's reports use - so the KPIs, the chart and the expense total agree.
 export default async function DashboardDetailsPage() {
+  await requireBackOfficeAccess("view_reports");
   const { branches, selected } = await getBranchSelection();
   const branchId = selected?.id ?? null;
   const today = businessToday();
