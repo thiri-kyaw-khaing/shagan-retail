@@ -27,17 +27,13 @@ async function BackOffice() {
   const [{ selected }, viewer] = await Promise.all([getBranchSelection(), requireBackOfficeViewer()]);
   const branchId = selected?.id ?? null;
   const canSeeReports = canUse(viewer, "view_reports");
-  const [summary, expenses] = canSeeReports
-    ? await Promise.all([api.homeSummary({ branchId }), api.expenses()])
-    : [null, []];
+  const [[summary, expenses], store] = await Promise.all([
+    canSeeReports ? Promise.all([api.homeSummary({ branchId }), api.expenses()]) : ([null, []] as const),
+    cookies(),
+  ]);
   const visible = (Object.keys(SECTION_ACCESS) as SectionKey[]).filter((key) =>
     canUse(viewer, ...SECTION_ACCESS[key]),
   );
-  const [summary, expenses, store] = await Promise.all([
-    api.homeSummary({ branchId }),
-    api.expenses(),
-    cookies(),
-  ]);
   // A till only reaches the Back Office with a manager's PIN (see proxy.ts).
   const isManager = store.get(ACCOUNT_TYPE_COOKIE)?.value === "pos";
 

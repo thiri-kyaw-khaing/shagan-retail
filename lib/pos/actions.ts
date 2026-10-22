@@ -288,12 +288,12 @@ export async function createExchangeAction(
  * Re-issues a receipt. The backend only simulates printing, so this just
  * confirms the sale exists. Needs the cashier's `reprint_receipt`.
  */
-export async function reprintReceiptAction(saleId: string): Promise<PosResult> {
-  const result = await asStaff(`/sales/${saleId}/reprint`, { method: "POST", json: {} });
+export async function reprintReceiptAction(saleId: string): Promise<PosResult<ApiReceipt>> {
+  const result = await asStaff<ApiReceipt>(`/sales/${saleId}/reprint`, { method: "POST", json: {} });
   if (!result.ok && /permission/i.test(result.error)) {
     return { ok: false, error: "Your role can't reprint receipts." };
   }
-  return result.ok ? { ok: true, data: undefined } : result;
+  return result;
 }
 
 // --- Customers ---
