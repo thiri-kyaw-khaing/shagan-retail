@@ -2,9 +2,11 @@ import InventoryLedgerView from "@/components/custom/common/back-office/inventor
 import { stockKey } from "@/components/custom/common/back-office/inventory-ledger/ledger-stock";
 import { formatDisplayDateTime, nameById, toStockMovement } from "@/lib/api/mappers";
 import { api } from "@/lib/api/server";
+import { requireBackOfficeAccess } from "@/lib/backoffice/session";
 import { getBranchSelection } from "@/lib/branch/selected-branch";
 
 export default async function InventoryLedgerPage() {
+  await requireBackOfficeAccess("view_inventory");
   const { branches, selected } = await getBranchSelection();
   const branchId = selected?.id ?? null;
   const [ledger, products, staff, me, transfers, stockLevels] = await Promise.all([

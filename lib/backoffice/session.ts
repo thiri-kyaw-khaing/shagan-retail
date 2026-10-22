@@ -44,7 +44,16 @@ export async function getBackOfficeSession(): Promise<StaffSession | null> {
 
 export type BackOfficeViewer =
   | { kind: "owner"; name: string }
-  | { kind: "manager"; name: string; staffId: number; branch: ApiBranch };
+  | { kind: "manager"; name: string; staffId: number; branch: ApiBranch; permissions: string[] };
+
+/**
+ * Whether the viewer may use a Back Office area (Access rights V1). The Owner
+ * can do everything; a manager needs the permission in their PIN sign-in
+ * (changes made by the Owner apply from their next sign-in).
+ */
+export function canUse(viewer: BackOfficeViewer, ...codes: string[]): boolean {
+  return viewer.kind === "owner" || codes.some((code) => viewer.permissions.includes(code));
+}
 
 /**
  * Who's in the Back Office. A till without an unlocked manager session is
@@ -62,5 +71,17 @@ export async function requireBackOfficeViewer(): Promise<BackOfficeViewer> {
   const manager = staff.find((s) => s.id === session.staffId && s.status === "active");
   const branch = branches.find((b) => b.id === me.branch_id);
   if (!manager || !branch || session.branchId !== branch.id) redirect("/manager/pin");
-  return { kind: "manager", name: manager.name, staffId: manager.id, branch };
+  return { kind: "manager", name: manager.name, staffId: manager.id, branch, permissions: session.permissions };
+}
+
+/**
+ * For a Back Office page: the viewer, or back to the Back Office home when
+ * their role lacks every one of `codes` (the backend would refuse the page's
+ * reads anyway). Pass no codes for an Owner-only page.
+ */
+export async function requireBackOfficeAccess(...codes: string[]): Promise<BackOfficeViewer> {
+  const viewer = await requireBackOfficeViewer();
+  if (viewer.kind === "owner") return viewer;
+  if (codes.length === 0 || !canUse(viewer, ...codes)) redirect("/owner");
+  return viewer;
 }

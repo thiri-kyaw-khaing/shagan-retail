@@ -104,7 +104,29 @@ export type ApiStaff = {
   updated_at: string;
 };
 
-export type ApiRole = { id: number; code: string; name: string };
+/**
+ * `GET /roles` (Owner / Service Center only). Roles belong to the org; the
+ * first row is a synthetic, non-editable Owner (`code: "owner"`, id 0).
+ * `pos` / `backoffice` are the two Loyverse-style switches.
+ */
+export type ApiRole = {
+  id: number;
+  code: string;
+  name: string;
+  is_system?: boolean;
+  editable?: boolean;
+  staff_count?: number;
+  pos?: boolean;
+  backoffice?: boolean;
+};
+
+export type ApiPermission = { id: number; code: string; name: string; category: "pos" | "backoffice" | string };
+
+/** `GET /permissions`: the catalogue, grouped (POS first, then Back office). */
+export type ApiPermissionGroup = { category: string; label: string; permissions: ApiPermission[] };
+
+/** `POST /roles`, `PATCH /roles/:id`. `warnings`: grants accepted but without effect (e.g. switch off). */
+export type ApiRoleDetail = ApiRole & { permission_codes: string[]; warnings: string[] };
 
 export type ApiCustomer = {
   id: number;

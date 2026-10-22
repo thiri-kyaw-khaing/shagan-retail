@@ -1,4 +1,5 @@
 import ReportsView from "@/components/custom/common/back-office/reports/reports-view";
+import { requireBackOfficeAccess } from "@/lib/backoffice/session";
 import { getBranchSelection } from "@/lib/branch/selected-branch";
 import { loadReportData, parseReportQuery } from "@/lib/reports/report-data";
 
@@ -7,6 +8,7 @@ export default async function ReportsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await requireBackOfficeAccess("view_reports");
   const [{ selected }, params] = await Promise.all([getBranchSelection(), searchParams]);
   const query = parseReportQuery(params);
   const data = await loadReportData(query, selected?.id ?? null);
