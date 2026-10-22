@@ -10,6 +10,7 @@ import ReconciliationSummary from "@/components/custom/common/pos/reconciliation
 import ShiftSummaryList from "@/components/custom/common/pos/shift-summary-list";
 import FormError from "@/components/custom/common/forms/form-error";
 import LabeledTextarea from "@/components/custom/common/labeled-textarea";
+import { usePrinter } from "@/components/custom/common/printer-context";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { closeShiftAction, openDrawerAction } from "@/lib/pos/actions";
 
@@ -41,6 +42,7 @@ export default function CloseShiftView({
   expectedCash,
 }: CloseShiftViewProps) {
   const router = useRouter();
+  const { openDrawer } = usePrinter();
   const { t } = useTranslation();
 
   const [cashInput, setCashInput] = useState("");
@@ -64,7 +66,11 @@ export default function CloseShiftView({
     setError(null);
     startTransition(async () => {
       const result = await openDrawerAction(shiftId);
-      if (result.ok) return;
+      if (result.ok) {
+        // Logged first, then opened: a refused no-sale never pops the drawer.
+        setError(await openDrawer({ manual: true }));
+        return;
+      }
       if (result.signedOut) router.push("/pos/select-staff");
       else setError(result.error);
     });

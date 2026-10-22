@@ -13,6 +13,7 @@ import type {
   ApiExchange,
   ApiHeldSale,
   ApiHeldSaleItems,
+  ApiReceipt,
   ApiReturn,
   ApiSale,
   ApiVoid,

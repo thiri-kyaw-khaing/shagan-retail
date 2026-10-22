@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, WalletCards } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import BackButton from "@/components/custom/common/back-button";
 import CustomButton from "@/components/custom/common/custom-button";
@@ -42,11 +42,6 @@ export default function PaymentComplete({
             {formatCurrency(totalDue, locale)}
           </p>
         </div>
-      </div>
-
-      <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
-        <WalletCards className="mr-2 inline size-4" />{" "}
-        {t("payment.cashDrawerOpened")}
       </div>
 
       <div className="py-7 text-center">

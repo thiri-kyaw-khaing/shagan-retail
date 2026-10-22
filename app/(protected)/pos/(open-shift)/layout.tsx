@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import ShiftShell from "@/components/custom/common/pos/shift-shell";
 import { toHeldSale } from "@/lib/api/mappers";
 import { api } from "@/lib/api/server";
+import { toReceiptShop } from "@/lib/printer/from-sale";
 import { requireTill } from "@/lib/pos/till-context";
 import type { HeldSale } from "@/lib/types/model/heldsale";
 
@@ -12,7 +13,11 @@ export default async function ShiftLayout({ children }: { children: React.ReactN
   const till = await requireTill();
   if (!till.shift) redirect("/pos/open-shift");
   // Held sales are branch-wide: any cashier here can resume them.
-  const heldSales = (await api.heldSales())
+  const [heldRows, receiptSettings] = await Promise.all([
+    api.heldSales(),
+    api.receiptSettings({ branchId: till.branch.id }),
+  ]);
+  const heldSales = heldRows
     .map(toHeldSale)
     .filter((held): held is HeldSale => held !== null)
     .sort((a, b) => b.heldAt - a.heldAt);
@@ -27,6 +32,7 @@ export default async function ShiftLayout({ children }: { children: React.ReactN
         branchName: till.branch.name,
         staffName: till.staff.name,
         canApplyDiscount: till.staff.permissions.includes("apply_manual_discount"),
+        receiptShop: toReceiptShop(receiptSettings),
       }}
     >
       {children}

@@ -20,9 +20,11 @@ import { useTranslation } from "@/lib/i18n/use-translation";
 type OpenDrawerProps = {
   trigger: ReactNode;
   onConfirm?: () => void;
+  /** Replaces the default "This will be logged." text. */
+  description?: string;
 };
 
-export default function OpenDrawer({ trigger, onConfirm }: OpenDrawerProps) {
+export default function OpenDrawer({ trigger, onConfirm, description }: OpenDrawerProps) {
   const { t } = useTranslation();
 
   return (
@@ -39,7 +41,7 @@ export default function OpenDrawer({ trigger, onConfirm }: OpenDrawerProps) {
           </DialogTitle>
 
           <DialogDescription className="text-base leading-relaxed text-slate-500">
-            {t("openDrawer.description")}
+            {description ?? t("openDrawer.description")}
           </DialogDescription>
         </DialogHeader>
 
