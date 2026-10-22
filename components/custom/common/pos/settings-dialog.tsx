@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+import PrinterSettings from "@/components/custom/common/pos/printer-settings";
 import SyncStatus from "@/components/custom/common/pos/sync-status";
 import { DeviceStatusCard } from "@/components/custom/common/device-status-card";
 import CustomButton from "@/components/custom/common/custom-button";
@@ -59,6 +60,15 @@ export default function SettingsDialog({
             </div>
 
             <DeviceStatusCard />
+          </section>
+
+          <section className="border-t border-rose-200 pt-6">
+            <div className="mb-4">
+              <h2 className="text-lg font-bold text-slate-800">Receipt printer</h2>
+              <p className="mt-1 text-sm text-slate-500">Saved on this till only.</p>
+            </div>
+
+            <PrinterSettings />
           </section>
         </div>
       </DialogContent>

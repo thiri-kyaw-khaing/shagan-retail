@@ -3,6 +3,7 @@
 import type { LucideIcon } from "lucide-react";
 
 import CustomButton from "@/components/custom/common/custom-button";
+import { useOpenDrawerOnMount } from "@/components/custom/common/printer-context";
 
 type AmountConfirmStepProps = {
   icon: LucideIcon;
@@ -23,6 +24,8 @@ export default function AmountConfirmStep({
   buttonLabel,
   onComplete,
 }: AmountConfirmStepProps) {
+  // Only used for cash payouts, whose banner says the drawer is open.
+  useOpenDrawerOnMount();
   return (
     <div className="mx-auto flex max-w-md flex-col items-center px-4 pt-8 text-center bg-white rounded-2xl p-6 shadow-md sm:px-10 sm:pt-10">
       <div className="flex size-16 items-center justify-center rounded-2xl bg-brand text-white">

@@ -12,6 +12,7 @@ import type {
   ApiExchange,
   ApiHeldSale,
   ApiHeldSaleItems,
+  ApiReceipt,
   ApiReturn,
   ApiSale,
   ApiVoid,
@@ -282,10 +283,12 @@ export async function createExchangeAction(
   return result.ok ? { ok: true, data: { netDifference: result.data.net_difference } } : result;
 }
 
-/** Re-issues a receipt. The backend only simulates printing, so this just confirms the sale exists. */
-export async function reprintReceiptAction(saleId: string): Promise<PosResult> {
-  const result = await mutate(`/sales/${saleId}/reprint`, { method: "POST" });
-  return result.ok ? { ok: true, data: undefined } : result;
+/**
+ * The receipt bundle to print again (same content as the original; the
+ * backend doesn't print anything itself). The till prints it over USB.
+ */
+export async function reprintReceiptAction(saleId: string): Promise<PosResult<ApiReceipt>> {
+  return mutate<ApiReceipt>(`/sales/${saleId}/reprint`, { method: "POST" });
 }
 
 // --- Held sales ---

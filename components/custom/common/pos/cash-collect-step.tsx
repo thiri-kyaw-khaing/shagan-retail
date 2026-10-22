@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 
 import CustomButton from "@/components/custom/common/custom-button";
 import NumPad from "@/components/custom/common/numpad";
+import { usePrinter } from "@/components/custom/common/printer-context";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { cn } from "@/lib/utils";
 
@@ -21,12 +22,15 @@ export default function CashCollectStep({
   onContinue,
 }: CashCollectStepProps) {
   const { t } = useTranslation();
+  const { openDrawer } = usePrinter();
   const customerGives = Number(cashInput || "0");
   const difference = customerGives - amountDue;
   const hasEnough = customerGives >= amountDue && cashInput !== "";
   const isShort = cashInput !== "" && !hasEnough;
 
   const handleContinue = () => {
+    // The customer's cash goes in the drawer.
+    void openDrawer();
     onContinue();
   };
 
