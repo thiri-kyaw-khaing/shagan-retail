@@ -49,6 +49,11 @@ export type ApiProduct = {
   name: string;
   barcode: string;
   price: Decimal;
+  /** Catalog discount, 0-100, set by the Owner. */
+  discount_percent: Decimal;
+  /** Server-computed from price and percent (rounded up to the next K 100). */
+  sale_price: Decimal;
+  /** Per-unit amount, price - sale_price (server-computed). */
   discount: Decimal;
   tax: Decimal;
   threshold: number;
@@ -209,7 +214,16 @@ export type ApiSaleItem = {
   price_override: Decimal | null;
   qty: number;
   line_total: Decimal;
+  /** The whole line discount: catalog + manual + combo. */
   discount: Decimal;
+  catalog_discount_percent: Decimal;
+  catalog_discount: Decimal;
+  manual_discount_percent: Decimal;
+  manual_discount: Decimal;
+  manual_discount_reason: string;
+  combo_discount: Decimal;
+  discount_approval_id: string | null;
+  manual_approved_by: number | null;
   tax: Decimal;
 };
 
@@ -223,7 +237,14 @@ export type ApiPayment = {
 };
 
 /** A receipt line plus how much has already come back (returns + exchanges) and what's left. */
-export type ApiReceiptItem = ApiSaleItem & { returned_qty: number; returnable_qty: number };
+export type ApiReceiptItem = ApiSaleItem & {
+  returned_qty: number;
+  returnable_qty: number;
+  /** Unit price after the catalog or custom discount. */
+  unit_sale_price: Decimal;
+  /** "" without a custom discount. */
+  manual_approved_by_name: string;
+};
 
 export type ApiReceipt = { sale: ApiSale; items: ApiReceiptItem[]; payments: ApiPayment[] };
 
@@ -446,12 +467,41 @@ export type ApiPinVerifyResult = {
 export type ApiCreateSaleItem = {
   product_id: number;
   name_snapshot: string;
+  /** The original price; the backend prices the line from the product (409 if it changed). */
   unit_price: Decimal;
   qty: number;
-  /** Line total discount (not per unit). */
+  /** Ignored by the backend except on a combo line (its bundle share). */
   discount: Decimal;
   /** Line total tax (not per unit). */
   tax: Decimal;
+  /** The custom discount's approval, got when it was added (Discount V1). */
+  discount_approval_id?: string;
+  /** The catalog % the till priced with - only read for an offline-queued sale. */
+  catalog_discount_percent?: Decimal;
+};
+
+/** `POST /sales/discount-approvals` - one custom discount, approved when it's added. */
+export type ApiCreateDiscountApproval = {
+  product_id: number;
+  /** 0 < percent <= 100. */
+  percent: Decimal;
+  qty: number;
+  reason: string;
+  /** Both, for another staff member's PIN; neither, for self-approval. */
+  approver_staff_id?: number;
+  pin?: string;
+};
+
+export type ApiDiscountApproval = {
+  id: string;
+  product_id: number;
+  percent: Decimal;
+  max_qty: number;
+  unit_price: Decimal;
+  /** What the backend will charge per unit. */
+  unit_sale_price: Decimal;
+  approved_by: { id: number; name: string };
+  expires_at: string;
 };
 
 export type ApiCreatePayment = {
@@ -585,4 +635,16 @@ export type ApiDrawerEvent = {
 export type ApiHeldSaleItems = {
   lines: CartItemData[];
   customerName: string | null;
+};
+
+/** `GET /reports/discounts`. */
+export type ApiDiscountStaffRow = { staff_id: number; name: string; manual_total: Decimal; count: number };
+
+export type ApiDiscountsReport = {
+  catalog_total: Decimal;
+  manual_total: Decimal;
+  manual_count: number;
+  by_seller: ApiDiscountStaffRow[];
+  by_approver: ApiDiscountStaffRow[];
+  cancelled_count: number;
 };

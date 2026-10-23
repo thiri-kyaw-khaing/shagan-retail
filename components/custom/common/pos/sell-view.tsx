@@ -3,8 +3,10 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import ConfirmDialog from "@/components/custom/common/back-office/confirm-dialog";
 import CategoryTabs from "@/components/custom/common/pos/category-tabs";
 import CheckoutPanel from "@/components/custom/common/pos/checkout-panel";
+import CustomDiscountDialog from "@/components/custom/common/pos/custom-discount-dialog";
 import MobileCartBar from "@/components/custom/common/pos/mobile-cart-bar";
 import ProductGrid from "@/components/custom/common/pos/product-grid";
 import ProductSearchBar from "@/components/custom/common/pos/search-bar";
@@ -26,9 +28,16 @@ type SellViewProps = {
   /** Raw: the UI category carries an icon, which can't cross from the server. */
   categories: ApiCategory[];
   customers: CustomerRow[];
+  /** Staff at this branch who may approve a custom discount (the cashier left out). */
+  discountApprovers: { id: number; name: string }[];
 };
 
-export default function SellView({ products, categories: apiCategories, customers }: SellViewProps) {
+export default function SellView({
+  products,
+  categories: apiCategories,
+  customers,
+  discountApprovers,
+}: SellViewProps) {
   const router = useRouter();
   const { locale } = useLocale();
   const { t } = useTranslation();
@@ -38,9 +47,10 @@ export default function SellView({ products, categories: apiCategories, customer
     addToCart,
     increaseQuantity,
     decreaseQuantity,
+    decreaseProduct,
+    applyCustomDiscount,
+    removeCustomDiscount,
     holdCurrentCart,
-    discountPercent,
-    setDiscountPercent,
     customer,
     setCustomer,
   } = usePos();
@@ -51,6 +61,11 @@ export default function SellView({ products, categories: apiCategories, customer
   const [search, setSearch] = useState("");
   const [isDiscountPanelOpen, setIsDiscountPanelOpen] = useState(false);
   const [discountPercentInput, setDiscountPercentInput] = useState("");
+  const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
+  const [discountHint, setDiscountHint] = useState<string | null>(null);
+  /** The line and % waiting for approval in the discount dialog. */
+  const [pendingDiscount, setPendingDiscount] = useState<{ lineId: string; percent: number } | null>(null);
+  const [confirmHold, setConfirmHold] = useState(false);
   const [compactView, setCompactView] = useState<"products" | "checkout">(
     "products",
   );
@@ -74,30 +89,52 @@ export default function SellView({ products, categories: apiCategories, customer
   }, [products, search, selectedCategoryId]);
 
   // The same pricing the payment screen sends to the backend.
-  const checkout = priceCart(cart, discountPercent);
+  const checkout = priceCart(cart);
   const subtotal = fromCents(checkout.subtotalCents);
   const discountAmount = fromCents(checkout.discountCents);
   const tax = fromCents(checkout.taxCents);
   const total = fromCents(checkout.totalCents);
   const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  const applyDiscount = () => {
-    const parsed = Number(discountPercentInput);
-    const clamped = Number.isFinite(parsed)
-      ? Math.min(Math.max(parsed, 0), 100)
-      : 0;
-
-    setDiscountPercent(clamped);
-    setIsDiscountPanelOpen(false);
+  const toggleDiscount = () => {
+    setDiscountHint(isDiscountPanelOpen ? null : t("discount.tapItem"));
+    // One line in the cart: that's the one.
+    if (!isDiscountPanelOpen && cart.length === 1) setSelectedLineId(cart[0].lineId);
+    setIsDiscountPanelOpen((open) => !open);
   };
 
-  const handleHold = async () => {
-    if (cart.length === 0) return;
+  const selectLine = (lineId: string) => {
+    if (!isDiscountPanelOpen) return;
+    setSelectedLineId(lineId);
+    setDiscountHint(null);
+  };
 
+  /** "% Disc" → Apply: checks the line and %, then the dialog asks for approval. */
+  const applyDiscount = () => {
+    const line = cart.find((item) => item.lineId === selectedLineId);
+    const percent = Number(discountPercentInput);
+    if (!line) return setDiscountHint(t("discount.tapItem"));
+    if (line.custom) return setDiscountHint(t("discount.alreadyDiscounted"));
+    if (!Number.isFinite(percent) || percent <= 0 || percent > 100) {
+      return setDiscountHint(t("discount.percentRange"));
+    }
+    setDiscountHint(null);
+    setPendingDiscount({ lineId: line.lineId, percent: Math.round(percent * 100) / 100 });
+  };
+
+  const hold = async () => {
+    setConfirmHold(false);
     const result = await holdCurrentCart(t("sell.walkIn"));
     if (!result.ok && result.signedOut) router.push("/pos/select-staff");
     // Any other failure leaves the cart as it was, so nothing is lost.
     else if (!result.ok) console.error("hold failed:", result.error);
+  };
+
+  const handleHold = async () => {
+    if (cart.length === 0) return;
+    // Custom discounts can't be held (their approvals are this cashier's, this shift's).
+    if (cart.some((item) => item.custom)) return setConfirmHold(true);
+    await hold();
   };
 
   const handlePayment = () => {
@@ -117,12 +154,15 @@ export default function SellView({ products, categories: apiCategories, customer
     customers,
     onChangeCustomer: (picked: CustomerRow | null) =>
       setCustomer(picked && { id: picked.id, name: picked.name }),
-    appliedDiscountPercent: discountPercent,
-    discountNeedsApproval: checkout.discountCents > 0 && !till.canApplyDiscount,
+    selectedLineId,
+    onSelectLine: selectLine,
+    onRemoveDiscount: removeCustomDiscount,
+    canAskDiscount: till.canAskDiscount,
+    discountHint,
     isDiscountPanelOpen,
     discountPercentInput,
     onDiscountInputChange: setDiscountPercentInput,
-    onToggleDiscount: () => setIsDiscountPanelOpen((open) => !open),
+    onToggleDiscount: toggleDiscount,
     onApplyDiscount: applyDiscount,
     onIncrease: increaseQuantity,
     onDecrease: decreaseQuantity,
@@ -161,8 +201,11 @@ export default function SellView({ products, categories: apiCategories, customer
               products={filteredProducts}
               onSelectProduct={addToCart}
               cart={cart}
-              onIncrease={increaseQuantity}
-              onDecrease={decreaseQuantity}
+              onIncrease={(productId) => {
+                const product = products.find((p) => p.id === productId);
+                if (product) addToCart(product);
+              }}
+              onDecrease={decreaseProduct}
             />
           </div>
         </section>
@@ -188,6 +231,30 @@ export default function SellView({ products, categories: apiCategories, customer
           onBackToProducts={() => setCompactView("products")}
         />
       </div>
+
+      <CustomDiscountDialog
+        line={pendingDiscount && (cart.find((item) => item.lineId === pendingDiscount.lineId) ?? null)}
+        percent={pendingDiscount?.percent ?? 0}
+        approvers={discountApprovers}
+        canSelfApprove={till.canSelfApproveDiscount}
+        onClose={() => setPendingDiscount(null)}
+        onApproved={(lineId, discount) => {
+          applyCustomDiscount(lineId, discount);
+          setIsDiscountPanelOpen(false);
+          setDiscountPercentInput("");
+          setSelectedLineId(null);
+        }}
+      />
+
+      {confirmHold && (
+        <ConfirmDialog
+          title={t("discount.holdTitle")}
+          description={t("discount.holdDescription")}
+          confirmLabel={t("sell.hold")}
+          onConfirm={hold}
+          onClose={() => setConfirmHold(false)}
+        />
+      )}
 
       {compactView === "products" && (
         <MobileCartBar

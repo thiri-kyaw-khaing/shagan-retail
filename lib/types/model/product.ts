@@ -4,7 +4,10 @@ export type Product = {
   name: string;
   barcode: string;
   price: number;
+  /** Catalog discount per unit (K), price - sale price. Server-computed. */
   discount: number;
+  /** Catalog discount %, 0-100 (the Owner sets this; the backend works out the sale price). */
+  discountPercent: number;
   tax: number;
   threshold: number;
   stock: number;
@@ -21,6 +24,7 @@ export const products: Product[] = [
     barcode: "SRF-0001",
     price: 18500,
     discount: 0,
+    discountPercent: 0,
     tax: 0,
     threshold: 10,
     stock: 45,
@@ -34,6 +38,7 @@ export const products: Product[] = [
     barcode: "SRF-0002",
     price: 7200,
     discount: 0,
+    discountPercent: 0,
     tax: 0,
     threshold: 15,
     stock: 60,
@@ -47,6 +52,7 @@ export const products: Product[] = [
     barcode: "SRF-0003",
     price: 1200,
     discount: 0,
+    discountPercent: 0,
     tax: 0,
     threshold: 30,
     stock: 200,
@@ -60,6 +66,7 @@ export const products: Product[] = [
     barcode: "SRF-0004",
     price: 2800,
     discount: 0,
+    discountPercent: 0,
     tax: 0,
     threshold: 20,
     stock: 75,
@@ -73,6 +80,7 @@ export const products: Product[] = [
     barcode: "SRF-0005",
     price: 1800,
     discount: 0,
+    discountPercent: 0,
     tax: 0,
     threshold: 25,
     stock: 18,
@@ -86,6 +94,7 @@ export const products: Product[] = [
     barcode: "SRF-0006",
     price: 300,
     discount: 0,
+    discountPercent: 0,
     tax: 0,
     threshold: 50,
     stock: 300,
@@ -99,6 +108,7 @@ export const products: Product[] = [
     barcode: "SRF-0007",
     price: 1500,
     discount: 0,
+    discountPercent: 0,
     tax: 0,
     threshold: 20,
     stock: 80,
@@ -112,6 +122,7 @@ export const products: Product[] = [
     barcode: "SRF-0008",
     price: 800,
     discount: 0,
+    discountPercent: 0,
     tax: 0,
     threshold: 20,
     stock: 120,
@@ -125,6 +136,7 @@ export const products: Product[] = [
     barcode: "SRF-0009",
     price: 1000,
     discount: 0,
+    discountPercent: 0,
     tax: 0,
     threshold: 30,
     stock: 95,
@@ -138,6 +150,7 @@ export const products: Product[] = [
     barcode: "SRF-0010",
     price: 4200,
     discount: 0,
+    discountPercent: 0,
     tax: 0,
     threshold: 15,
     stock: 8,

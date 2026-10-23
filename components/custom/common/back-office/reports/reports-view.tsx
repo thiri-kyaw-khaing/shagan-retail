@@ -5,6 +5,7 @@ import { Download } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 import PageHeader from "@/components/custom/common/back-office/page-header";
+import DiscountsCard from "@/components/custom/common/back-office/reports/discounts-card";
 import PaymentBreakdownCard from "@/components/custom/common/back-office/reports/payment-breakdown-card";
 import ProductSalesKpis from "@/components/custom/common/back-office/reports/product-sales-kpis";
 import ProductSalesTable from "@/components/custom/common/back-office/reports/product-sales-table";
@@ -120,7 +121,10 @@ export default function ReportsView({ query, data }: ReportsViewProps) {
               hourlyDisabled={!data.hourlyAvailable}
               weeklyDisabled={getRangeDays(range) === 1}
             />
-            <PaymentBreakdownCard payments={data.payments} />
+            <div className="space-y-4">
+              <PaymentBreakdownCard payments={data.payments} />
+              <DiscountsCard discounts={data.discounts} />
+            </div>
           </div>
           <TransactionsTable rows={data.transactions} totalCount={data.transactionCount} />
         </>

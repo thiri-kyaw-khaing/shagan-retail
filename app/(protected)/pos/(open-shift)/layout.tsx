@@ -31,7 +31,10 @@ export default async function ShiftLayout({ children }: { children: React.ReactN
         branchId: till.branch.id,
         branchName: till.branch.name,
         staffName: till.staff.name,
-        canApplyDiscount: till.staff.permissions.includes("apply_manual_discount"),
+        canAskDiscount: till.staff.permissions.includes("apply_manual_discount"),
+        canSelfApproveDiscount:
+          till.staff.permissions.includes("approve_manual_discount") &&
+          till.staff.permissions.includes("approve_own_discount"),
         receiptShop: toReceiptShop(receiptSettings),
       }}
     >

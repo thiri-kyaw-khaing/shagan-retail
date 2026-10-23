@@ -10,6 +10,8 @@ export type ReceiptLine = {
   unitPrice: number;
   /** Line total discount. */
   discount: number;
+  /** The discount's %, e.g. 10 -> "Discount 10%"; 0/undefined prints just "Discount". */
+  discountPercent?: number;
   /** Line total tax. */
   tax: number;
 };
@@ -129,7 +131,10 @@ export function buildReceipt(doc: ReceiptDoc, paper: PaperProfile, rasterize: Ra
   for (const line of doc.lines) {
     say(line.name, { bold: true });
     p.line(twoColumns(`  ${line.qty} x ${money(line.unitPrice)}`, money(line.unitPrice * line.qty), columns));
-    if (line.discount > 0) p.line(twoColumns("  Discount", `-${money(line.discount)}`, columns));
+    if (line.discount > 0) {
+      const label = line.discountPercent ? `  Discount ${line.discountPercent}%` : "  Discount";
+      p.line(twoColumns(label, `-${money(line.discount)}`, columns));
+    }
     if (line.tax > 0) p.line(twoColumns("  Tax", `+${money(line.tax)}`, columns));
   }
   rule();

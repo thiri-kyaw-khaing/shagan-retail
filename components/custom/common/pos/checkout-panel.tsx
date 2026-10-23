@@ -29,8 +29,11 @@ export default function CheckoutPanel({
   customer,
   customers,
   onChangeCustomer,
-  appliedDiscountPercent,
-  discountNeedsApproval,
+  selectedLineId,
+  onSelectLine,
+  onRemoveDiscount,
+  canAskDiscount,
+  discountHint,
   isDiscountPanelOpen,
   discountPercentInput,
   onDiscountInputChange,
@@ -97,10 +100,13 @@ export default function CheckoutPanel({
         ) : (
           cart.map((item) => (
             <CartItem
-              key={item.productId}
+              key={item.lineId}
               item={item}
               onIncrease={onIncrease}
               onDecrease={onDecrease}
+              selected={isDiscountPanelOpen && item.lineId === selectedLineId}
+              onSelect={onSelectLine}
+              onRemoveDiscount={onRemoveDiscount}
             />
           ))
         )}
@@ -114,10 +120,7 @@ export default function CheckoutPanel({
           </div>
           {discountAmount > 0 && (
             <div className="flex justify-between text-rose-600">
-              <span>
-                {t("sell.discountPrefix")}
-                {appliedDiscountPercent > 0 && ` (${appliedDiscountPercent}%)`}
-              </span>
+              <span>{t("sell.discountPrefix")}</span>
               <span>− {formatCurrency(discountAmount, locale)}</span>
             </div>
           )}
@@ -126,11 +129,6 @@ export default function CheckoutPanel({
               <span>Tax</span>
               <span>+ {formatCurrency(tax, locale)}</span>
             </div>
-          )}
-          {discountNeedsApproval && (
-            <p className="text-xs text-amber-700">
-              This sale has a discount - a manager approves it at payment.
-            </p>
           )}
           <div className="flex justify-between border-t pt-3 text-xl font-bold">
             <span>{t("sell.total")}</span>
@@ -157,11 +155,15 @@ export default function CheckoutPanel({
             />
           </div>
         )}
+        {isDiscountPanelOpen && discountHint && (
+          <p className="px-4 pb-2 text-xs text-amber-700">{discountHint}</p>
+        )}
 
         <div className="px-4 pb-2">
           <CustomButton
             label={t("sell.discToggle")}
             onClick={onToggleDiscount}
+            disabled={!canAskDiscount || cart.length === 0}
             className={cn(
               "min-h-11 px-6 font-semibold",
               isDiscountPanelOpen
@@ -170,6 +172,10 @@ export default function CheckoutPanel({
             )}
           />
         </div>
+
+        {!canAskDiscount && (
+          <p className="px-4 pb-2 text-xs text-slate-500">{t("discount.roleCantAsk")}</p>
+        )}
 
         <div className="px-4">
           <NumPad

@@ -155,3 +155,14 @@ export function summarizeProductSales(rows: ProductSalesRow[]): ProductSalesSumm
     bestSeller,
   };
 }
+
+/** `GET /reports/discounts` for the Reports page. */
+export type DiscountsSummary = {
+  catalogTotal: number;
+  customTotal: number;
+  /** Sale lines with a custom discount. */
+  customCount: number;
+  /** Approvals given but never spent (removed at the till, or the shift closed). */
+  cancelledCount: number;
+  byApprover: { staffId: number; name: string; total: number; count: number }[];
+};

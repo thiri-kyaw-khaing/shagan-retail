@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
+import { discountedUnitPrice } from "@/lib/pos/pricing";
 import type { Category } from "@/lib/types/model/categories";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +27,8 @@ export type ProductFormValues = {
   categoryId: string;
   modifier: string;
   price: string;
-  discount: string;
+  /** Catalog discount, 0-100. */
+  discountPercent: string;
   threshold: string;
   tax: string;
   /** Current image (an uploaded URL or a local preview). */
@@ -142,17 +144,24 @@ export default function ProductFormDialog({
   error,
 }: ProductFormDialogProps) {
   const form = useForm<ProductFormValues>({ defaultValues: values });
-  const [name, barcode, price, threshold, imageFile] = form.watch([
+  const [name, barcode, price, threshold, imageFile, discountPercent] = form.watch([
     "name",
     "barcode",
     "price",
     "threshold",
     "imageFile",
+    "discountPercent",
   ]);
+  const percent = Number(discountPercent || "0");
+  const percentValid = Number.isFinite(percent) && percent >= 0 && percent <= 100;
+  // A preview with the backend's rounding (up to the next K 100); it saves the real one.
+  const salePrice =
+    percentValid && percent > 0 && Number(price) > 0 ? discountedUnitPrice(Number(price), percent) : null;
   // The backend requires these on create (a photo included); on edit every
   // field is optional and only what's sent changes.
   const canSubmit =
     !pending &&
+    percentValid &&
     (mode === "edit" ||
       (name.trim() !== "" &&
         barcode.trim() !== "" &&
@@ -241,15 +250,26 @@ export default function ProductFormDialog({
                 className={LABEL_CLASS}
                 inputClassName={INPUT_CLASS}
               />
-              <FormInput
-                control={form.control}
-                path="discount"
-                type="number"
-                label="Discount (K)"
-                placeholder="0"
-                className={LABEL_CLASS}
-                inputClassName={INPUT_CLASS}
-              />
+              <div>
+                <FormInput
+                  control={form.control}
+                  path="discountPercent"
+                  type="number"
+                  label="Discount (%)"
+                  placeholder="0"
+                  className={LABEL_CLASS}
+                  inputClassName={INPUT_CLASS}
+                />
+                {!percentValid ? (
+                  <p className="mt-1 text-xs text-brand">Use 0 to 100.</p>
+                ) : (
+                  salePrice !== null && (
+                    <p className="mt-1 text-xs text-ink-muted">
+                      Sale price K {salePrice.toLocaleString()} (rounded up to the next K 100)
+                    </p>
+                  )
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

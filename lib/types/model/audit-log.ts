@@ -8,6 +8,8 @@ export type AuditLogId = number;
 export type AuditActionType =
   | "staff_updated"
   | "discount_applied"
+  | "discount_approved"
+  | "discount_cancelled"
   | "sale_voided"
   | "sale_returned"
   | "sale_exchanged"

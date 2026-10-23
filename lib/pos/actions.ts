@@ -8,7 +8,9 @@ import type {
   ApiCreateExchangeItem,
   ApiCreateReturn,
   ApiCreateSale,
+  ApiCreateDiscountApproval,
   ApiCustomer,
+  ApiDiscountApproval,
   ApiDrawerEvent,
   ApiExchange,
   ApiHeldSale,
@@ -177,22 +179,75 @@ export async function forceCloseShiftAction(
 // --- Sales ---
 
 /**
- * Records a completed sale. Totals are re-derived server-side; payments must
- * add up exactly. Resending the same sale id from this till returns the
- * original sale, so a retry after a lost response is safe. A sale with any
- * line discount needs the cashier's own `apply_manual_discount` or a
- * manager's approval token.
+ * Records a completed sale. Totals are re-derived server-side from the
+ * products; payments must add up exactly. Resending the same sale id from
+ * this till returns the original sale, so a retry after a lost response is
+ * safe. Custom discounts were approved when they were added (each line
+ * carries its `discount_approval_id`), so payment never needs a PIN.
  */
 export async function createSaleAction(
   sale: ApiCreateSale,
-  approvalToken?: string,
 ): Promise<PosResult<{ id: string; total: string }>> {
-  const result = await asStaff<ApiSale>("/sales", {
-    method: "POST",
-    json: sale,
-    headers: approvalToken ? { "X-Manager-Approval-Token": approvalToken } : undefined,
-  });
+  const result = await asStaff<ApiSale>("/sales", { method: "POST", json: sale });
+  if (!result.ok && /discount approval|approved (for|on) a different/i.test(result.error)) {
+    return {
+      ok: false,
+      error: `${result.error}. Go back, remove that custom discount and add it again.`,
+    };
+  }
+  if (!result.ok && /price changed/i.test(result.error)) {
+    return { ok: false, error: "A price changed since this screen loaded. Go back to selling to refresh it." };
+  }
   return result.ok ? { ok: true, data: { id: result.data.id, total: result.data.total } } : result;
+}
+
+/**
+ * Asks for one custom discount when it's added to a cart line (Discount V1).
+ * With `approver_staff_id` + `pin` another staff member approves it; with
+ * neither, the cashier approves their own (needs `approve_manual_discount`
+ * and `approve_own_discount`). Returns what the backend will charge per unit.
+ */
+export async function requestDiscountApprovalAction(
+  input: ApiCreateDiscountApproval,
+): Promise<PosResult<ApiDiscountApproval>> {
+  const staff = await getStaffSession();
+  if (!staff) return SIGNED_OUT;
+  try {
+    const data = await api.requestDiscountApproval(staff.token, { ...input, reason: input.reason.trim() });
+    return { ok: true, data };
+  } catch (err) {
+    unstable_rethrow(err);
+    if (isStaffTokenError(err)) {
+      await clearStaffSession();
+      return SIGNED_OUT;
+    }
+    if (err instanceof ApiError && err.status === 429) {
+      return { ok: false, error: "Too many wrong PINs. This approver is locked out for 15 minutes." };
+    }
+    if (err instanceof ApiError && err.status === 401) return { ok: false, error: "Wrong PIN. Try again." };
+    if (err instanceof ApiError && /no open shift/i.test(err.message)) {
+      return { ok: false, error: "There's no open shift on this till. Open a shift first." };
+    }
+    // 403/409/400 carry a message meant for people ("That staff member can't approve discounts.").
+    if (err instanceof ApiError && err.status < 500) return { ok: false, error: err.message };
+    console.error("discount approval failed", err);
+    return { ok: false, error: "Can't reach the server. Check the connection and try again." };
+  }
+}
+
+/**
+ * Withdraws a custom discount's approval when the cashier removes it before
+ * paying. Best effort: an approval left behind is cancelled when the shift
+ * closes anyway.
+ */
+export async function cancelDiscountApprovalAction(approvalId: string): Promise<PosResult> {
+  const staff = await getStaffSession();
+  if (!staff) return SIGNED_OUT;
+  const result = await mutate(`/sales/discount-approvals/${approvalId}`, {
+    method: "DELETE",
+    headers: { "X-Staff-Token": staff.token },
+  });
+  return result.ok ? { ok: true, data: undefined } : result;
 }
 
 /**

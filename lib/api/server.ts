@@ -16,7 +16,10 @@ import type {
   ApiBranch,
   ApiCategory,
   ApiCombo,
+  ApiCreateDiscountApproval,
   ApiCustomer,
+  ApiDiscountApproval,
+  ApiDiscountsReport,
   ApiExchange,
   ApiExpense,
   ApiGranularity,
@@ -279,6 +282,16 @@ export const api = {
       { method: "POST", json: { pin, permission } },
       { pinCheck: true },
     ),
+  /**
+   * Asks for one custom discount at the till (Discount V1). A PIN check: a
+   * wrong approver PIN is a 401 that must not end the device session.
+   */
+  requestDiscountApproval: (staffToken: string, body: ApiCreateDiscountApproval) =>
+    authed<ApiDiscountApproval>(
+      "/sales/discount-approvals",
+      { method: "POST", json: body, headers: { "X-Staff-Token": staffToken } },
+      { pinCheck: true },
+    ),
   /** Staff whose role grants `permission` at a branch - the approver picker. */
   approvers: (branchId: number, permission: string) =>
     authed<ApiStaff[]>(withQuery(`/branches/${branchId}/managers`, { permission })),
@@ -329,4 +342,10 @@ export const api = {
       authed<{ products: ApiProductRevenue[] }>(withQuery("/reports/product-sales", windowed(window))),
       ["products"],
     ),
+  /** Catalog vs custom discounts, and who asked for / approved the custom ones. */
+  discounts: (window: DateWindow) =>
+    withLists(authed<ApiDiscountsReport>(withQuery("/reports/discounts", windowed(window))), [
+      "by_seller",
+      "by_approver",
+    ]),
 };

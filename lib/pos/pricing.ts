@@ -1,9 +1,11 @@
-// Checkout maths for the till. The backend re-derives every total and
-// rejects a sale whose payments don't match to the cent, so this works in
-// integer hundredths of a Kyat ("cents") and only converts at the edges.
+// Checkout maths for the till. The backend re-derives every total from the
+// products and rejects a sale whose payments don't match to the cent, so this
+// works in integer hundredths of a Kyat ("cents") and only converts at the edges.
 //
 //   line gross    = unit price × qty
-//   line discount = catalog discount × qty + its share of the order discount
+//   line discount = (unit price − unit sale price) × qty, where the sale
+//                   price comes from the catalog %, or from a custom
+//                   discount's approval (which replaces the catalog %)
 //   line tax      = tax per unit × qty
 //   total         = Σ gross − Σ discount + Σ tax      (backend's formula)
 import type { ApiCreateSaleItem } from "@/lib/api/types";
@@ -14,7 +16,24 @@ export const fromCents = (cents: number) => cents / 100;
 /** A decimal string for the API, e.g. 1850050 -> "18500.50". */
 export const centsToDecimal = (cents: number) => (cents / 100).toFixed(2);
 
+const K100 = 10_000; // in cents
+
+/**
+ * The backend's rounding for a discounted unit price (common.DiscountedUnitPrice):
+ * truncate to 2 decimals, then round UP to the next K 100, never above the
+ * original. Only a preview - the backend's figure (an approval's
+ * `unit_sale_price`, a product's `sale_price`) is what the till charges.
+ */
+export function discountedUnitPrice(original: number, percent: number): number {
+  const originalCents = toCents(original);
+  if (percent <= 0) return original;
+  const keep = 10_000 - Math.round(Math.min(percent, 100) * 100); // hundredths of a percent
+  const truncated = Math.floor((originalCents * keep) / 10_000);
+  return fromCents(Math.min(Math.ceil(truncated / K100) * K100, originalCents));
+}
+
 export type PricedLine = {
+  lineId: string;
   productId: number;
   name: string;
   qty: number;
@@ -22,70 +41,57 @@ export type PricedLine = {
   grossCents: number;
   discountCents: number;
   taxCents: number;
+  /** The catalog % this line was priced with (0 on a custom-discount line). */
+  catalogPercent: number;
+  custom?: { approvalId: string; percent: number; approvedBy: string };
 };
 
 export type Checkout = {
   lines: PricedLine[];
   subtotalCents: number;
-  /** Catalog + order discounts. */
+  /** Catalog + custom discounts. */
   discountCents: number;
-  /** Just the order-level (manual %) part, for the "Discount (n%)" row. */
-  orderDiscountCents: number;
+  /** Just the custom (approved) part. */
+  customDiscountCents: number;
   taxCents: number;
   totalCents: number;
 };
 
-/**
- * Prices the cart. `orderDiscountPercent` (0-100) applies to what's left after
- * catalog discounts, rounded to a whole Kyat like the old till, and is shared
- * across lines in proportion to their value; the rounding remainder goes to
- * the largest line so the shares add up exactly.
- */
-export function priceCart(cart: CartItemData[], orderDiscountPercent: number): Checkout {
+/** Prices the cart line by line - there's no order-level discount any more. */
+export function priceCart(cart: CartItemData[]): Checkout {
   const lines: PricedLine[] = cart.map((item) => {
     const unitCents = toCents(item.price);
-    const grossCents = unitCents * item.quantity;
-    // A catalog discount can't exceed the price.
-    const catalogCents = Math.min(toCents(item.unitDiscount ?? 0), unitCents) * item.quantity;
+    // A discount can't take a unit below zero.
+    const unitOffCents = item.custom
+      ? Math.max(unitCents - toCents(item.custom.unitSalePrice), 0)
+      : Math.min(toCents(item.unitDiscount ?? 0), unitCents);
     return {
+      lineId: item.lineId,
       productId: item.productId,
       name: item.name,
       qty: item.quantity,
       unitCents,
-      grossCents,
-      discountCents: catalogCents,
+      grossCents: unitCents * item.quantity,
+      discountCents: unitOffCents * item.quantity,
       taxCents: toCents(item.unitTax ?? 0) * item.quantity,
+      catalogPercent: item.custom ? 0 : (item.catalogPercent ?? 0),
+      custom: item.custom && {
+        approvalId: item.custom.approvalId,
+        percent: item.custom.percent,
+        approvedBy: item.custom.approvedBy,
+      },
     };
   });
 
-  const netCents = (line: PricedLine) => line.grossCents - line.discountCents;
-  const netTotal = lines.reduce((sum, line) => sum + netCents(line), 0);
-  const percent = Math.min(Math.max(orderDiscountPercent, 0), 100);
-  const orderDiscountCents = Math.round((netTotal * percent) / 100 / 100) * 100;
-
-  if (orderDiscountCents > 0 && netTotal > 0) {
-    let allocated = 0;
-    const shares = lines.map((line) => {
-      const share = Math.floor((orderDiscountCents * netCents(line)) / netTotal);
-      allocated += share;
-      return share;
-    });
-    // Put the remainder on the largest line (it always has room: shares are floored).
-    const largest = lines.reduce((best, line, i) => (netCents(line) > netCents(lines[best]) ? i : best), 0);
-    shares[largest] += orderDiscountCents - allocated;
-    lines.forEach((line, i) => {
-      line.discountCents += Math.min(shares[i], netCents(line));
-    });
-  }
-
-  const subtotalCents = lines.reduce((sum, line) => sum + line.grossCents, 0);
-  const discountCents = lines.reduce((sum, line) => sum + line.discountCents, 0);
-  const taxCents = lines.reduce((sum, line) => sum + line.taxCents, 0);
+  const sum = (pick: (line: PricedLine) => number) => lines.reduce((total, line) => total + pick(line), 0);
+  const subtotalCents = sum((line) => line.grossCents);
+  const discountCents = sum((line) => line.discountCents);
+  const taxCents = sum((line) => line.taxCents);
   return {
     lines,
     subtotalCents,
     discountCents,
-    orderDiscountCents,
+    customDiscountCents: sum((line) => (line.custom ? line.discountCents : 0)),
     taxCents,
     totalCents: subtotalCents - discountCents + taxCents,
   };
@@ -100,5 +106,8 @@ export function toSaleItems(checkout: Checkout): ApiCreateSaleItem[] {
     qty: line.qty,
     discount: centsToDecimal(line.discountCents),
     tax: centsToDecimal(line.taxCents),
+    ...(line.custom
+      ? { discount_approval_id: line.custom.approvalId }
+      : { catalog_discount_percent: String(line.catalogPercent) }),
   }));
 }

@@ -3,11 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import FilterSelect from "@/components/custom/common/back-office/filter-select";
 import CustomButton from "@/components/custom/common/custom-button";
 import FormError from "@/components/custom/common/forms/form-error";
 import CashPayment from "@/components/custom/common/pos/cash-payment";
-import ManagerApprovalStep from "@/components/custom/common/pos/manager-approval-step";
 import PaymentComplete from "@/components/custom/common/pos/payment-complete";
 import PaymentMethodSelection from "@/components/custom/common/pos/payment-method-selection";
 import { usePos } from "@/components/custom/common/pos/pos-context";
@@ -16,7 +14,7 @@ import SaleComplete from "@/components/custom/common/pos/sale-complete";
 import SplitPayment from "@/components/custom/common/pos/split-payment";
 import type { ApiCreatePayment } from "@/lib/api/types";
 import { useLocale } from "@/lib/i18n/locale-context";
-import { approveAction, createSaleAction } from "@/lib/pos/actions";
+import { createSaleAction } from "@/lib/pos/actions";
 import { centsToDecimal, fromCents, priceCart, toCents, toSaleItems } from "@/lib/pos/pricing";
 import { receiptFromCheckout } from "@/lib/printer/from-sale";
 import type { ReceiptDoc } from "@/lib/printer/receipt";
@@ -26,8 +24,6 @@ import { getReceiptNumber } from "@/lib/types/model/sales";
 
 type PaymentViewProps = {
   qrCodes: QrCode[];
-  /** Active staff at this branch who may approve a discount. */
-  approvers: { id: number; name: string }[];
 };
 
 type Done = { receiptNo: string; total: number; change: number | null; receipt: ReceiptDoc };
@@ -39,10 +35,10 @@ const payment = (method: "cash" | "qr", amountCents: number, receivedCents = amo
   change_given: centsToDecimal(receivedCents - amountCents),
 });
 
-export default function PaymentView({ qrCodes, approvers }: PaymentViewProps) {
+export default function PaymentView({ qrCodes }: PaymentViewProps) {
   const router = useRouter();
   const { locale } = useLocale();
-  const { till, cart, discountPercent, customer, resetOrder } = usePos();
+  const { till, cart, customer, resetOrder } = usePos();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [cashInput, setCashInput] = useState("");
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
@@ -50,39 +46,29 @@ export default function PaymentView({ qrCodes, approvers }: PaymentViewProps) {
   // One id per checkout: retrying after a lost response resends the same id,
   // and the backend returns the sale it already recorded.
   const [saleId] = useState(() => crypto.randomUUID());
-  const [pendingPayments, setPendingPayments] = useState<ApiCreatePayment[] | null>(null);
-  const [approverId, setApproverId] = useState(approvers[0] ? String(approvers[0].id) : "");
-  const [approvalPin, setApprovalPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<Done | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const checkout = priceCart(cart, discountPercent);
+  const checkout = priceCart(cart);
   const totalDue = fromCents(checkout.totalCents);
   const customerGives = Number(cashInput || "0");
   const difference = customerGives - totalDue;
   const hasEnoughCash = cashInput !== "" && toCents(customerGives) >= checkout.totalCents;
-  // A discounted sale needs apply_manual_discount: the cashier's own, or a
-  // manager's PIN approval just for this sale.
-  const needsApproval = checkout.discountCents > 0 && !till.canApplyDiscount;
-
-  const submit = (payments: ApiCreatePayment[], approvalToken?: string) => {
+  // Custom discounts were approved when they were added, so no PIN here.
+  const submit = (payments: ApiCreatePayment[]) => {
     setError(null);
     startTransition(async () => {
-      const result = await createSaleAction(
-        {
-          id: saleId,
-          shift_id: till.shiftId,
-          device_id: till.deviceId,
-          customer_id: customer?.id ?? null,
-          items: toSaleItems(checkout),
-          payments,
-        },
-        approvalToken,
-      );
+      const result = await createSaleAction({
+        id: saleId,
+        shift_id: till.shiftId,
+        device_id: till.deviceId,
+        customer_id: customer?.id ?? null,
+        items: toSaleItems(checkout),
+        payments,
+      });
       if (result.ok) {
         const cash = payments.find((p) => p.method === "cash");
-        setPendingPayments(null);
         setDone({
           receiptNo: getReceiptNumber(result.data.id),
           total: totalDue,
@@ -114,27 +100,7 @@ export default function PaymentView({ qrCodes, approvers }: PaymentViewProps) {
       setError("The payments don't add up to the total. Go back and check them.");
       return;
     }
-    if (needsApproval) {
-      setApprovalPin("");
-      setPendingPayments(payments);
-    } else {
-      submit(payments);
-    }
-  };
-
-  const approveAndSubmit = () => {
-    if (!pendingPayments) return;
-    setError(null);
-    startTransition(async () => {
-      const approval = await approveAction(Number(approverId), approvalPin, "apply_manual_discount");
-      if (!approval.ok) {
-        if (approval.signedOut) router.push("/pos/select-staff");
-        setError(approval.error);
-        setApprovalPin("");
-        return;
-      }
-      submit(pendingPayments, approval.data.token);
-    });
+    submit(payments);
   };
 
   const fromSplit = (lines: SplitLine[]) =>
@@ -175,43 +141,7 @@ export default function PaymentView({ qrCodes, approvers }: PaymentViewProps) {
           />
         )}
 
-        {!done && pendingPayments && (
-          <div className="p-6">
-            <ManagerApprovalStep
-              title="Manager approval"
-              subtitle="This sale has a discount. A manager enters their PIN to approve it."
-              pin={approvalPin}
-              onPinChange={(pin) => {
-                setError(null);
-                setApprovalPin(pin.slice(0, 6));
-              }}
-              onSubmit={approveAndSubmit}
-              pending={isPending}
-              error={error}
-            >
-              {approvers.length > 0 ? (
-                <FilterSelect
-                  aria-label="Approver"
-                  value={approverId}
-                  onChange={setApproverId}
-                  options={approvers.map((a) => ({ value: String(a.id), label: a.name }))}
-                />
-              ) : (
-                <FormError message="Nobody at this branch can approve discounts. Remove the discount to continue." />
-              )}
-            </ManagerApprovalStep>
-            <CustomButton
-              label="Back to payment"
-              onClick={() => {
-                setError(null);
-                setPendingPayments(null);
-              }}
-              className="mx-auto mt-4 flex border border-slate-200 bg-white text-slate-600 shadow-none hover:bg-slate-50"
-            />
-          </div>
-        )}
-
-        {!done && !pendingPayments && (
+        {!done && (
           <>
             {error && (
               <div className="space-y-2 p-4 pb-0">

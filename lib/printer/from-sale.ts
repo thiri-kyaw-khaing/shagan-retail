@@ -42,6 +42,7 @@ export function receiptFromCheckout(
       qty: line.qty,
       unitPrice: fromCents(line.unitCents),
       discount: fromCents(line.discountCents),
+      discountPercent: line.custom?.percent ?? line.catalogPercent,
       tax: fromCents(line.taxCents),
     })),
     subtotal: fromCents(checkout.subtotalCents),
@@ -80,6 +81,9 @@ export function receiptFromApi(ctx: Context, receipt: ApiReceipt): ReceiptDoc {
       qty: item.qty,
       unitPrice: decimalToNumber(item.price_override ?? item.unit_price),
       discount: decimalToNumber(item.discount),
+      // A custom % replaces the catalog one, so at most one is set.
+      discountPercent:
+        decimalToNumber(item.manual_discount_percent ?? "0") || decimalToNumber(item.catalog_discount_percent ?? "0"),
       tax: decimalToNumber(item.tax),
     })),
     subtotal: decimalToNumber(sale.subtotal),
