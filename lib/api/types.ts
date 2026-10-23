@@ -55,6 +55,9 @@ export type ApiProduct = {
   sale_price: Decimal;
   /** Per-unit amount, price - sale_price (server-computed). */
   discount: Decimal;
+  /** Tax %, 0-100, already inside the price (Tax V1). */
+  tax_percent: Decimal;
+  /** Informational: the tax inside one unit at the sale price (server-computed). */
   tax: Decimal;
   threshold: number;
   is_active: boolean;
@@ -194,6 +197,8 @@ export type ApiSale = {
   has_exchange?: boolean;
   /** Sum of the sale's return refunds (exchange differences aren't in it). */
   refunded_total?: Decimal;
+  /** true: tax is inside the prices (Tax V1). false: an older sale whose tax was added on top. */
+  tax_inclusive?: boolean;
 };
 
 /** `GET /sales` - newest first, paginated. */
@@ -224,6 +229,9 @@ export type ApiSaleItem = {
   combo_discount: Decimal;
   discount_approval_id: string | null;
   manual_approved_by: number | null;
+  /** The line's tax % (stored on the line; 0 on sales from before Tax V1). */
+  tax_percent: Decimal;
+  /** The tax inside the line total (inclusive), or the amount added on top (older sales). */
   tax: Decimal;
 };
 
@@ -246,7 +254,13 @@ export type ApiReceiptItem = ApiSaleItem & {
   manual_approved_by_name: string;
 };
 
-export type ApiReceipt = { sale: ApiSale; items: ApiReceiptItem[]; payments: ApiPayment[] };
+export type ApiReceipt = {
+  sale: ApiSale;
+  items: ApiReceiptItem[];
+  payments: ApiPayment[];
+  /** Print "Includes tax" (true) or add it (false, sales from before Tax V1). */
+  tax_inclusive?: boolean;
+};
 
 /**
  * `date` is a calendar date, serialized as midnight UTC (e.g. "2026-10-08T00:00:00Z").
@@ -335,6 +349,9 @@ export type ApiSalesTotals = {
   discounts: Decimal;
   returns: Decimal;
   net_sales: Decimal;
+  /** Tax inside the period's sales, less what returns gave back (Tax V1). */
+  tax_collected: Decimal;
+  net_sales_excl_tax: Decimal;
   transaction_count: number;
 };
 
@@ -472,8 +489,10 @@ export type ApiCreateSaleItem = {
   qty: number;
   /** Ignored by the backend except on a combo line (its bundle share). */
   discount: Decimal;
-  /** Line total tax (not per unit). */
+  /** Ignored by the backend - it works out the tax from the product's %. */
   tax: Decimal;
+  /** The tax % the till priced with - only read for an offline-queued sale. */
+  tax_percent?: Decimal;
   /** The custom discount's approval, got when it was added (Discount V1). */
   discount_approval_id?: string;
   /** The catalog % the till priced with - only read for an offline-queued sale. */

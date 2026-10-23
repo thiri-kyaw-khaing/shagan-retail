@@ -191,6 +191,7 @@ const zh: typeof en = {
   "receiptDetail.status": "状态",
   "receiptDetail.discount": "折扣",
   "receiptDetail.tax": "税额",
+  "sell.includesTax": "含税",
   "receiptDetail.voidedTitle": "已作废",
   "receiptDetail.returnedPrefix": "已退货",
   "receiptDetail.exchangedPrefix": "已换货",

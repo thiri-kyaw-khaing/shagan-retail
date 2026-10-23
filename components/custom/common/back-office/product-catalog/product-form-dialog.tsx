@@ -30,7 +30,8 @@ export type ProductFormValues = {
   /** Catalog discount, 0-100. */
   discountPercent: string;
   threshold: string;
-  tax: string;
+  /** Tax %, 0-100, already inside the price. */
+  taxPercent: string;
   /** Current image (an uploaded URL or a local preview). */
   imageUrl: string;
   /** A newly picked photo to upload; null keeps the current one. */
@@ -144,24 +145,34 @@ export default function ProductFormDialog({
   error,
 }: ProductFormDialogProps) {
   const form = useForm<ProductFormValues>({ defaultValues: values });
-  const [name, barcode, price, threshold, imageFile, discountPercent] = form.watch([
+  const [name, barcode, price, threshold, imageFile, discountPercent, taxPercentInput] = form.watch([
     "name",
     "barcode",
     "price",
     "threshold",
     "imageFile",
     "discountPercent",
+    "taxPercent",
   ]);
   const percent = Number(discountPercent || "0");
   const percentValid = Number.isFinite(percent) && percent >= 0 && percent <= 100;
   // A preview with the backend's rounding (up to the next K 100); it saves the real one.
   const salePrice =
     percentValid && percent > 0 && Number(price) > 0 ? discountedUnitPrice(Number(price), percent) : null;
+  const taxPercent = Number(taxPercentInput || "0");
+  const taxValid = Number.isFinite(taxPercent) && taxPercent >= 0 && taxPercent <= 100;
+  // The tax inside one unit at the sale price (the backend's rule, to the cent).
+  const unitPrice = salePrice ?? Number(price);
+  const taxInside =
+    taxValid && taxPercent > 0 && unitPrice > 0
+      ? Math.round((unitPrice * 100 * taxPercent) / (100 + taxPercent)) / 100
+      : null;
   // The backend requires these on create (a photo included); on edit every
   // field is optional and only what's sent changes.
   const canSubmit =
     !pending &&
     percentValid &&
+    taxValid &&
     (mode === "edit" ||
       (name.trim() !== "" &&
         barcode.trim() !== "" &&
@@ -282,15 +293,25 @@ export default function ProductFormDialog({
                 className={LABEL_CLASS}
                 inputClassName={INPUT_CLASS}
               />
-              <FormInput
-                control={form.control}
-                path="tax"
-                type="number"
-                label="Tax per unit (K)"
-                placeholder="0"
-                className={LABEL_CLASS}
-                inputClassName={INPUT_CLASS}
-              />
+              <div>
+                <FormInput
+                  control={form.control}
+                  path="taxPercent"
+                  type="number"
+                  label="Tax (%)"
+                  placeholder="0"
+                  className={LABEL_CLASS}
+                  inputClassName={INPUT_CLASS}
+                />
+                {!taxValid ? (
+                  <p className="mt-1 text-xs text-brand">Use 0 to 100.</p>
+                ) : (
+                  <p className="mt-1 text-xs text-ink-muted">
+                    Included in the price
+                    {taxInside !== null && ` · K ${taxInside.toLocaleString()} tax per unit`}
+                  </p>
+                )}
+              </div>
             </div>
 
             <FormError message={error} />

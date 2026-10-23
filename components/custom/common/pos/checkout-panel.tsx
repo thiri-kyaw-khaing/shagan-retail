@@ -124,18 +124,19 @@ export default function CheckoutPanel({
               <span>− {formatCurrency(discountAmount, locale)}</span>
             </div>
           )}
-          {tax > 0 && (
-            <div className="flex justify-between text-slate-600">
-              <span>Tax</span>
-              <span>+ {formatCurrency(tax, locale)}</span>
-            </div>
-          )}
           <div className="flex justify-between border-t pt-3 text-xl font-bold">
             <span>{t("sell.total")}</span>
             <span className="text-rose-900">
               {formatCurrency(total, locale)}
             </span>
           </div>
+          {/* Tax is inside the prices (Tax V1): shown, never added. */}
+          {tax > 0 && (
+            <div className="flex justify-between text-xs text-slate-500">
+              <span>{t("sell.includesTax")}</span>
+              <span>{formatCurrency(tax, locale)}</span>
+            </div>
+          )}
         </div>
 
         {isDiscountPanelOpen && (

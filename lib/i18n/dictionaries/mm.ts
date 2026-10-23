@@ -203,6 +203,7 @@ const mm: typeof en = {
   "receiptDetail.status": "အခြေအနေ",
   "receiptDetail.discount": "လျှော့စျေး",
   "receiptDetail.tax": "အခွန်",
+  "sell.includesTax": "အခွန် ပါဝင်ပြီး",
   "receiptDetail.voidedTitle": "ပယ်ဖျက်ပြီး",
   "receiptDetail.returnedPrefix": "ပြန်ပေးပြီး",
   "receiptDetail.exchangedPrefix": "လဲလှယ်ပြီး",

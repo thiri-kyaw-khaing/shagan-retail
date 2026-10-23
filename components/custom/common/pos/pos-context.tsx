@@ -123,7 +123,7 @@ export function PosProvider({ till, initialHeldSales, children }: PosProviderPro
         );
       }
 
-      // Price, catalog discount and tax are snapshotted when the item is added.
+      // Price, catalog discount and tax % are snapshotted when the item is added.
       return [
         ...currentCart,
         {
@@ -135,7 +135,7 @@ export function PosProvider({ till, initialHeldSales, children }: PosProviderPro
           quantity: 1,
           unitDiscount: product.discount,
           catalogPercent: product.discountPercent,
-          unitTax: product.tax,
+          taxPercent: product.taxPercent,
           maxQuantity: product.stock,
         },
       ];

@@ -6,8 +6,9 @@
 //   line discount = (unit price − unit sale price) × qty, where the sale
 //                   price comes from the catalog %, or from a custom
 //                   discount's approval (which replaces the catalog %)
-//   line tax      = tax per unit × qty
-//   total         = Σ gross − Σ discount + Σ tax      (backend's formula)
+//   line tax      = (gross − discount) × p / (100 + p), rounded to the cent -
+//                   tax is INSIDE the price (Tax V1), shown but never added
+//   total         = Σ gross − Σ discount              (backend's formula)
 import type { ApiCreateSaleItem } from "@/lib/api/types";
 import type { CartItemData } from "@/lib/types/model/cart";
 
@@ -40,7 +41,9 @@ export type PricedLine = {
   unitCents: number;
   grossCents: number;
   discountCents: number;
+  /** The tax inside this line's total (not added to it). */
   taxCents: number;
+  taxPercent: number;
   /** The catalog % this line was priced with (0 on a custom-discount line). */
   catalogPercent: number;
   custom?: { approvalId: string; percent: number; approvedBy: string };
@@ -53,6 +56,7 @@ export type Checkout = {
   discountCents: number;
   /** Just the custom (approved) part. */
   customDiscountCents: number;
+  /** Tax included in the total - for "Includes tax", never added. */
   taxCents: number;
   totalCents: number;
 };
@@ -65,15 +69,20 @@ export function priceCart(cart: CartItemData[]): Checkout {
     const unitOffCents = item.custom
       ? Math.max(unitCents - toCents(item.custom.unitSalePrice), 0)
       : Math.min(toCents(item.unitDiscount ?? 0), unitCents);
+    const grossCents = unitCents * item.quantity;
+    const discountCents = unitOffCents * item.quantity;
+    const taxPercent = Math.min(Math.max(item.taxPercent ?? 0, 0), 100);
     return {
       lineId: item.lineId,
       productId: item.productId,
       name: item.name,
       qty: item.quantity,
       unitCents,
-      grossCents: unitCents * item.quantity,
-      discountCents: unitOffCents * item.quantity,
-      taxCents: toCents(item.unitTax ?? 0) * item.quantity,
+      grossCents,
+      discountCents,
+      // The backend's rule: round(line_total × p / (100 + p), 2), half-up.
+      taxCents: Math.round(((grossCents - discountCents) * taxPercent) / (100 + taxPercent)),
+      taxPercent,
       catalogPercent: item.custom ? 0 : (item.catalogPercent ?? 0),
       custom: item.custom && {
         approvalId: item.custom.approvalId,
@@ -93,7 +102,7 @@ export function priceCart(cart: CartItemData[]): Checkout {
     discountCents,
     customDiscountCents: sum((line) => (line.custom ? line.discountCents : 0)),
     taxCents,
-    totalCents: subtotalCents - discountCents + taxCents,
+    totalCents: subtotalCents - discountCents,
   };
 }
 
@@ -106,6 +115,7 @@ export function toSaleItems(checkout: Checkout): ApiCreateSaleItem[] {
     qty: line.qty,
     discount: centsToDecimal(line.discountCents),
     tax: centsToDecimal(line.taxCents),
+    tax_percent: String(line.taxPercent),
     ...(line.custom
       ? { discount_approval_id: line.custom.approvalId }
       : { catalog_discount_percent: String(line.catalogPercent) }),

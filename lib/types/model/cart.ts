@@ -25,7 +25,9 @@ export type CartItemData = {
   unitDiscount?: number;
   /** The catalog % behind unitDiscount (sent with the sale for offline pricing). */
   catalogPercent?: number;
-  /** Tax per unit (K), added on top of the price. */
+  /** Tax %, already inside the price (Tax V1) - shown as "Includes tax", never added. */
+  taxPercent?: number;
+  /** Held sales from before Tax V1 carry a per-unit amount; it's no longer used. */
   unitTax?: number;
   /** Stock on hand at this branch when added; the till won't sell more across the product's lines. */
   maxQuantity?: number;

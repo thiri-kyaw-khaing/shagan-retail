@@ -44,11 +44,13 @@ export function receiptFromCheckout(
       discount: fromCents(line.discountCents),
       discountPercent: line.custom?.percent ?? line.catalogPercent,
       tax: fromCents(line.taxCents),
+      taxPercent: line.taxPercent,
     })),
     subtotal: fromCents(checkout.subtotalCents),
     discount: fromCents(checkout.discountCents),
     tax: fromCents(checkout.taxCents),
     total: fromCents(checkout.totalCents),
+    taxInclusive: true,
     payments: payments.map((p) => ({
       method: p.method,
       amount: Number(p.amount),
@@ -85,11 +87,14 @@ export function receiptFromApi(ctx: Context, receipt: ApiReceipt): ReceiptDoc {
       discountPercent:
         decimalToNumber(item.manual_discount_percent ?? "0") || decimalToNumber(item.catalog_discount_percent ?? "0"),
       tax: decimalToNumber(item.tax),
+      taxPercent: decimalToNumber(item.tax_percent ?? "0"),
     })),
     subtotal: decimalToNumber(sale.subtotal),
     discount: decimalToNumber(sale.discount),
     tax: decimalToNumber(sale.tax),
     total: decimalToNumber(sale.total),
+    // Older sales had their tax added on top.
+    taxInclusive: receipt.tax_inclusive ?? sale.tax_inclusive ?? false,
     payments: receipt.payments.map((p) => ({
       method: p.method,
       amount: decimalToNumber(p.amount),

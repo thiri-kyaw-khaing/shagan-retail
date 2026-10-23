@@ -126,6 +126,7 @@ export default function ReceiptDetailView({
           subtotal={sale.subtotal}
           discount={sale.discount}
           tax={sale.tax}
+          taxInclusive={sale.taxInclusive}
           total={sale.total}
         />
 

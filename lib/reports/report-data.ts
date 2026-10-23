@@ -170,6 +170,7 @@ export async function loadReportData(query: ReportQuery, branchId: number | null
       discounts: decimalToNumber(summary.discounts),
       returns: decimalToNumber(summary.returns),
       net,
+      taxCollected: decimalToNumber(summary.tax_collected ?? "0"),
       transactions: summary.transaction_count,
       averageSale: summary.transaction_count ? Math.round(net / summary.transaction_count) : 0,
     },

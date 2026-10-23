@@ -8,6 +8,9 @@ export type Product = {
   discount: number;
   /** Catalog discount %, 0-100 (the Owner sets this; the backend works out the sale price). */
   discountPercent: number;
+  /** Tax %, 0-100, already inside the price (Tax V1). */
+  taxPercent: number;
+  /** Informational: tax inside one unit at the sale price. */
   tax: number;
   threshold: number;
   stock: number;
@@ -25,6 +28,7 @@ export const products: Product[] = [
     price: 18500,
     discount: 0,
     discountPercent: 0,
+    taxPercent: 0,
     tax: 0,
     threshold: 10,
     stock: 45,
@@ -39,6 +43,7 @@ export const products: Product[] = [
     price: 7200,
     discount: 0,
     discountPercent: 0,
+    taxPercent: 0,
     tax: 0,
     threshold: 15,
     stock: 60,
@@ -53,6 +58,7 @@ export const products: Product[] = [
     price: 1200,
     discount: 0,
     discountPercent: 0,
+    taxPercent: 0,
     tax: 0,
     threshold: 30,
     stock: 200,
@@ -67,6 +73,7 @@ export const products: Product[] = [
     price: 2800,
     discount: 0,
     discountPercent: 0,
+    taxPercent: 0,
     tax: 0,
     threshold: 20,
     stock: 75,
@@ -81,6 +88,7 @@ export const products: Product[] = [
     price: 1800,
     discount: 0,
     discountPercent: 0,
+    taxPercent: 0,
     tax: 0,
     threshold: 25,
     stock: 18,
@@ -95,6 +103,7 @@ export const products: Product[] = [
     price: 300,
     discount: 0,
     discountPercent: 0,
+    taxPercent: 0,
     tax: 0,
     threshold: 50,
     stock: 300,
@@ -109,6 +118,7 @@ export const products: Product[] = [
     price: 1500,
     discount: 0,
     discountPercent: 0,
+    taxPercent: 0,
     tax: 0,
     threshold: 20,
     stock: 80,
@@ -123,6 +133,7 @@ export const products: Product[] = [
     price: 800,
     discount: 0,
     discountPercent: 0,
+    taxPercent: 0,
     tax: 0,
     threshold: 20,
     stock: 120,
@@ -137,6 +148,7 @@ export const products: Product[] = [
     price: 1000,
     discount: 0,
     discountPercent: 0,
+    taxPercent: 0,
     tax: 0,
     threshold: 30,
     stock: 95,
@@ -151,6 +163,7 @@ export const products: Product[] = [
     price: 4200,
     discount: 0,
     discountPercent: 0,
+    taxPercent: 0,
     tax: 0,
     threshold: 15,
     stock: 8,

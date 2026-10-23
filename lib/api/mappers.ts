@@ -67,6 +67,7 @@ export function toProduct(product: ApiProduct, stock: Map<number, number>): Prod
     price: decimalToNumber(product.price),
     discount: decimalToNumber(product.discount),
     discountPercent: decimalToNumber(product.discount_percent),
+    taxPercent: decimalToNumber(product.tax_percent),
     tax: decimalToNumber(product.tax),
     threshold: product.threshold,
     stock: stock.get(product.id) ?? 0,
@@ -497,6 +498,7 @@ export function toTillSale(sale: ApiSale & { payment_methods?: ("cash" | "qr")[]
     subtotal: decimalToNumber(sale.subtotal),
     discount: decimalToNumber(sale.discount),
     tax: decimalToNumber(sale.tax),
+    taxInclusive: sale.tax_inclusive ?? false,
     total: decimalToNumber(sale.total),
     paymentMethod: toPaymentMethod(sale.payment_methods ?? []),
     status: sale.status === "voided" ? "voided" : sale.status === "open" ? "pending" : "completed",
@@ -531,12 +533,12 @@ export function imageByProduct(products: ApiProduct[]): Map<number, string> {
 
 /**
  * A replacement product for an exchange, priced at what a customer pays per
- * unit at the till (price - catalog discount + tax), which is the
- * `unit_price` the exchange sends for it.
+ * unit at the till: the sale price (tax is inside it). The backend prices
+ * exchange "out" lines from the product the same way (Tax V1).
  */
 export function toExchangeProduct(product: ApiProduct, stock: Map<number, number>): Product {
   const base = toProduct(product, stock);
-  const unit = Math.max(base.price - Math.min(base.discount, base.price), 0) + base.tax;
+  const unit = Math.max(base.price - Math.min(base.discount, base.price), 0);
   return { ...base, price: Math.round(unit * 100) / 100, discount: 0, discountPercent: 0, tax: 0 };
 }
 

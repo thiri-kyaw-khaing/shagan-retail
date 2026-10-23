@@ -193,6 +193,7 @@ const en = {
   "receiptDetail.status": "Status",
   "receiptDetail.discount": "Discount",
   "receiptDetail.tax": "Tax",
+  "sell.includesTax": "Includes tax",
   "receiptDetail.voidedTitle": "Voided",
   "receiptDetail.returnedPrefix": "Returned",
   "receiptDetail.exchangedPrefix": "Exchanged",

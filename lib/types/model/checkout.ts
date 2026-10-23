@@ -8,6 +8,7 @@ export type CheckoutPanelProps = {
   subtotal: number;
   /** Catalog + custom discounts. */
   discountAmount: number;
+  /** Tax inside the total (shown as "Includes tax"). */
   tax: number;
   total: number;
   locale: Locale;

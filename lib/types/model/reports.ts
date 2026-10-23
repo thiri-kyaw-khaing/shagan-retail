@@ -23,6 +23,8 @@ export type SalesSummary = {
   discounts: number;
   returns: number;
   net: number;
+  /** Tax inside net sales (Tax V1). */
+  taxCollected: number;
   transactions: number;
   averageSale: number;
 };
