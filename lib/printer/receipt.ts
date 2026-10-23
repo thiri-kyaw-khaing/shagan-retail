@@ -10,8 +10,12 @@ export type ReceiptLine = {
   unitPrice: number;
   /** Line total discount. */
   discount: number;
-  /** Line total tax. */
+  /** The discount's %, e.g. 10 -> "Discount 10%"; 0/undefined prints just "Discount". */
+  discountPercent?: number;
+  /** Line total tax (inside the line, or added on top for an older sale). */
   tax: number;
+  /** The line's tax %, printed with "Includes tax". */
+  taxPercent?: number;
 };
 
 export type ReceiptPayment = {
@@ -35,6 +39,8 @@ export type ReceiptDoc = {
   discount: number;
   tax: number;
   total: number;
+  /** Tax is inside the prices (Tax V1): print "Includes tax", don't add it. */
+  taxInclusive?: boolean;
   payments: ReceiptPayment[];
   /** Printed again from history: marked so it isn't mistaken for the original. */
   reprint?: boolean;
@@ -129,17 +135,27 @@ export function buildReceipt(doc: ReceiptDoc, paper: PaperProfile, rasterize: Ra
   for (const line of doc.lines) {
     say(line.name, { bold: true });
     p.line(twoColumns(`  ${line.qty} x ${money(line.unitPrice)}`, money(line.unitPrice * line.qty), columns));
-    if (line.discount > 0) p.line(twoColumns("  Discount", `-${money(line.discount)}`, columns));
-    if (line.tax > 0) p.line(twoColumns("  Tax", `+${money(line.tax)}`, columns));
+    if (line.discount > 0) {
+      const label = line.discountPercent ? `  Discount ${line.discountPercent}%` : "  Discount";
+      p.line(twoColumns(label, `-${money(line.discount)}`, columns));
+    }
+    // Inclusive tax is summed once under the total instead.
+    if (line.tax > 0 && !doc.taxInclusive) p.line(twoColumns("  Tax", `+${money(line.tax)}`, columns));
   }
   rule();
 
   // Totals
   p.line(twoColumns("Subtotal", money(doc.subtotal), columns));
   if (doc.discount > 0) p.line(twoColumns("Discount", `-${money(doc.discount)}`, columns));
-  if (doc.tax > 0) p.line(twoColumns("Tax", `+${money(doc.tax)}`, columns));
+  if (doc.tax > 0 && !doc.taxInclusive) p.line(twoColumns("Tax", `+${money(doc.tax)}`, columns));
   // Double height only: the line still fits the full width.
   p.bold(true).size(1, 2).line(twoColumns("TOTAL", money(doc.total), columns)).size(1, 1).bold(false);
+  if (doc.tax > 0 && doc.taxInclusive) {
+    // One rate across the receipt prints it; mixed rates print just the amount.
+    const rates = [...new Set(doc.lines.filter((line) => line.tax > 0).map((line) => line.taxPercent ?? 0))];
+    const label = rates.length === 1 && rates[0] > 0 ? `Includes tax (${rates[0]}%)` : "Includes tax";
+    p.line(twoColumns(label, money(doc.tax), columns));
+  }
 
   for (const payment of doc.payments) {
     const label = payment.method === "cash" ? "Cash" : "QR";

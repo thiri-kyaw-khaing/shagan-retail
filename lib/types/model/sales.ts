@@ -33,6 +33,8 @@ export type Sale = {
   subtotal: number;
   discount: number;
   tax: number;
+  /** true: tax is inside the total (Tax V1); false/absent: an older sale whose tax was added on top. */
+  taxInclusive?: boolean;
   total: number;
   paymentMethod: PaymentMethod;
   status: SaleStatus;

@@ -1,4 +1,21 @@
+/** A custom % discount on one cart line, approved when it was added (Discount V1). */
+export type CartCustomDiscount = {
+  approvalId: string;
+  percent: number;
+  /** Units the approval covers; the line can't grow past it. */
+  maxQty: number;
+  /** What the backend will charge per unit (from the approval). */
+  unitSalePrice: number;
+  approvedBy: string;
+  reason: string;
+};
+
 export type CartItemData = {
+  /**
+   * One cart line. A product can sit on two lines: some units with a custom
+   * discount, the rest without. Older held sales have none (see toHeldSale).
+   */
+  lineId: string;
   productId: number;
   name: string;
   price: number;
@@ -6,8 +23,14 @@ export type CartItemData = {
   quantity: number;
   /** Catalog discount per unit (K), applied automatically (decided 2026-10-08). */
   unitDiscount?: number;
-  /** Tax per unit (K), added on top of the price. */
+  /** The catalog % behind unitDiscount (sent with the sale for offline pricing). */
+  catalogPercent?: number;
+  /** Tax %, already inside the price (Tax V1) - shown as "Includes tax", never added. */
+  taxPercent?: number;
+  /** Held sales from before Tax V1 carry a per-unit amount; it's no longer used. */
   unitTax?: number;
-  /** Stock on hand at this branch when added; the till won't sell more. */
+  /** Stock on hand at this branch when added; the till won't sell more across the product's lines. */
   maxQuantity?: number;
+  /** Replaces the catalog discount on this line. */
+  custom?: CartCustomDiscount;
 };

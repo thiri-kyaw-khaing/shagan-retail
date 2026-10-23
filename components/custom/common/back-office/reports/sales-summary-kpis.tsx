@@ -28,7 +28,9 @@ export default function SalesSummaryKpis({
       <KpiCard
         label="Net sales"
         value={formatCurrency(summary.net, locale)}
-        caption={`Gross ${formatCurrency(summary.gross, locale)} · Returns ${formatCurrency(summary.returns, locale)}`}
+        caption={`Gross ${formatCurrency(summary.gross, locale)} · Returns ${formatCurrency(summary.returns, locale)}${
+          summary.taxCollected > 0 ? ` · Includes tax ${formatCurrency(summary.taxCollected, locale)}` : ""
+        }`}
         tone="accent"
         mono
         wrapCaption

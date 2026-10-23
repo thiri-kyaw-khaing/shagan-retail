@@ -3,7 +3,9 @@ import { cn } from "@/lib/utils";
 
 export const ACTION_LABEL: Record<AuditActionType, string> = {
   staff_updated: "Staff updated",
-  discount_applied: "Manual discount",
+  discount_applied: "Custom discount",
+  discount_approved: "Discount approved",
+  discount_cancelled: "Discount removed",
   sale_voided: "Void",
   sale_returned: "Return",
   sale_exchanged: "Exchange",
@@ -13,6 +15,8 @@ export const ACTION_LABEL: Record<AuditActionType, string> = {
 const ACTION_CLASS: Record<AuditActionType, string> = {
   staff_updated: "bg-amber-100 text-amber-700",
   discount_applied: "bg-violet-100 text-violet-700",
+  discount_approved: "bg-violet-50 text-violet-600",
+  discount_cancelled: "bg-slate-100 text-slate-600",
   sale_voided: "bg-red-100 text-red-700",
   sale_returned: "bg-sky-100 text-sky-700",
   sale_exchanged: "bg-indigo-100 text-indigo-700",

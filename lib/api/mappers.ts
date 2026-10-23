@@ -66,6 +66,8 @@ export function toProduct(product: ApiProduct, stock: Map<number, number>): Prod
     barcode: product.barcode,
     price: decimalToNumber(product.price),
     discount: decimalToNumber(product.discount),
+    discountPercent: decimalToNumber(product.discount_percent),
+    taxPercent: decimalToNumber(product.tax_percent),
     tax: decimalToNumber(product.tax),
     threshold: product.threshold,
     stock: stock.get(product.id) ?? 0,
@@ -278,8 +280,14 @@ function auditAction(log: ApiAuditLog): AuditActionType {
   switch (key) {
     case "staff/updated":
       return "staff_updated";
+    // Discount V1: approved when added (entity id = the approval), spent by a sale (entity id = the sale).
+    case "sale/manual_discount":
     case "sale/manual_discount_applied":
       return "discount_applied";
+    case "sale/discount_approved":
+      return "discount_approved";
+    case "sale/discount_cancelled":
+      return "discount_cancelled";
     case "sale/voided":
       return "sale_voided";
     case "sale/returned":
@@ -296,12 +304,18 @@ function field(snapshot: unknown, key: string): unknown {
   return snapshot && typeof snapshot === "object" ? (snapshot as Record<string, unknown>)[key] : undefined;
 }
 
+/** ", approved by Ko Zaw" from a discount entry's `approver` staff id. */
+function approvedBy(log: ApiAuditLog, staffNames: Map<number, string>): string {
+  const name = staffNames.get(Number(field(log.after, "approver")));
+  return name ? `, approved by ${name}` : "";
+}
+
 const money = (value: unknown) => `K ${decimalToNumber(String(value ?? 0)).toLocaleString("en-US")}`;
 
 // Bookkeeping fields that change on every save and say nothing to a reader.
 const IGNORED_STAFF_FIELDS = new Set(["updated_at", "created_at", "pin_hash"]);
 
-function auditDetails(log: ApiAuditLog, action: AuditActionType): string {
+function auditDetails(log: ApiAuditLog, action: AuditActionType, staffNames: Map<number, string>): string {
   const receipt = `#${getReceiptNumber(log.entity_id)}`;
   switch (action) {
     case "sale_voided":
@@ -310,8 +324,17 @@ function auditDetails(log: ApiAuditLog, action: AuditActionType): string {
       return `Return on receipt ${receipt}, refund ${money(field(log.after, "refund_total"))}`;
     case "sale_exchanged":
       return `Exchange on receipt ${receipt}, net difference ${money(field(log.after, "net_difference"))}`;
-    case "discount_applied":
-      return `Manual discount ${money(field(log.after, "discount"))} on receipt ${receipt}`;
+    case "discount_applied": {
+      const percent = field(log.after, "percent");
+      const amount = field(log.after, "manual_discount") ?? field(log.after, "discount");
+      return `Custom discount${percent ? ` ${decimalToNumber(String(percent))}%` : ""} (${money(amount)}) on receipt ${receipt}${approvedBy(log, staffNames)}`;
+    }
+    case "discount_approved": {
+      const reason = field(log.after, "reason");
+      return `Custom discount ${decimalToNumber(String(field(log.after, "percent") ?? 0))}% for ${field(log.after, "qty") ?? 1} unit(s)${approvedBy(log, staffNames)}${reason ? ` - "${reason}"` : ""}`;
+    }
+    case "discount_cancelled":
+      return "Custom discount removed before payment";
     case "staff_updated": {
       const changed = Object.keys((log.after as object | null) ?? {}).filter(
         (key) =>
@@ -358,7 +381,7 @@ export function toAuditLogEntry(log: ApiAuditLog, actors: AuditActors): AuditLog
     userName,
     userRole,
     action,
-    details: auditDetails(log, action),
+    details: auditDetails(log, action, actors.staff),
   };
 }
 
@@ -475,6 +498,7 @@ export function toTillSale(sale: ApiSale & { payment_methods?: ("cash" | "qr")[]
     subtotal: decimalToNumber(sale.subtotal),
     discount: decimalToNumber(sale.discount),
     tax: decimalToNumber(sale.tax),
+    taxInclusive: sale.tax_inclusive ?? false,
     total: decimalToNumber(sale.total),
     paymentMethod: toPaymentMethod(sale.payment_methods ?? []),
     status: sale.status === "voided" ? "voided" : sale.status === "open" ? "pending" : "completed",
@@ -509,13 +533,13 @@ export function imageByProduct(products: ApiProduct[]): Map<number, string> {
 
 /**
  * A replacement product for an exchange, priced at what a customer pays per
- * unit at the till (price - catalog discount + tax), which is the
- * `unit_price` the exchange sends for it.
+ * unit at the till: the sale price (tax is inside it). The backend prices
+ * exchange "out" lines from the product the same way (Tax V1).
  */
 export function toExchangeProduct(product: ApiProduct, stock: Map<number, number>): Product {
   const base = toProduct(product, stock);
-  const unit = Math.max(base.price - Math.min(base.discount, base.price), 0) + base.tax;
-  return { ...base, price: Math.round(unit * 100) / 100, discount: 0, tax: 0 };
+  const unit = Math.max(base.price - Math.min(base.discount, base.price), 0);
+  return { ...base, price: Math.round(unit * 100) / 100, discount: 0, discountPercent: 0, tax: 0 };
 }
 
 /**
@@ -531,7 +555,12 @@ export function toHeldSale(held: ApiHeldSale): HeldSale | null {
     id: held.id,
     customerName,
     customer: held.customer_ref !== null ? { id: held.customer_ref, name: customerName } : null,
-    items: items.lines,
+    // Lines held before Discount V1 have no id; custom discounts never travel with a hold.
+    items: items.lines.map((line, index) => ({
+      ...line,
+      lineId: line.lineId ?? `held-${held.id}-${index}`,
+      custom: undefined,
+    })),
     discountPercent: percent > 0 ? percent : null,
     heldAt: new Date(held.held_at).getTime(),
   };

@@ -19,9 +19,9 @@ export function toProductFormValues(
       categoryId: categories[0] ? String(categories[0].id) : "",
       modifier: "",
       price: "",
-      discount: "0",
+      discountPercent: "0",
       threshold: "",
-      tax: "0",
+      taxPercent: "0",
       imageUrl: "",
       imageFile: null,
     };
@@ -33,9 +33,9 @@ export function toProductFormValues(
     categoryId: String(product.categoryId),
     modifier: product.modifier ?? "",
     price: String(product.price),
-    discount: String(product.discount),
+    discountPercent: String(product.discountPercent),
     threshold: String(product.threshold),
-    tax: String(product.tax),
+    taxPercent: String(product.taxPercent),
     imageUrl: product.imageUrl,
     imageFile: null,
   };
@@ -52,8 +52,10 @@ export function toProductFormData(values: ProductFormValues, mode: "add" | "edit
   data.set("name", values.name.trim());
   data.set("barcode", values.barcode.trim());
   data.set("price", values.price.trim());
-  data.set("discount", values.discount.trim() || "0");
-  data.set("tax", values.tax.trim() || "0");
+  // A percent: the backend works out the sale price (and ignores an amount).
+  data.set("discount_percent", values.discountPercent.trim() || "0");
+  // Tax V1: a % already inside the price (the backend ignores an amount).
+  data.set("tax_percent", values.taxPercent.trim() || "0");
   data.set("threshold", values.threshold.trim());
   data.set("modifier", values.modifier.trim());
   if (mode === "add") data.set("is_active", "true");

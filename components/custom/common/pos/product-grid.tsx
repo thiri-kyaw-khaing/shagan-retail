@@ -32,7 +32,8 @@ export default function ProductGrid({
     <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-4 lg:p-4 xl:grid-cols-5">
       {products.map((product) => {
         const quantity =
-          cart.find((item) => item.productId === product.id)?.quantity ?? 0;
+          // Across its lines (some units may carry a custom discount).
+          cart.reduce((sum, item) => (item.productId === product.id ? sum + item.quantity : sum), 0);
 
         return (
           <ProductCard

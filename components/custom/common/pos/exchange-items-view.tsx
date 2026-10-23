@@ -92,6 +92,7 @@ export default function ExchangeItemsView({
       return [
         ...current,
         {
+          lineId: String(product.id),
           productId: product.id,
           name: product.name,
           price: product.price,

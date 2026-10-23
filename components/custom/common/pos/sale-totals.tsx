@@ -5,6 +5,8 @@ type SaleTotalsProps = {
   discount: number;
   tax: number;
   total: number;
+  /** Tax is inside the total (Tax V1). Older sales had it added on top. */
+  taxInclusive?: boolean;
 };
 
 export default function SaleTotals({
@@ -12,6 +14,7 @@ export default function SaleTotals({
   discount,
   tax,
   total,
+  taxInclusive = false,
 }: SaleTotalsProps) {
   const { t } = useTranslation();
 
@@ -29,10 +32,10 @@ export default function SaleTotals({
         </div>
       )}
 
-      {tax > 0 && (
+      {tax > 0 && !taxInclusive && (
         <div className="flex justify-between text-ink-muted">
           <span>{t("receiptDetail.tax")}</span>
-          <span>K {tax.toLocaleString()}</span>
+          <span>+ K {tax.toLocaleString()}</span>
         </div>
       )}
 
@@ -40,6 +43,13 @@ export default function SaleTotals({
         <span>{t("sell.total")}</span>
         <span className="text-rose-900">K {total.toLocaleString()}</span>
       </div>
+
+      {tax > 0 && taxInclusive && (
+        <div className="flex justify-between text-xs text-ink-muted">
+          <span>{t("sell.includesTax")}</span>
+          <span>K {tax.toLocaleString()}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -18,6 +18,7 @@ import {
   toDateInputValue,
   type ActiveDatePreset,
   type DateRangePreset,
+  type DiscountsSummary,
   type PaymentBreakdownRow,
   type ProductSalesRow,
   type ReportTab,
@@ -44,6 +45,7 @@ export type ReportData = {
   transactions: TransactionRow[];
   transactionCount: number;
   products: ProductSalesRow[];
+  discounts: DiscountsSummary;
   /** Hourly data exists only for today. */
   hourlyAvailable: boolean;
 };
@@ -150,13 +152,14 @@ export async function loadReportData(query: ReportQuery, branchId: number | null
   const today = businessToday();
   const hourly = query.view === "hourly";
 
-  const [summary, trend, todayReport, transactions, productSales, staff] = await Promise.all([
+  const [summary, trend, todayReport, transactions, productSales, staff, discounts] = await Promise.all([
     api.salesSummary(window),
     hourly ? null : api.salesTrend({ ...window, granularity: query.view === "weekly" ? "weekly" : "daily" }),
     hourly ? api.today({ branchId }) : null,
     api.transactions({ ...window, page: 1, pageSize: TRANSACTIONS_PAGE_SIZE }),
     api.productSales(window),
     api.staff(),
+    api.discounts(window),
   ]);
   const staffNames = nameById(staff);
 
@@ -167,6 +170,7 @@ export async function loadReportData(query: ReportQuery, branchId: number | null
       discounts: decimalToNumber(summary.discounts),
       returns: decimalToNumber(summary.returns),
       net,
+      taxCollected: decimalToNumber(summary.tax_collected ?? "0"),
       transactions: summary.transaction_count,
       averageSale: summary.transaction_count ? Math.round(net / summary.transaction_count) : 0,
     },
@@ -187,6 +191,18 @@ export async function loadReportData(query: ReportQuery, branchId: number | null
       quantity: p.qty_sold,
       revenue: decimalToNumber(p.revenue),
     })),
+    discounts: {
+      catalogTotal: decimalToNumber(discounts.catalog_total),
+      customTotal: decimalToNumber(discounts.manual_total),
+      customCount: discounts.manual_count,
+      cancelledCount: discounts.cancelled_count,
+      byApprover: discounts.by_approver.map((row) => ({
+        staffId: row.staff_id,
+        name: row.name,
+        total: decimalToNumber(row.manual_total),
+        count: row.count,
+      })),
+    },
     hourlyAvailable: query.from === today && query.to === today,
   };
 }
