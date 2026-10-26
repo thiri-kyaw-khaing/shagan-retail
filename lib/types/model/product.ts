@@ -17,6 +17,18 @@ export type Product = {
   modifier?: string;
   imageUrl: string;
   isActive: boolean;
+  /** Set when the catalog is shown for one branch: what that branch charges. */
+  branchPricing?: BranchPricing;
+};
+
+/** A product's price at one branch (its override, else the catalog's). */
+export type BranchPricing = {
+  price: number;
+  discountPercent: number;
+  /** Per-unit sale price at the branch (server-computed, K 100 rounding). */
+  salePrice: number;
+  /** True when the branch has its own price or discount % for this product. */
+  overridden: boolean;
 };
 
 export const products: Product[] = [

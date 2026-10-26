@@ -65,6 +65,35 @@ export type ApiProduct = {
   created_at: string;
   updated_at: string;
   images: ApiProductImage[];
+  /**
+   * Set only when the product was priced for a branch (a POS token, or
+   * `?branch_id=`): whether price / discount_percent / sale_price are that
+   * branch's override or the catalog's.
+   */
+  price_source?: "branch" | "catalog";
+};
+
+/**
+ * One branch's row of `GET /products/:id/branch-prices` (also the PUT's
+ * response). `price` / `discount_percent` are the override itself - null where
+ * the branch inherits the catalog value; `effective_*` are what it charges.
+ */
+export type ApiBranchPrice = {
+  branch_id: number;
+  branch_name: string;
+  price: Decimal | null;
+  discount_percent: Decimal | null;
+  effective_price: Decimal;
+  effective_discount_percent: Decimal;
+  effective_sale_price: Decimal;
+  price_source: "branch" | "catalog";
+  updated_at: string | null;
+  /**
+   * The catalog values the branch falls back to. Not sent by older backends;
+   * a manager's till can't read catalog prices any other way.
+   */
+  catalog_price?: Decimal;
+  catalog_discount_percent?: Decimal;
 };
 
 export type ApiCategory = {

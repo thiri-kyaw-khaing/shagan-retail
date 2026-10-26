@@ -58,14 +58,23 @@ export function isStaffTokenError(err: unknown): boolean {
   return err instanceof ApiError && err.status === 401 && /staff token/i.test(err.message);
 }
 
-/**
- * `pinCheck`: the 401 means "wrong PIN", not a dead device session, so it's
- * passed to the caller instead of sending the till back to login.
- */
+type AuthedOptions = {
+  /**
+   * The 401 means "wrong PIN", not a dead device session, so it's passed to
+   * the caller instead of sending the till back to login.
+   */
+  pinCheck?: boolean;
+  /**
+   * A read the backend gates like a Back Office write (e.g. a product's
+   * branch prices, `manage_catalog`): send the manager's staff token with it.
+   */
+  backOfficeRead?: boolean;
+};
+
 async function authed<T>(
   path: string,
   init?: Parameters<typeof callBackend>[1],
-  { pinCheck = false }: { pinCheck?: boolean } = {},
+  { pinCheck = false, backOfficeRead = false }: AuthedOptions = {},
 ): Promise<T> {
   const store = await cookies();
   const accessToken = store.get(ACCESS_COOKIE)?.value;
@@ -76,9 +85,10 @@ async function authed<T>(
   // it on purpose: the backend only restricts a read when that token is sent
   // (view_* permissions), so attaching it would let a role change break the
   // till's own reads (staff picker, receipts) - the Back Office pages check
-  // view access themselves (requireBackOfficeAccess). A till write that
-  // passes its own cashier X-Staff-Token (asStaff) still wins.
-  const isWrite = !!init?.method && init.method !== "GET";
+  // view access themselves (requireBackOfficeAccess). The few reads gated
+  // like writes opt in with `backOfficeRead`. A till write that passes its
+  // own cashier X-Staff-Token (asStaff) still wins.
+  const isWrite = (!!init?.method && init.method !== "GET") || backOfficeRead;
   const managerToken =
     isWrite && store.get(ACCOUNT_TYPE_COOKIE)?.value === "pos" ? store.get(BACKOFFICE_COOKIE)?.value : undefined;
   const headers =
@@ -144,6 +154,24 @@ export async function mutate<T = undefined>(
   }
 }
 
+/**
+ * A read for a Server Function that loads data on demand (e.g. when a dialog
+ * opens), with the same error handling as mutate() but no re-render.
+ * `backOfficeRead`: see AuthedOptions.
+ */
+export async function query<T>(
+  path: string,
+  { backOfficeRead = false }: { backOfficeRead?: boolean } = {},
+): Promise<ActionResult<T>> {
+  try {
+    return { ok: true, data: await authed<T>(path, undefined, { backOfficeRead }) };
+  } catch (err) {
+    if (!(err instanceof ApiError) && !(err instanceof TypeError)) throw err;
+    console.error(`GET ${path} failed`, err);
+    return { ok: false, error: messageFor(err) };
+  }
+}
+
 type Query = Record<string, string | number | null | undefined>;
 
 /** `path?a=1&b=2`, skipping null/undefined values. */
@@ -182,7 +210,13 @@ export const api = {
   me: () => authed<ApiUser>("/me"),
 
   // Catalog (org-wide)
-  products: () => authed<ApiProduct[]>("/products"),
+  /**
+   * `branchId` prices them for that branch (its overrides, else the catalog);
+   * without one, plain catalog prices. A POS token always gets its own
+   * branch's prices, whatever is passed.
+   */
+  products: (scope: BranchScope = { branchId: null }) =>
+    authed<ApiProduct[]>(withQuery("/products", scoped(scope))),
   categories: () => authed<ApiCategory[]>("/categories"),
   combos: () => authed<ApiCombo[]>("/combos"),
 

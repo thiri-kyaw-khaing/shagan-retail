@@ -1,6 +1,7 @@
 "use server";
 
-import { mutate } from "@/lib/api/server";
+import { mutate, query } from "@/lib/api/server";
+import type { ApiBranchPrice } from "@/lib/api/types";
 
 // --- Categories (JSON) ---
 
@@ -32,6 +33,36 @@ export async function updateProductAction(id: number, form: FormData) {
 /** Hard delete. 409 while the product is part of a combo. */
 export async function deleteProductAction(id: number) {
   return mutate(`/products/${id}`, { method: "DELETE" });
+}
+
+// --- Branch prices (a branch's own price / discount % for a product) ---
+
+/** Every branch's row for the Owner; a manager at a till gets only their own branch's. */
+export async function listBranchPricesAction(productId: number) {
+  // Gated by manage_catalog on the backend, so a manager's staff token goes with it.
+  return query<ApiBranchPrice[]>(`/products/${productId}/branch-prices`, { backOfficeRead: true });
+}
+
+/**
+ * Replaces the branch's whole override: a null field inherits the catalog
+ * value; both null clears it. The Owner / Service Center for any branch; a
+ * manager with manage_branch_prices for their own till's branch only.
+ * The backend computes the branch's sale price (K 100 rounding).
+ */
+export async function setBranchPriceAction(
+  productId: number,
+  branchId: number,
+  override: { price: string | null; discountPercent: string | null },
+) {
+  return mutate<ApiBranchPrice>(`/products/${productId}/branch-prices/${branchId}`, {
+    method: "PUT",
+    json: { price: override.price, discount_percent: override.discountPercent },
+  });
+}
+
+/** The branch goes back to the catalog price. Idempotent. */
+export async function clearBranchPriceAction(productId: number, branchId: number) {
+  return mutate(`/products/${productId}/branch-prices/${branchId}`, { method: "DELETE" });
 }
 
 // --- Combos (multipart; see toComboFormData) ---

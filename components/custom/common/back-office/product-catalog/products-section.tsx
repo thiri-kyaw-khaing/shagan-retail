@@ -2,7 +2,11 @@
 
 import { useMemo } from "react";
 
-import type { CatalogDialogState } from "@/components/custom/common/back-office/product-catalog/catalog-dialog";
+import BranchPricesDialog from "@/components/custom/common/back-office/product-catalog/branch-prices-dialog";
+import type {
+  CatalogDialogState,
+  CatalogPricing,
+} from "@/components/custom/common/back-office/product-catalog/catalog-dialog";
 import {
   toProductFormData,
   toProductFormValues,
@@ -24,6 +28,7 @@ import type { Product } from "@/lib/types/model/product";
 type ProductsSectionProps = CatalogDialogState & {
   products: Product[];
   categories: Category[];
+  pricing: CatalogPricing;
 };
 
 export default function ProductsSection({
@@ -31,6 +36,7 @@ export default function ProductsSection({
   setDialog,
   products,
   categories,
+  pricing,
 }: ProductsSectionProps) {
   const { isPending, error, run, clearError } = useAction();
   const editing = dialog?.type === "edit-product" ? dialog.product : undefined;
@@ -47,7 +53,7 @@ export default function ProductsSection({
       run(() => createProductAction(toProductFormData(values, "add")), closeDialog);
     } else if (editing) {
       const id = editing.id;
-      run(() => updateProductAction(id, toProductFormData(values, "edit")), closeDialog);
+      run(() => updateProductAction(id, toProductFormData(values, "edit", formValues)), closeDialog);
     }
   };
 
@@ -64,7 +70,21 @@ export default function ProductsSection({
         categories={categories}
         onEdit={(product) => setDialog({ type: "edit-product", product })}
         onDelete={(product) => setDialog({ type: "delete-product", product })}
+        onBranchPrices={
+          pricing.canEditBranchPrices
+            ? (product) => setDialog({ type: "branch-prices", product })
+            : undefined
+        }
+        branchName={pricing.branchName}
       />
+
+      {dialog?.type === "branch-prices" && dialog.product && (
+        <BranchPricesDialog
+          product={dialog.product}
+          catalogKnown={pricing.catalogPricesKnown}
+          onClose={closeDialog}
+        />
+      )}
 
       {(dialog?.type === "add-product" || dialog?.type === "edit-product") && (
         <ProductFormDialog
@@ -72,6 +92,15 @@ export default function ProductsSection({
           isOpen
           values={formValues}
           categories={categories}
+          priceLockedReason={
+            editing && !pricing.catalogPricesKnown && editing.branchPricing?.overridden
+              ? `${pricing.branchName ?? "This branch"} has its own price for this product. ${
+                  pricing.canEditBranchPrices
+                    ? "Change it with Prices by branch (the shop icon)."
+                    : "Only the owner can change it."
+                }`
+              : null
+          }
           onClose={closeDialog}
           onSave={saveProduct}
           pending={isPending}

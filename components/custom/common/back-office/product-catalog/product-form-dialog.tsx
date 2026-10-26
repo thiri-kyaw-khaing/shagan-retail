@@ -47,6 +47,8 @@ type ProductFormDialogProps = {
   onSave: (values: ProductFormValues) => void;
   pending?: boolean;
   error?: string | null;
+  /** Shown instead of letting the price and discount be edited (see ProductsSection). */
+  priceLockedReason?: string | null;
 };
 
 const LABEL_CLASS = "text-sm font-semibold uppercase tracking-wide text-slate-500";
@@ -143,6 +145,7 @@ export default function ProductFormDialog({
   onSave,
   pending = false,
   error,
+  priceLockedReason = null,
 }: ProductFormDialogProps) {
   const form = useForm<ProductFormValues>({ defaultValues: values });
   const [name, barcode, price, threshold, imageFile, discountPercent, taxPercentInput] = form.watch([
@@ -260,6 +263,7 @@ export default function ProductFormDialog({
                 placeholder="0"
                 className={LABEL_CLASS}
                 inputClassName={INPUT_CLASS}
+                readonly={priceLockedReason !== null}
               />
               <div>
                 <FormInput
@@ -270,6 +274,7 @@ export default function ProductFormDialog({
                   placeholder="0"
                   className={LABEL_CLASS}
                   inputClassName={INPUT_CLASS}
+                  readonly={priceLockedReason !== null}
                 />
                 {!percentValid ? (
                   <p className="mt-1 text-xs text-brand">Use 0 to 100.</p>
@@ -282,6 +287,12 @@ export default function ProductFormDialog({
                 )}
               </div>
             </div>
+
+            {priceLockedReason && (
+              <p className="-mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                {priceLockedReason}
+              </p>
+            )}
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <FormInput
