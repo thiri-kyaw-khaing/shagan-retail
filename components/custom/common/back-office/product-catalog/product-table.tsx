@@ -1,6 +1,6 @@
 "use client";
 
-import { Package, Pencil, Trash2 } from "lucide-react";
+import { Package, Pencil, Store, Trash2 } from "lucide-react";
 
 import DataTable, {
   type DataTableColumn,
@@ -49,6 +49,39 @@ function ProductImage({ product, size }: { product: Product; size: number }) {
   );
 }
 
+/**
+ * The list price where the list is shown: the branch's (marked when it's the
+ * branch's own) or the catalog's. A discount shows as the price it sells at.
+ */
+function PriceCell({ product, branchName }: { product: Product; branchName: string | null }) {
+  const at = product.branchPricing;
+  const price = at?.price ?? product.price;
+  const percent = at?.discountPercent ?? product.discountPercent;
+  const salePrice = at?.salePrice ?? product.price - product.discount;
+  return (
+    <div className="space-y-1">
+      <p className="font-semibold text-ink">
+        K {price.toLocaleString()}
+        {percent > 0 && salePrice < price && (
+          <span className="ml-1 text-xs font-normal text-ink-muted">
+            → K {salePrice.toLocaleString()} ({percent}% off)
+          </span>
+        )}
+      </p>
+      {at?.overridden && (
+        <p className="flex flex-wrap items-center gap-1 text-xs">
+          <span className="rounded-full bg-rose-50 px-2 py-0.5 font-semibold text-brand">
+            {branchName ? `${branchName} price` : "Branch price"}
+          </span>
+          {at.price !== product.price && (
+            <span className="text-ink-muted">catalog K {product.price.toLocaleString()}</span>
+          )}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function ProductThumbnail({ product }: { product: Product }) {
   return (
     <div className="flex items-center gap-3">
@@ -64,6 +97,9 @@ type ProductTableProps = {
   /** Omit both for a read-only table. */
   onEdit?: (product: Product) => void;
   onDelete?: (product: Product) => void;
+  /** Opens a product's per-branch prices; omit to hide the button. */
+  onBranchPrices?: (product: Product) => void;
+  branchName?: string | null;
 };
 
 export default function ProductTable({
@@ -71,6 +107,8 @@ export default function ProductTable({
   categories,
   onEdit,
   onDelete,
+  onBranchPrices,
+  branchName = null,
 }: ProductTableProps) {
   const columns: DataTableColumn<Product>[] = [
     {
@@ -91,7 +129,7 @@ export default function ProductTable({
     {
       key: "price",
       header: "Price",
-      render: (row) => `K ${row.price.toLocaleString()}`,
+      render: (row) => <PriceCell product={row} branchName={branchName} />,
     },
     {
       key: "stock",
@@ -106,6 +144,14 @@ export default function ProductTable({
       className: "flex justify-end",
       render: (row) => (
         <div className="flex justify-end gap-1">
+          {onBranchPrices && (
+            <CustomButton
+              icon={Store}
+              aria-label={`Branch prices for ${row.name}`}
+              onClick={() => onBranchPrices(row)}
+              className="size-10 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
+            />
+          )}
           <CustomButton
             icon={Pencil}
             aria-label={`Edit ${row.name}`}
@@ -138,9 +184,9 @@ export default function ProductTable({
               <p className="text-sm text-ink-muted">
                 {categoryLabel(categories, row.categoryId)} · {row.barcode}
               </p>
-              <p className="mt-1 font-semibold text-ink">
-                K {row.price.toLocaleString()}
-              </p>
+              <div className="mt-1">
+                <PriceCell product={row} branchName={branchName} />
+              </div>
               <div className="mt-2">
                 <StockBadge product={row} />
               </div>
@@ -149,6 +195,14 @@ export default function ProductTable({
 
           {onEdit && onDelete && (
             <div className="flex shrink-0 flex-col gap-1">
+              {onBranchPrices && (
+                <CustomButton
+                  icon={Store}
+                  aria-label={`Branch prices for ${row.name}`}
+                  onClick={() => onBranchPrices(row)}
+                  className="size-9 bg-transparent p-0 text-slate-500 shadow-none hover:bg-slate-50"
+                />
+              )}
               <CustomButton
                 icon={Pencil}
                 aria-label={`Edit ${row.name}`}

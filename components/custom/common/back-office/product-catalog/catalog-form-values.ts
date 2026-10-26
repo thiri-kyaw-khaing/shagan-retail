@@ -45,19 +45,33 @@ export function toProductFormValues(
  * The multipart body for POST/PATCH /products. Money stays the typed string
  * (the backend parses decimals); a new photo is attached only if one was
  * picked. New products are created active - the backend defaults to false.
+ *
+ * An edit (`initial` = the values the dialog opened with) sends only the
+ * fields that changed: re-sending an untouched price would rewrite the
+ * catalog price for every branch, e.g. from a manager's branch-priced list.
  */
-export function toProductFormData(values: ProductFormValues, mode: "add" | "edit"): FormData {
+export function toProductFormData(
+  values: ProductFormValues,
+  mode: "add" | "edit",
+  initial?: ProductFormValues,
+): FormData {
   const data = new FormData();
-  data.set("category_id", values.categoryId);
-  data.set("name", values.name.trim());
-  data.set("barcode", values.barcode.trim());
-  data.set("price", values.price.trim());
-  // A percent: the backend works out the sale price (and ignores an amount).
-  data.set("discount_percent", values.discountPercent.trim() || "0");
-  // Tax V1: a % already inside the price (the backend ignores an amount).
-  data.set("tax_percent", values.taxPercent.trim() || "0");
-  data.set("threshold", values.threshold.trim());
-  data.set("modifier", values.modifier.trim());
+  const fields: [key: string, field: keyof ProductFormValues, value: string][] = [
+    ["category_id", "categoryId", values.categoryId],
+    ["name", "name", values.name.trim()],
+    ["barcode", "barcode", values.barcode.trim()],
+    ["price", "price", values.price.trim()],
+    // A percent: the backend works out the sale price (and ignores an amount).
+    ["discount_percent", "discountPercent", values.discountPercent.trim() || "0"],
+    // Tax V1: a % already inside the price (the backend ignores an amount).
+    ["tax_percent", "taxPercent", values.taxPercent.trim() || "0"],
+    ["threshold", "threshold", values.threshold.trim()],
+    ["modifier", "modifier", values.modifier.trim()],
+  ];
+  for (const [key, field, value] of fields) {
+    if (mode === "edit" && initial && values[field] === initial[field]) continue;
+    data.set(key, value);
+  }
   if (mode === "add") data.set("is_active", "true");
   if (values.imageFile) data.set("image", values.imageFile);
   return data;

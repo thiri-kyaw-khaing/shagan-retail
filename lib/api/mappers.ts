@@ -77,6 +77,27 @@ export function toProduct(product: ApiProduct, stock: Map<number, number>): Prod
   };
 }
 
+/**
+ * Adds each product's price at a branch, from a `GET /products?branch_id=`
+ * list (or a till's own list) of the same catalog.
+ */
+export function withBranchPricing(products: Product[], priced: ApiProduct[]): Product[] {
+  const byId = new Map(priced.map((p) => [p.id, p]));
+  return products.map((product) => {
+    const at = byId.get(product.id);
+    if (!at) return product;
+    return {
+      ...product,
+      branchPricing: {
+        price: decimalToNumber(at.price),
+        discountPercent: decimalToNumber(at.discount_percent),
+        salePrice: decimalToNumber(at.sale_price),
+        overridden: at.price_source === "branch",
+      },
+    };
+  });
+}
+
 export function toCategory(category: ApiCategory): Category {
   return { id: category.id, label: category.name_i18n, icon: Tag };
 }

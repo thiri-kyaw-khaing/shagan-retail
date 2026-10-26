@@ -16,6 +16,10 @@ type ProductsTabProps = {
   /** Omit both for a read-only list. */
   onEdit?: (product: Product) => void;
   onDelete?: (product: Product) => void;
+  /** Opens a product's per-branch prices (Owner only). */
+  onBranchPrices?: (product: Product) => void;
+  /** The branch the list is priced for; null = catalog prices. */
+  branchName?: string | null;
 };
 
 export default function ProductsTab({
@@ -23,6 +27,8 @@ export default function ProductsTab({
   categories,
   onEdit,
   onDelete,
+  onBranchPrices,
+  branchName = null,
 }: ProductsTabProps) {
   const [search, setSearch] = useState("");
   const filterForm = useForm<{ category: string }>({
@@ -80,6 +86,8 @@ export default function ProductsTab({
           categories={categories}
           onEdit={onEdit}
           onDelete={onDelete}
+          onBranchPrices={onBranchPrices}
+          branchName={branchName}
         />
       </div>
     </>

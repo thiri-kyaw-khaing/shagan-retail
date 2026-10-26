@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 
 import PageHeader from "@/components/custom/common/back-office/page-header";
-import type { CatalogDialog } from "@/components/custom/common/back-office/product-catalog/catalog-dialog";
+import type {
+  CatalogDialog,
+  CatalogPricing,
+} from "@/components/custom/common/back-office/product-catalog/catalog-dialog";
 import CategoriesSection from "@/components/custom/common/back-office/product-catalog/categories-section";
 import CombosSection from "@/components/custom/common/back-office/product-catalog/combos-section";
 import { isExpired } from "@/components/custom/common/back-office/product-catalog/combo-table";
@@ -24,12 +27,14 @@ type ProductCatalogProps = {
   // Raw API categories: the UI Category carries an icon component, which
   // can't cross the server -> client boundary, so it's mapped here.
   categories: ApiCategory[];
+  pricing: CatalogPricing;
 };
 
 export default function ProductCatalog({
   products,
   combos,
   categories: apiCategories,
+  pricing,
 }: ProductCatalogProps) {
   const [activeTab, setActiveTab] = useState<ProductTab>("products");
   const [dialog, setDialog] = useState<CatalogDialog>(null);
@@ -41,7 +46,7 @@ export default function ProductCatalog({
     <main className="min-h-[calc(100dvh-5rem)] bg-page p-4 sm:p-6">
       <PageHeader
         title="Product Catalog"
-        subtitle={`${products.length} products · ${combos.length} combos (${combos.filter(isExpired).length} expired)`}
+        subtitle={`${products.length} products · ${combos.length} combos (${combos.filter(isExpired).length} expired) · ${pricing.branchName ? `prices at ${pricing.branchName}` : "catalog prices"}`}
         backHref="/owner"
         action={
           activeTab !== "categories" ? (
@@ -60,7 +65,12 @@ export default function ProductCatalog({
       <ProductTabs activeTab={activeTab} onChange={setActiveTab} />
 
       {activeTab === "products" && (
-        <ProductsSection {...sectionProps} products={products} categories={categories} />
+        <ProductsSection
+          {...sectionProps}
+          products={products}
+          categories={categories}
+          pricing={pricing}
+        />
       )}
       {activeTab === "categories" && (
         <CategoriesSection {...sectionProps} categories={categories} />
