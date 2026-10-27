@@ -33,6 +33,25 @@ export type ApiUser = {
   status: "active" | "suspended";
   created_at: string;
   updated_at: string;
+  /** The organization's tier (WORKFLOWS "Subscription tiers"); absent on an older backend. */
+  subscription?: ApiSubscription | null;
+};
+
+export type ApiPlanCode = "basic" | "pro" | "enterprise";
+
+/** `GET /me` -> subscription. A null limit is unlimited. */
+export type ApiSubscription = {
+  /** The effective plan, after expiry and grace. */
+  plan: ApiPlanCode;
+  trial: boolean;
+  expires_at: string | null;
+  /** A paid plan past its end date, still working for the 7-day grace period. */
+  in_grace: boolean;
+  /** The plan lapsed; the org is on Basic now. */
+  expired: boolean;
+  features: string[];
+  limits: { branches: number | null; devices: number | null };
+  usage: { branches: number; devices: number };
 };
 
 export type ApiProductImage = {

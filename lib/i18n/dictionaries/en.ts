@@ -374,6 +374,15 @@ const en = {
   "payment.changeGivenPrefix": "Change given:",
   "payment.printReceipt": "Print receipt",
   "payment.newSale": "New Sale",
+  "plan.basic": "Basic",
+  "plan.pro": "Pro",
+  "plan.enterprise": "Enterprise",
+  "plan.trialNotice": "{plan} trial: {days} days left. Contact Shagan to keep the {plan} features.",
+  "plan.endingNotice": "Your {plan} plan ends on {date}. Contact Shagan to renew.",
+  "plan.graceNotice": "Your {plan} plan has ended. It keeps working for {days} more days - contact Shagan to renew.",
+  "plan.expiredNotice": "Your plan has ended, so you're on Basic now. Contact Shagan to renew.",
+  "plan.overLimitBranches": "Active branches: {current}, but your plan allows {max}. They keep working, but you can't add more - contact Shagan to upgrade.",
+  "plan.overLimitDevices": "Active devices: {current}, but your plan allows {max}. They keep working, but you can't add more - contact Shagan to upgrade.",
 };
 
 export default en;

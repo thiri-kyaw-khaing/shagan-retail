@@ -366,6 +366,15 @@ const zh: typeof en = {
   "payment.changeGivenPrefix": "已找零：",
   "payment.printReceipt": "打印收据",
   "payment.newSale": "新的销售",
+  "plan.basic": "Basic",
+  "plan.pro": "Pro",
+  "plan.enterprise": "Enterprise",
+  "plan.trialNotice": "{plan} 试用期：剩余 {days} 天。如需继续使用 {plan} 功能，请联系 Shagan。",
+  "plan.endingNotice": "您的 {plan} 套餐将于 {date} 到期。如需续费，请联系 Shagan。",
+  "plan.graceNotice": "您的 {plan} 套餐已到期，还可继续使用 {days} 天。如需续费，请联系 Shagan。",
+  "plan.expiredNotice": "您的套餐已到期，现已转为 Basic。如需续费，请联系 Shagan。",
+  "plan.overLimitBranches": "您的套餐允许 {max} 个启用中的分店，您目前有 {current} 个。现有分店可继续使用，但无法再新增。如需升级，请联系 Shagan。",
+  "plan.overLimitDevices": "您的套餐允许 {max} 台启用中的设备，您目前有 {current} 台。现有设备可继续使用，但无法再新增。如需升级，请联系 Shagan。",
 };
 
 export default zh;
