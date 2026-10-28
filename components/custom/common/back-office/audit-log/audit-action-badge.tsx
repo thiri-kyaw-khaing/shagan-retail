@@ -9,6 +9,8 @@ export const ACTION_LABEL: Record<AuditActionType, string> = {
   sale_voided: "Void",
   sale_returned: "Return",
   sale_exchanged: "Exchange",
+  branch_price_changed: "Branch price",
+  plan_changed: "Plan",
   other: "Other",
 };
 
@@ -20,6 +22,8 @@ const ACTION_CLASS: Record<AuditActionType, string> = {
   sale_voided: "bg-red-100 text-red-700",
   sale_returned: "bg-sky-100 text-sky-700",
   sale_exchanged: "bg-indigo-100 text-indigo-700",
+  branch_price_changed: "bg-emerald-100 text-emerald-700",
+  plan_changed: "bg-rose-100 text-rose-700",
   other: "bg-slate-100 text-slate-700",
 };
 

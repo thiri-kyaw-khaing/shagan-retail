@@ -6,13 +6,14 @@ import { getBranchSelection } from "@/lib/branch/selected-branch";
 
 export default async function AuditLogPage() {
   await requireBackOfficeAccess("view_audit_log");
-  const { selected } = await getBranchSelection();
+  const { branches, selected } = await getBranchSelection();
   // "All branches" also includes org-level events that have no branch.
-  const [logs, staff, roles, me] = await Promise.all([
+  const [logs, staff, roles, me, products] = await Promise.all([
     api.auditLog({ branchId: selected?.id ?? null }),
     api.staff(),
     api.roles(),
     api.me(),
+    api.products(),
   ]);
 
   const roleNames = nameById(roles);
@@ -21,6 +22,8 @@ export default async function AuditLogPage() {
     staffRoles: new Map(staff.map((s) => [s.id, roleNames.get(s.role) ?? "Staff"])),
     users: new Map([[me.id, me.name || me.email]]),
     userRole: "Owner",
+    products: nameById(products),
+    branches: nameById(branches),
   };
 
   return (

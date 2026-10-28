@@ -315,6 +315,14 @@ function auditAction(log: ApiAuditLog): AuditActionType {
       return "sale_returned";
     case "sale/exchanged":
       return "sale_exchanged";
+    case "product_branch_price/branch_price_set":
+    case "product_branch_price/branch_price_removed":
+      return "branch_price_changed";
+    case "organization_subscription/subscription_trial_started":
+    case "organization_subscription/subscription_updated":
+    case "organization_subscription/feature_override_set":
+    case "organization_subscription/feature_override_cleared":
+      return "plan_changed";
     default:
       return "other";
   }
@@ -336,9 +344,50 @@ const money = (value: unknown) => `K ${decimalToNumber(String(value ?? 0)).toLoc
 // Bookkeeping fields that change on every save and say nothing to a reader.
 const IGNORED_STAFF_FIELDS = new Set(["updated_at", "created_at", "pin_hash"]);
 
-function auditDetails(log: ApiAuditLog, action: AuditActionType, staffNames: Map<number, string>): string {
+const PLAN_NAMES: Record<string, string> = { basic: "Basic", pro: "Pro", enterprise: "Enterprise" };
+
+/** "Pro trial until 11 Nov 2026" from a subscription entry's snapshot. */
+function planText(snapshot: unknown): string {
+  const plan = String(field(snapshot, "plan") ?? "");
+  const expires = field(snapshot, "expires_at");
+  const until =
+    typeof expires === "string"
+      ? ` until ${new Date(expires).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: BUSINESS_TIME_ZONE })}`
+      : "";
+  return `${PLAN_NAMES[plan] ?? plan}${field(snapshot, "trial") ? " trial" : ""}${until}`;
+}
+
+function auditDetails(log: ApiAuditLog, action: AuditActionType, actors: AuditActors): string {
+  const staffNames = actors.staff;
   const receipt = `#${getReceiptNumber(log.entity_id)}`;
   switch (action) {
+    case "branch_price_changed": {
+      const product = actors.products?.get(Number(log.entity_id)) ?? `Product #${log.entity_id}`;
+      const branch = log.branch_id !== null ? actors.branches?.get(log.branch_id) : undefined;
+      const where = branch ? ` at ${branch}` : "";
+      if (log.action === "branch_price_removed") return `${product}${where}: back to the catalog price`;
+      const price = field(log.after, "price");
+      const percent = field(log.after, "discount_percent");
+      const parts = [
+        price != null ? money(price) : "catalog price",
+        percent != null && decimalToNumber(String(percent)) > 0 ? `${decimalToNumber(String(percent))}% off` : null,
+      ].filter(Boolean);
+      return `${product}${where}: ${parts.join(", ")}`;
+    }
+    case "plan_changed": {
+      const note = field(log.after, "note");
+      const noted = note ? ` - "${note}"` : "";
+      switch (log.action) {
+        case "subscription_trial_started":
+          return `${planText(log.after)} started`;
+        case "feature_override_set":
+          return `Feature ${field(log.after, "feature")} turned ${field(log.after, "enabled") ? "on" : "off"}${noted}`;
+        case "feature_override_cleared":
+          return `Feature ${field(log.after, "feature") ?? field(log.before, "feature")} back to the plan's default${noted}`;
+        default:
+          return `Plan changed to ${planText(log.after)}${noted}`;
+      }
+    }
     case "sale_voided":
       return `Voided receipt ${receipt} (${field(log.after, "qty_reversed") ?? 0} units back to stock)`;
     case "sale_returned":
@@ -375,35 +424,51 @@ export type AuditActors = ActorNames & {
   staffRoles: Map<number, string>;
   /** Role label for named org users (the owner). */
   userRole: string;
+  /** For naming the product and branch of branch-price entries. */
+  products?: Map<number, string>;
+  branches?: Map<number, string>;
 };
 
 export function toAuditLogEntry(log: ApiAuditLog, actors: AuditActors): AuditLogEntry {
   const action = auditAction(log);
-  // Sale events are logged with a staff id as actor; everything else (today:
-  // staff edits) with an org user id. See ApiAuditLog.
-  // An owner acting directly (e.g. a void with no PIN) is recorded in
-  // actor_user_id, with actor_id null.
-  const isStaffActor = log.entity === "sale" && log.actor_id !== null;
-  const actorId = isStaffActor ? log.actor_id : (log.actor_user_id ?? log.actor_id);
-  const userName =
-    (actorId !== null && (isStaffActor ? actors.staff : actors.users).get(actorId)) || "—";
-  const userRole =
-    actorId === null
-      ? "—"
-      : isStaffActor
-        ? (actors.staffRoles.get(actorId) ?? "Staff")
-        : actors.users.has(actorId)
-          ? actors.userRole
-          : "User";
-
+  const { userName, userRole } = auditActor(log, actors);
   return {
     id: log.id,
     occurredAt: log.created_at,
     userName,
     userRole,
     action,
-    details: auditDetails(log, action, actors.staff),
+    details: auditDetails(log, action, actors),
   };
+}
+
+/**
+ * Who did it. `actor_id` is a staff member (a till action, or a manager in
+ * Back Office) and `actor_user_id` an org account (Owner / Service Center) -
+ * except staff edits, which put the editing org user's id in `actor_id`.
+ * Plan changes come from the Shagan team's portal and have neither; their
+ * snapshot says who (`changed_by`).
+ */
+function auditActor(log: ApiAuditLog, actors: AuditActors): { userName: string; userRole: string } {
+  const userId = log.actor_user_id ?? (log.entity === "staff" ? log.actor_id : null);
+  if (userId !== null) {
+    return {
+      userName: actors.users.get(userId) ?? "—",
+      userRole: actors.users.has(userId) ? actors.userRole : "Org account",
+    };
+  }
+  if (log.actor_id !== null) {
+    return {
+      userName: actors.staff.get(log.actor_id) ?? `Staff #${log.actor_id}`,
+      userRole: actors.staffRoles.get(log.actor_id) ?? "Staff",
+    };
+  }
+  if (log.entity === "organization_subscription") {
+    const by = field(log.after, "changed_by");
+    // "system" is the trial a new organization starts on.
+    return { userName: typeof by === "string" && by !== "system" ? by : "Automatic", userRole: "Shagan team" };
+  }
+  return { userName: "—", userRole: "—" };
 }
 
 export function toCombo(combo: ApiCombo): Combo {

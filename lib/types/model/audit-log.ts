@@ -13,6 +13,8 @@ export type AuditActionType =
   | "sale_voided"
   | "sale_returned"
   | "sale_exchanged"
+  | "branch_price_changed"
+  | "plan_changed"
   | "other";
 
 export type AuditLogEntry = {
