@@ -520,7 +520,61 @@ export type ApiShiftSummary = {
   exchange_cash_in: Decimal;
   /** Cash paid out to customers on this shift's exchanges. */
   exchange_cash_out: Decimal;
+  /** Counted vs expected per method; empty while the shift is open. */
+  reconciliations?: ApiShiftReconciliation[];
 };
+
+export type ApiShiftReconciliation = {
+  id: number;
+  shift_id: number;
+  method: "cash" | "qr";
+  expected: Decimal;
+  counted: Decimal;
+  /** counted - expected: negative = short. */
+  difference: Decimal;
+  reason: string;
+};
+
+/**
+ * A row of `GET /shifts` (shift history). Its figures come from the same
+ * calculation as `GET /shifts/:id/summary`. While the shift is open the
+ * closed_* / counted / difference fields are null and the totals are live.
+ */
+export type ApiShiftHistoryRow = {
+  id: number;
+  status: "open" | "closed";
+  branch_id: number;
+  branch_name: string;
+  device_id: number;
+  device_name: string;
+  staff_id: number;
+  staff_name: string;
+  closed_by_staff_id: number | null;
+  closed_by_name: string | null;
+  /** Closed by someone other than the shift's own staff (a manager override). */
+  force_closed: boolean;
+  opened_at: string;
+  closed_at: string | null;
+  opening_cash: Decimal;
+  sales_count: number;
+  sales_total: Decimal;
+  /** Keyed by method; a method with no payments is absent. */
+  payment_totals: Partial<Record<"cash" | "qr", Decimal>>;
+  expected_cash: Decimal;
+  counted_cash: Decimal | null;
+  /** counted - expected: negative = short. */
+  cash_difference: Decimal | null;
+  difference_reason: string | null;
+};
+
+export type ApiShiftsPage = {
+  shifts: ApiShiftHistoryRow[];
+  page: number;
+  page_size: number;
+  total_count: number;
+};
+
+export type ShiftDiscrepancy = "short" | "over" | "any";
 
 /** `POST /staff/:id/pin/verify` and `/manager-pin/verify`. `token` goes in X-Staff-Token / X-Manager-Approval-Token. */
 export type ApiPinVerifyResult = {

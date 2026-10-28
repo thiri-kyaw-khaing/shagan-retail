@@ -4,6 +4,7 @@ import {
   BookOpen,
   ChartColumn,
   CircleUser,
+  History,
   Package,
   Receipt,
   ScrollText,
@@ -21,6 +22,7 @@ export type SectionKey =
   | "suppliers"
   | "customers"
   | "salesHistory"
+  | "shiftHistory"
   | "auditLog"
   | "reports";
 
@@ -80,6 +82,14 @@ export default function SectionCardGrid({ visible }: { visible?: SectionKey[] })
           icon={Receipt}
           title={t("sections.salesHistory.title")}
           subtitle={t("sections.salesHistory.subtitle")}
+        />
+      )}
+      {show("shiftHistory") && (
+        <SectionCard
+          href="/owner/shift-history"
+          icon={History}
+          title={t("sections.shiftHistory.title")}
+          subtitle={t("sections.shiftHistory.subtitle")}
         />
       )}
       {show("auditLog") && (
