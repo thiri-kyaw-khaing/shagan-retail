@@ -535,7 +535,7 @@ export type ApiCreateSaleItem = {
   /** The original price; the backend prices the line from the product (409 if it changed). */
   unit_price: Decimal;
   qty: number;
-  /** Ignored by the backend except on a combo line (its bundle share). */
+  /** Ignored by the backend on every line - it prices combo lines from the combo itself (Combo V1). */
   discount: Decimal;
   /** Ignored by the backend - it works out the tax from the product's %. */
   tax: Decimal;
@@ -582,6 +582,8 @@ export type ApiCreatePayment = {
 export type ApiCreateSale = {
   id: string;
   shift_id: number;
+  /** ISO time the till rang it up - read only for an offline-queued sale (combo expiry is judged then). */
+  rung_up_at?: string;
   device_id: number;
   customer_id: number | null;
   items: ApiCreateSaleItem[];
