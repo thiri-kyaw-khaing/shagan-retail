@@ -320,6 +320,8 @@ const zh: typeof en = {
   "sections.suppliers.subtitle": "供应商与采购订单",
   "sections.customers.title": "客户",
   "sections.customers.subtitle": "客户资料与消费记录",
+  "sections.shiftHistory.title": "班次记录",
+  "sections.shiftHistory.subtitle": "班次、现金清点与差额",
   "sections.salesHistory.title": "销售记录",
   "sections.salesHistory.subtitle": "浏览、退货、换货和作废收据",
   "sections.auditLog.title": "审计日志",

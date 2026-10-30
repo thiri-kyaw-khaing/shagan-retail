@@ -338,6 +338,8 @@ const mm: typeof en = {
   "sections.suppliers.subtitle": "ပေးသွင်းသူများနှင့် ဝယ်ယူမှု အမှာစာများ",
   "sections.customers.title": "ဖောက်သည်",
   "sections.customers.subtitle": "ဖောက်သည် အချက်အလက်နှင့် ကုန်ကျစရိတ်",
+  "sections.shiftHistory.title": "အဆိုင်းမှတ်တမ်း",
+  "sections.shiftHistory.subtitle": "အဆိုင်းများ၊ ငွေရေတွက်မှုနှင့် ကွာခြားချက်များ",
   "sections.salesHistory.title": "ရောင်းချမှတ်တမ်း",
   "sections.salesHistory.subtitle":
     "ဘောက်ချာများ ကြည့်ရှု၊ ပြန်ပေး၊ လဲလှယ်နှင့် ပယ်ဖျက်ရန်",

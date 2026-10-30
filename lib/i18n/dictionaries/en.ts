@@ -326,6 +326,8 @@ const en = {
   "sections.suppliers.subtitle": "Suppliers and purchase orders",
   "sections.customers.title": "Customer",
   "sections.customers.subtitle": "Customer profiles and spend",
+  "sections.shiftHistory.title": "Shift History",
+  "sections.shiftHistory.subtitle": "Shifts, cash counts and differences",
   "sections.salesHistory.title": "Sales History",
   "sections.salesHistory.subtitle":
     "Browse, return, exchange and void receipts",

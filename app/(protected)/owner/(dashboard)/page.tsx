@@ -19,6 +19,7 @@ const SECTION_ACCESS: Record<SectionKey, string[]> = {
   suppliers: ["manage_suppliers", "manage_purchase_orders", "receive_stock"],
   customers: ["view_customers"],
   salesHistory: ["view_sales"],
+  shiftHistory: ["view_shift_history"],
   auditLog: ["view_audit_log"],
   reports: ["view_reports"],
 };

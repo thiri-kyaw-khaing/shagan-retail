@@ -20,6 +20,7 @@ import type {
   ApiCustomer,
   ApiDiscountApproval,
   ApiDiscountsReport,
+  ApiDrawerEvent,
   ApiExchange,
   ApiExpense,
   ApiGranularity,
@@ -42,6 +43,7 @@ import type {
   ApiSalesSummary,
   ApiSalesTrend,
   ApiShift,
+  ApiShiftsPage,
   ApiShiftSummary,
   ApiStaff,
   ApiStockLevel,
@@ -51,6 +53,7 @@ import type {
   ApiTransactions,
   ApiUser,
   ApiVoid,
+  ShiftDiscrepancy,
 } from "@/lib/api/types";
 
 /** A 401 about the cashier's X-Staff-Token, not the device's login. */
@@ -250,7 +253,9 @@ export const api = {
   // Sales. A POS token is always scoped to its own branch. /expenses ignores
   // ?branch_id and returns the whole org.
   /** Newest first; page_size is capped at 100. from/to are org-local days. */
-  sales: (query: BranchScope & { page?: number; pageSize?: number; from?: string; to?: string }) =>
+  sales: (
+    query: BranchScope & { page?: number; pageSize?: number; from?: string; to?: string; shiftId?: number },
+  ) =>
     authed<ApiSalesPage>(
       withQuery("/sales", {
         branch_id: query.branchId,
@@ -258,10 +263,47 @@ export const api = {
         page_size: query.pageSize ?? 100,
         from: query.from,
         to: query.to,
+        shift_id: query.shiftId,
       }),
     ),
   receipt: (saleId: string) => authed<ApiReceipt>(`/sales/${saleId}/receipt`),
-  expenses: () => authed<ApiExpense[]>("/expenses"),
+  /** `shiftId`: only expenses logged at the till during that shift (older ones have no shift). */
+  expenses: (query: { shiftId?: number } = {}) =>
+    authed<ApiExpense[]>(withQuery("/expenses", { shift_id: query.shiftId })),
+
+  // Shift history (Back Office, view_shift_history). Gated like a write, so a
+  // manager's staff token goes along; a manager at a till sees only their branch.
+  /** Newest first; from/to are org-local days on opened_at; page_size max 100. */
+  shifts: (
+    query: BranchScope & {
+      from?: string;
+      to?: string;
+      status?: "open" | "closed";
+      staffId?: number;
+      discrepancy?: ShiftDiscrepancy;
+      page?: number;
+      pageSize?: number;
+    },
+  ) =>
+    authed<ApiShiftsPage>(
+      withQuery("/shifts", {
+        branch_id: query.branchId,
+        from: query.from,
+        to: query.to,
+        status: query.status,
+        staff_id: query.staffId,
+        discrepancy: query.discrepancy,
+        page: query.page ?? 1,
+        page_size: query.pageSize ?? 25,
+      }),
+      undefined,
+      { backOfficeRead: true },
+    ),
+  /** One shift's summary for the Back Office (the till uses shiftSummary). */
+  shiftHistorySummary: (id: number) =>
+    authed<ApiShiftSummary>(`/shifts/${id}/summary`, undefined, { backOfficeRead: true }),
+  drawerEvents: (query: { shiftId?: number } = {}) =>
+    authed<ApiDrawerEvent[]>(withQuery("/drawer-events", { shift_id: query.shiftId })),
 
   // Inventory
   stockLevels: (scope: BranchScope = { branchId: null }) =>
