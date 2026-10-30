@@ -58,7 +58,7 @@ export function canUse(viewer: BackOfficeViewer, ...codes: string[]): boolean {
 /**
  * Who's in the Back Office. A till without an unlocked manager session is
  * sent to the manager PIN screen; so is one whose manager no longer belongs
- * to the till's branch.
+ * to the till's branch or org (the backend refuses that token too, R24).
  */
 export async function requireBackOfficeViewer(): Promise<BackOfficeViewer> {
   const me = await api.me();
@@ -70,7 +70,8 @@ export async function requireBackOfficeViewer(): Promise<BackOfficeViewer> {
   const [staff, branches] = await Promise.all([api.staff(), api.branches()]);
   const manager = staff.find((s) => s.id === session.staffId && s.status === "active");
   const branch = branches.find((b) => b.id === me.branch_id);
-  if (!manager || !branch || session.branchId !== branch.id) redirect("/manager/pin");
+  const otherOrg = session.orgId !== undefined && session.orgId !== me.org_id;
+  if (!manager || !branch || otherOrg || session.branchId !== branch.id) redirect("/manager/pin");
   return { kind: "manager", name: manager.name, staffId: manager.id, branch, permissions: session.permissions };
 }
 

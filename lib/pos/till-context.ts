@@ -28,7 +28,13 @@ export async function requireTill(): Promise<TillContext> {
   ]);
   const member = members.find((s) => s.id === staff.staffId);
   const branch = branches.find((b) => b.id === me.branch_id);
-  if (!member || !branch || me.device_id === null) redirect("/pos/select-staff");
+  // A cashier signed in at another branch or shop: the backend refuses their
+  // token here (R24), so ask for a PIN at this till instead. A token with no
+  // org (older backend) isn't judged here - the backend has the final say,
+  // and its 401 already sends the cashier back to sign in.
+  const otherOrg = staff.orgId !== undefined && staff.orgId !== me.org_id;
+  const elsewhere = otherOrg || staff.branchId !== me.branch_id;
+  if (!member || !branch || elsewhere || me.device_id === null) redirect("/pos/select-staff");
 
   return {
     staff: { ...staff, name: member.name },

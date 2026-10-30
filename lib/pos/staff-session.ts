@@ -13,6 +13,8 @@ export const STAFF_COOKIE = "shagan_staff";
 export type StaffSession = {
   token: string;
   staffId: number;
+  /** Absent on a token minted before the backend added `org_id` (R24). */
+  orgId?: number;
   branchId: number;
   roleId: number;
   permissions: string[];
@@ -24,6 +26,7 @@ export function decodeStaffToken(token: string): Omit<StaffSession, "token"> | n
     const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
     return {
       staffId: payload.staff_id,
+      orgId: payload.org_id,
       branchId: payload.branch_id,
       roleId: payload.role_id,
       permissions: Array.isArray(payload.permissions) ? payload.permissions : [],
