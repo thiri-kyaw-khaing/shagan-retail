@@ -25,7 +25,17 @@ export default function CartItem({
   onRemoveDiscount,
 }: CartItemProps) {
   const { t } = useTranslation();
-  const totalPrice = item.price * item.quantity;
+  // What this line charges (as priceCart works it out) and what it would cost without the discount.
+  const originalPrice = item.combo
+    ? item.combo.parts.reduce((sum, part) => sum + part.price * part.qty, 0) * item.quantity
+    : item.price * item.quantity;
+  const unitPrice = item.combo
+    ? item.price
+    : item.custom
+      ? item.custom.unitSalePrice
+      : item.price - Math.min(item.unitDiscount ?? 0, item.price);
+  const totalPrice = Math.round(unitPrice * item.quantity * 100) / 100;
+  const discounted = totalPrice < originalPrice;
 
   return (
     <article
@@ -45,6 +55,18 @@ export default function CartItem({
       {/* Product name and quantity */}
       <div className="min-w-0 flex-1">
         <h3 className="truncate font-semibold text-slate-900">{item.name}</h3>
+
+        {item.combo && (
+          <div className="mt-1 space-y-0.5">
+            <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-700">
+              {t("combo.badge")}
+            </span>
+            {/* What one combo holds; the stepper counts combos. */}
+            <p className="truncate text-xs text-slate-500">
+              {item.combo.parts.map((part) => `${part.qty}× ${part.name}`).join(" · ")}
+            </p>
+          </div>
+        )}
 
         {item.custom && (
           <div className="mt-1 flex items-center gap-1">
@@ -80,9 +102,10 @@ export default function CartItem({
       </div>
 
       {/* Item total */}
-      <p className="self-center whitespace-nowrap font-bold text-slate-900">
-        K {totalPrice.toLocaleString()}
-      </p>
+      <div className="self-center whitespace-nowrap text-right">
+        <p className="font-bold text-slate-900">K {totalPrice.toLocaleString()}</p>
+        {discounted && <s className="text-xs text-slate-400">K {originalPrice.toLocaleString()}</s>}
+      </div>
     </article>
   );
 }

@@ -545,6 +545,8 @@ export type ApiCreateSaleItem = {
   discount_approval_id?: string;
   /** The catalog % the till priced with - only read for an offline-queued sale. */
   catalog_discount_percent?: Decimal;
+  /** On every line of a combo: the backend checks the lines match it and prices the bundle (Combo V1). */
+  combo_id?: number;
 };
 
 /** `POST /sales/discount-approvals` - one custom discount, approved when it's added. */

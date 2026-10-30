@@ -195,6 +195,12 @@ export async function createSaleAction(
       error: `${result.error}. Go back, remove that custom discount and add it again.`,
     };
   }
+  if (!result.ok && /combo has expired|combo not found/i.test(result.error)) {
+    return { ok: false, error: "A combo in this sale has ended. Go back, remove it and sell the items on their own." };
+  }
+  if (!result.ok && /^combo \d+:/i.test(result.error)) {
+    return { ok: false, error: "A combo changed since this screen loaded. Go back to selling, remove it and add it again." };
+  }
   if (!result.ok && /price changed/i.test(result.error)) {
     return { ok: false, error: "A price changed since this screen loaded. Go back to selling to refresh it." };
   }
@@ -387,15 +393,26 @@ export async function holdSaleAction(input: {
   });
 }
 
-/** Resume = delete-and-return, atomically. 404 when another till already resumed it. */
+/**
+ * Resume = delete-and-return, atomically. Needs the cashier's
+ * `hold_resume_sales`, so it goes with their staff token. 404 when another
+ * till already resumed it (`gone`); any other failure leaves it held.
+ */
 export async function resumeHeldSaleAction(
   heldSaleId: number,
-): Promise<PosResult<ApiHeldSale<ApiHeldSaleItems>>> {
+): Promise<PosResult<ApiHeldSale<ApiHeldSaleItems>> & { gone?: boolean }> {
+  const staff = await getStaffSession();
+  if (!staff) return SIGNED_OUT;
   const result = await mutate<ApiHeldSale<ApiHeldSaleItems>>(`/held-sales/${heldSaleId}`, {
     method: "DELETE",
+    headers: { "X-Staff-Token": staff.token },
   });
+  if (!result.ok && /sign-in|staff token/i.test(result.error)) {
+    await clearStaffSession();
+    return SIGNED_OUT;
+  }
   if (!result.ok && /not found/i.test(result.error)) {
-    return { ok: false, error: "This held sale was already resumed on another till." };
+    return { ok: false, error: "This held sale was already resumed on another till.", gone: true };
   }
   return result;
 }

@@ -43,6 +43,7 @@ export function receiptFromCheckout(
       unitPrice: fromCents(line.unitCents),
       discount: fromCents(line.discountCents),
       discountPercent: line.custom?.percent ?? line.catalogPercent,
+      combo: line.combo?.name,
       tax: fromCents(line.taxCents),
       taxPercent: line.taxPercent,
     })),
@@ -86,6 +87,8 @@ export function receiptFromApi(ctx: Context, receipt: ApiReceipt): ReceiptDoc {
       // A custom % replaces the catalog one, so at most one is set.
       discountPercent:
         decimalToNumber(item.manual_discount_percent ?? "0") || decimalToNumber(item.catalog_discount_percent ?? "0"),
+      // The receipt has the combo's id, not its name.
+      combo: item.combo_id ? "" : undefined,
       tax: decimalToNumber(item.tax),
       taxPercent: decimalToNumber(item.tax_percent ?? "0"),
     })),

@@ -9,6 +9,11 @@
 //   line tax      = (gross − discount) × p / (100 + p), rounded to the cent -
 //                   tax is INSIDE the price (Tax V1), shown but never added
 //   total         = Σ gross − Σ discount              (backend's formula)
+//
+// A combo line becomes one line per part at its normal price, and the bundle
+// discount (normal total − combo price × k) is split across them exactly as
+// the backend does (sales.allocateBundleDiscount), so the totals agree to the
+// cent. The catalog % doesn't stack on a combo.
 import type { ApiCreateSaleItem } from "@/lib/api/types";
 import type { CartItemData } from "@/lib/types/model/cart";
 
@@ -47,6 +52,8 @@ export type PricedLine = {
   /** The catalog % this line was priced with (0 on a custom-discount line). */
   catalogPercent: number;
   custom?: { approvalId: string; percent: number; approvedBy: string };
+  /** Set on a combo's part: its share of the bundle discount is `discountCents`. */
+  combo?: { comboId: number; name: string };
 };
 
 export type Checkout = {
@@ -61,9 +68,67 @@ export type Checkout = {
   totalCents: number;
 };
 
+/** Half-up division of non-negative integers, exact for any size (shopspring's DivRound). */
+function divRound(numerator: bigint, denominator: bigint): bigint {
+  const two = BigInt(2);
+  return (two * numerator + denominator) / (two * denominator);
+}
+
+/**
+ * Shares `discountCents` across lines in proportion to their normal totals,
+ * each rounded half-up to the cent; the remainder goes to the line with the
+ * largest normal total (the first on a tie). The backend's rule.
+ */
+export function allocateBundleDiscount(normalCents: number[], discountCents: number): number[] {
+  const total = normalCents.reduce((sum, n) => sum + n, 0);
+  if (discountCents <= 0 || total <= 0) return normalCents.map(() => 0);
+  let largest = 0;
+  const shares = normalCents.map((n, j) => {
+    if (n > normalCents[largest]) largest = j;
+    return Number(divRound(BigInt(discountCents) * BigInt(n), BigInt(total)));
+  });
+  shares[largest] += discountCents - shares.reduce((sum, share) => sum + share, 0);
+  return shares;
+}
+
+const lineTax = (lineTotalCents: number, taxPercent: number) =>
+  // The backend's rule: round(line_total × p / (100 + p), 2), half-up.
+  Math.round((lineTotalCents * taxPercent) / (100 + taxPercent));
+
+const clampPercent = (percent: number | undefined) => Math.min(Math.max(percent ?? 0, 0), 100);
+
+/** A combo line's parts, each at its normal price with its share of the bundle discount. */
+function priceCombo(item: CartItemData & { combo: NonNullable<CartItemData["combo"]> }): PricedLine[] {
+  const parts = item.combo.parts.map((part) => {
+    const unitCents = toCents(part.price);
+    const qty = part.qty * item.quantity;
+    return { part, unitCents, qty, grossCents: unitCents * qty };
+  });
+  const normalCents = parts.map((part) => part.grossCents);
+  const bundleCents = toCents(item.price) * item.quantity;
+  const shares = allocateBundleDiscount(normalCents, normalCents.reduce((sum, n) => sum + n, 0) - bundleCents);
+  return parts.map(({ part, unitCents, qty, grossCents }, j) => {
+    const taxPercent = clampPercent(part.taxPercent);
+    return {
+      lineId: `${item.lineId}:${part.productId}`,
+      productId: part.productId,
+      name: part.name,
+      qty,
+      unitCents,
+      grossCents,
+      discountCents: shares[j],
+      taxCents: lineTax(grossCents - shares[j], taxPercent),
+      taxPercent,
+      catalogPercent: 0,
+      combo: { comboId: item.combo.comboId, name: item.name },
+    };
+  });
+}
+
 /** Prices the cart line by line - there's no order-level discount any more. */
 export function priceCart(cart: CartItemData[]): Checkout {
-  const lines: PricedLine[] = cart.map((item) => {
+  const lines: PricedLine[] = cart.flatMap((item): PricedLine | PricedLine[] => {
+    if (item.combo) return priceCombo({ ...item, combo: item.combo });
     const unitCents = toCents(item.price);
     // A discount can't take a unit below zero.
     const unitOffCents = item.custom
@@ -71,7 +136,7 @@ export function priceCart(cart: CartItemData[]): Checkout {
       : Math.min(toCents(item.unitDiscount ?? 0), unitCents);
     const grossCents = unitCents * item.quantity;
     const discountCents = unitOffCents * item.quantity;
-    const taxPercent = Math.min(Math.max(item.taxPercent ?? 0, 0), 100);
+    const taxPercent = clampPercent(item.taxPercent);
     return {
       lineId: item.lineId,
       productId: item.productId,
@@ -80,8 +145,7 @@ export function priceCart(cart: CartItemData[]): Checkout {
       unitCents,
       grossCents,
       discountCents,
-      // The backend's rule: round(line_total × p / (100 + p), 2), half-up.
-      taxCents: Math.round(((grossCents - discountCents) * taxPercent) / (100 + taxPercent)),
+      taxCents: lineTax(grossCents - discountCents, taxPercent),
       taxPercent,
       catalogPercent: item.custom ? 0 : (item.catalogPercent ?? 0),
       custom: item.custom && {
@@ -116,8 +180,11 @@ export function toSaleItems(checkout: Checkout): ApiCreateSaleItem[] {
     discount: centsToDecimal(line.discountCents),
     tax: centsToDecimal(line.taxCents),
     tax_percent: String(line.taxPercent),
-    ...(line.custom
-      ? { discount_approval_id: line.custom.approvalId }
-      : { catalog_discount_percent: String(line.catalogPercent) }),
+    // A combo part carries its combo, never a custom discount or catalog %.
+    ...(line.combo
+      ? { combo_id: line.combo.comboId }
+      : line.custom
+        ? { discount_approval_id: line.custom.approvalId }
+        : { catalog_discount_percent: String(line.catalogPercent) }),
   }));
 }

@@ -10,6 +10,13 @@ export type CartCustomDiscount = {
   reason: string;
 };
 
+/** A combo on one cart line (Combo V1): sent as one sale line per part, tagged with `comboId`. */
+export type CartCombo = {
+  comboId: number;
+  /** Per combo; the backend checks every part is sold as part qty x the line's quantity. */
+  parts: { productId: number; name: string; qty: number; price: number; taxPercent: number; stock: number }[];
+};
+
 export type CartItemData = {
   /**
    * One cart line. A product can sit on two lines: some units with a custom
@@ -33,4 +40,10 @@ export type CartItemData = {
   maxQuantity?: number;
   /** Replaces the catalog discount on this line. */
   custom?: CartCustomDiscount;
+  /**
+   * Set on a combo line: `name`/`price` are the combo's, `quantity` is how many
+   * combos, and `productId` is 0 (the products are in `combo.parts`). A combo
+   * line never gets a custom discount.
+   */
+  combo?: CartCombo;
 };

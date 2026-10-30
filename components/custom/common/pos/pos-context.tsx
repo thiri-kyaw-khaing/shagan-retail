@@ -18,6 +18,7 @@ import {
   type PosResult,
 } from "@/lib/pos/actions";
 import type { CartCustomDiscount, CartItemData } from "@/lib/types/model/cart";
+import type { SellableCombo } from "@/lib/types/model/combos";
 import type { HeldSale } from "@/lib/types/model/heldsale";
 import type { Product } from "@/lib/types/model/product";
 
@@ -44,6 +45,8 @@ type PosContextValue = {
   setCart: Dispatch<SetStateAction<CartItemData[]>>;
   /** Adds one unit to the product's line without a custom discount. */
   addToCart: (product: Product) => void;
+  /** Adds one combo (one cart line per combo, its quantity = how many). */
+  addCombo: (combo: SellableCombo) => void;
   increaseQuantity: (lineId: string) => void;
   decreaseQuantity: (lineId: string) => void;
   /** The product grid's stepper: the line without a custom discount first. */
@@ -81,11 +84,22 @@ type PosProviderProps = {
 
 const newLineId = () => crypto.randomUUID();
 
-/** Units of a product already in the cart, across all its lines. */
-const unitsOf = (cart: CartItemData[], productId: number, exceptLineId?: string) =>
-  cart.reduce(
-    (sum, item) => (item.productId === productId && item.lineId !== exceptLineId ? sum + item.quantity : sum),
-    0,
+/** Units of a product a cart line takes from stock - a combo takes its parts'. */
+const unitsIn = (item: CartItemData, productId: number, quantity = item.quantity) =>
+  item.combo
+    ? (item.combo.parts.find((part) => part.productId === productId)?.qty ?? 0) * quantity
+    : item.productId === productId
+      ? quantity
+      : 0;
+
+/** Units of a product already in the cart, across all its lines (combos included). */
+export const unitsOf = (cart: CartItemData[], productId: number, exceptLineId?: string) =>
+  cart.reduce((sum, item) => (item.lineId === exceptLineId ? sum : sum + unitsIn(item, productId)), 0);
+
+/** Whether `quantity` of this combo line fits the stock left after the rest of the cart. */
+const comboFits = (cart: CartItemData[], item: CartItemData, quantity: number) =>
+  !!item.combo?.parts.every(
+    (part) => unitsOf(cart, part.productId, item.lineId) + part.qty * quantity <= part.stock,
   );
 
 /** The cart with every custom discount taken off (lines of one product merged back). */
@@ -93,7 +107,8 @@ function withoutCustomDiscounts(cart: CartItemData[]): CartItemData[] {
   const merged: CartItemData[] = [];
   for (const item of cart) {
     const plain = { ...item, custom: undefined };
-    const existing = merged.find((line) => line.productId === item.productId);
+    // A combo line stays as it is (it never has a custom discount).
+    const existing = !item.combo && merged.find((line) => !line.combo && line.productId === item.productId);
     if (existing) existing.quantity += item.quantity;
     else merged.push(plain);
   }
@@ -115,7 +130,7 @@ export function PosProvider({ till, initialHeldSales, children }: PosProviderPro
   const addToCart = (product: Product) => {
     setCart((currentCart) => {
       if (unitsOf(currentCart, product.id) >= product.stock) return currentCart;
-      const plainLine = currentCart.find((item) => item.productId === product.id && !item.custom);
+      const plainLine = currentCart.find((item) => item.productId === product.id && !item.custom && !item.combo);
 
       if (plainLine) {
         return currentCart.map((item) =>
@@ -142,10 +157,44 @@ export function PosProvider({ till, initialHeldSales, children }: PosProviderPro
     });
   };
 
+  const addCombo = (combo: SellableCombo) => {
+    setCart((currentCart) => {
+      const line = currentCart.find((item) => item.combo?.comboId === combo.id);
+      if (line) {
+        if (!comboFits(currentCart, line, line.quantity + 1)) return currentCart;
+        return currentCart.map((item) => (item === line ? { ...item, quantity: item.quantity + 1 } : item));
+      }
+      const newLine: CartItemData = {
+        lineId: newLineId(),
+        productId: 0,
+        name: combo.name,
+        // A combo never raises a price: at most its parts' normal total.
+        price: Math.min(combo.price, combo.normalPrice),
+        imageUrl: combo.imageUrl,
+        quantity: 1,
+        combo: {
+          comboId: combo.id,
+          parts: combo.parts.map(({ productId, name, qty, price, taxPercent, stock }) => ({
+            productId,
+            name,
+            qty,
+            price,
+            taxPercent,
+            stock,
+          })),
+        },
+      };
+      return comboFits(currentCart, newLine, 1) ? [...currentCart, newLine] : currentCart;
+    });
+  };
+
   const increaseQuantity = (lineId: string) => {
     setCart((currentCart) =>
       currentCart.map((item) => {
         if (item.lineId !== lineId) return item;
+        if (item.combo) {
+          return comboFits(currentCart, item, item.quantity + 1) ? { ...item, quantity: item.quantity + 1 } : item;
+        }
         const stockLeft = (item.maxQuantity ?? Infinity) - unitsOf(currentCart, item.productId, lineId);
         // A custom discount was approved for so many units, no more.
         const cap = Math.min(stockLeft, item.custom?.maxQty ?? Infinity);
@@ -165,7 +214,7 @@ export function PosProvider({ till, initialHeldSales, children }: PosProviderPro
   };
 
   const decreaseProduct = (productId: number) => {
-    const lines = cart.filter((item) => item.productId === productId);
+    const lines = cart.filter((item) => item.productId === productId && !item.combo);
     const line = lines.find((item) => !item.custom) ?? lines.at(-1);
     if (line) decreaseQuantity(line.lineId);
   };
@@ -229,8 +278,8 @@ export function PosProvider({ till, initialHeldSales, children }: PosProviderPro
   const resumeHeldSale = async (heldSaleId: number): Promise<PosResult> => {
     const result = await resumeHeldSaleAction(heldSaleId);
     if (!result.ok) {
-      // Gone from the server either way (e.g. resumed on another till).
-      if (!result.signedOut) setHeldSales((current) => current.filter((sale) => sale.id !== heldSaleId));
+      // Only drop it when another till already resumed it; otherwise it's still held.
+      if (result.gone) setHeldSales((current) => current.filter((sale) => sale.id !== heldSaleId));
       return result;
     }
 
@@ -250,6 +299,7 @@ export function PosProvider({ till, initialHeldSales, children }: PosProviderPro
         cart,
         setCart,
         addToCart,
+        addCombo,
         increaseQuantity,
         decreaseQuantity,
         decreaseProduct,

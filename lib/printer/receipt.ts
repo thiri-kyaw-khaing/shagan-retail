@@ -12,6 +12,8 @@ export type ReceiptLine = {
   discount: number;
   /** The discount's %, e.g. 10 -> "Discount 10%"; 0/undefined prints just "Discount". */
   discountPercent?: number;
+  /** A combo's part: its discount is its share of the bundle, printed "Combo <name>" ("" when unknown). */
+  combo?: string;
   /** Line total tax (inside the line, or added on top for an older sale). */
   tax: number;
   /** The line's tax %, printed with "Includes tax". */
@@ -136,7 +138,12 @@ export function buildReceipt(doc: ReceiptDoc, paper: PaperProfile, rasterize: Ra
     say(line.name, { bold: true });
     p.line(twoColumns(`  ${line.qty} x ${money(line.unitPrice)}`, money(line.unitPrice * line.qty), columns));
     if (line.discount > 0) {
-      const label = line.discountPercent ? `  Discount ${line.discountPercent}%` : "  Discount";
+      const label =
+        line.combo !== undefined
+          ? `  Combo ${line.combo}`.trimEnd()
+          : line.discountPercent
+            ? `  Discount ${line.discountPercent}%`
+            : "  Discount";
       p.line(twoColumns(label, `-${money(line.discount)}`, columns));
     }
     // Inclusive tax is summed once under the total instead.

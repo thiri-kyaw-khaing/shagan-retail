@@ -10,6 +10,7 @@ import CustomButton from "@/components/custom/common/custom-button";
 import FormError from "@/components/custom/common/forms/form-error";
 import { usePos } from "./pos-context";
 import { useTranslation } from "@/lib/i18n/use-translation";
+import { fromCents, priceCart } from "@/lib/pos/pricing";
 
 export default function HeldSaleComponent() {
   const router = useRouter();
@@ -73,13 +74,9 @@ export default function HeldSaleComponent() {
                   0,
                 );
 
-                const subtotal = sale.items.reduce(
-                  (sum, item) => sum + item.price * item.quantity,
-                  0,
-                );
-
-                const total =
-                  subtotal * (1 - (sale.discountPercent ?? 0) / 100);
+                // What resuming it would charge: catalog and combo discounts
+                // included (an old held order % isn't applied any more).
+                const total = fromCents(priceCart(sale.items).totalCents);
 
                 const heldMinutesAgo = Math.max(
                   0,

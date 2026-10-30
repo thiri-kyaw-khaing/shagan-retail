@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PackageCheck } from "lucide-react";
 
 import ConfirmDialog from "@/components/custom/common/back-office/confirm-dialog";
 import CategoryTabs from "@/components/custom/common/pos/category-tabs";
@@ -18,7 +19,8 @@ import { formatCurrency } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { fromCents, priceCart } from "@/lib/pos/pricing";
-import type { CategoryId } from "@/lib/types/model/categories";
+import type { Category, CategoryId } from "@/lib/types/model/categories";
+import type { SellableCombo } from "@/lib/types/model/combos";
 import type { CustomerRow } from "@/lib/types/model/customers";
 import type { Product } from "@/lib/types/model/product";
 import { cn } from "@/lib/utils";
@@ -30,13 +32,19 @@ type SellViewProps = {
   customers: CustomerRow[];
   /** Staff at this branch who may approve a custom discount (the cashier left out). */
   discountApprovers: { id: number; name: string }[];
+  /** Combos this till can sell (Combo V1). */
+  combos: SellableCombo[];
 };
+
+/** The "Combos" tab's id - real category ids are positive. */
+const COMBOS_TAB = -1;
 
 export default function SellView({
   products,
   categories: apiCategories,
   customers,
   discountApprovers,
+  combos,
 }: SellViewProps) {
   const router = useRouter();
   const { locale } = useLocale();
@@ -45,6 +53,7 @@ export default function SellView({
     till,
     cart,
     addToCart,
+    addCombo,
     increaseQuantity,
     decreaseQuantity,
     decreaseProduct,
@@ -54,7 +63,14 @@ export default function SellView({
     customer,
     setCustomer,
   } = usePos();
-  const categories = useMemo(() => apiCategories.map(toCategory), [apiCategories]);
+  const categories = useMemo<Category[]>(
+    () => [
+      ...apiCategories.map(toCategory),
+      // Only when there's a combo to sell; its label is translated by CategoryTabs.
+      ...(combos.length > 0 ? [{ id: COMBOS_TAB, label: "Combos", icon: PackageCheck }] : []),
+    ],
+    [apiCategories, combos.length],
+  );
 
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<CategoryId>(null);
@@ -72,6 +88,7 @@ export default function SellView({
 
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLowerCase();
+    if (selectedCategoryId === COMBOS_TAB) return [];
 
     return products.filter((product) => {
       const categoryMatches =
@@ -87,6 +104,13 @@ export default function SellView({
       return product.isActive && categoryMatches && searchMatches;
     });
   }, [products, search, selectedCategoryId]);
+
+  // Combos show under "All" (before the products) and on their own tab.
+  const filteredCombos = useMemo(() => {
+    if (selectedCategoryId !== null && selectedCategoryId !== COMBOS_TAB) return [];
+    const query = search.trim().toLowerCase();
+    return combos.filter((combo) => query === "" || combo.name.toLowerCase().includes(query));
+  }, [combos, search, selectedCategoryId]);
 
   // The same pricing the payment screen sends to the backend.
   const checkout = priceCart(cart);
@@ -114,6 +138,7 @@ export default function SellView({
     const line = cart.find((item) => item.lineId === selectedLineId);
     const percent = Number(discountPercentInput);
     if (!line) return setDiscountHint(t("discount.tapItem"));
+    if (line.combo) return setDiscountHint(t("combo.noCustomDiscount"));
     if (line.custom) return setDiscountHint(t("discount.alreadyDiscounted"));
     if (!Number.isFinite(percent) || percent <= 0 || percent > 100) {
       return setDiscountHint(t("discount.percentRange"));
@@ -206,6 +231,12 @@ export default function SellView({
                 if (product) addToCart(product);
               }}
               onDecrease={decreaseProduct}
+              combos={filteredCombos}
+              onAddCombo={addCombo}
+              onDecreaseCombo={(comboId) => {
+                const line = cart.find((item) => item.combo?.comboId === comboId);
+                if (line) decreaseQuantity(line.lineId);
+              }}
             />
           </div>
         </section>

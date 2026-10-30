@@ -9,6 +9,33 @@ export type Combo = {
   price: number;
   expiresAt: string;
   items: ComboItem[];
+  imageUrl?: string;
+};
+
+/** One product inside a combo the till can sell, priced at this branch. */
+export type SellableComboPart = {
+  productId: number;
+  name: string;
+  /** Units of this product in one combo. */
+  qty: number;
+  /** The product's normal (original) price - the backend prices the bundle from it. */
+  price: number;
+  taxPercent: number;
+  /** Stock on hand at this branch. */
+  stock: number;
+};
+
+/** A combo the till can ring up: not expired, every component on sale here. */
+export type SellableCombo = {
+  id: number;
+  name: string;
+  /** What one combo costs. */
+  price: number;
+  /** One combo's components at their normal prices (what it saves = normalPrice - price). */
+  normalPrice: number;
+  expiresAt: string;
+  imageUrl: string;
+  parts: SellableComboPart[];
 };
 
 export const combos: Combo[] = [

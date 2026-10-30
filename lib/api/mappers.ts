@@ -26,7 +26,7 @@ import type {
 import { BUSINESS_TIME_ZONE } from "@/lib/i18n/format";
 import type { AuditActionType, AuditLogEntry } from "@/lib/types/model/audit-log";
 import type { Category } from "@/lib/types/model/categories";
-import type { Combo } from "@/lib/types/model/combos";
+import type { Combo, SellableCombo } from "@/lib/types/model/combos";
 import type { MethodTotals, RecentReceipt, RevenueBar } from "@/lib/types/model/dashboard";
 import type { Expense } from "@/lib/types/model/expenses";
 import type { HeldSale } from "@/lib/types/model/heldsale";
@@ -478,7 +478,44 @@ export function toCombo(combo: ApiCombo): Combo {
     price: decimalToNumber(combo.price),
     expiresAt: combo.expires_at,
     items: combo.items.map((item) => ({ productId: item.product_id, quantity: item.qty })),
+    imageUrl: combo.images?.[0]?.url,
   };
+}
+
+/**
+ * The combos this till can sell: not expired, and every component a product
+ * on sale here (`products` is the till's own list, so prices are this
+ * branch's). Anything else the backend would refuse at payment.
+ */
+export function toSellableCombos(combos: ApiCombo[], products: Product[], now = Date.now()): SellableCombo[] {
+  const byId = new Map(products.map((p) => [p.id, p]));
+  return combos.flatMap((combo) => {
+    if (new Date(combo.expires_at).getTime() <= now || !combo.items?.length) return [];
+    const parts = combo.items.map((item) => ({ item, product: byId.get(item.product_id) }));
+    if (parts.some(({ item, product }) => !product?.isActive || item.qty <= 0)) return [];
+    const sellable = parts.map(({ item, product }) => ({
+      productId: product!.id,
+      name: product!.name,
+      qty: item.qty,
+      price: product!.price,
+      taxPercent: product!.taxPercent,
+      stock: product!.stock,
+    }));
+    const normalPrice = sellable.reduce((sum, part) => sum + part.price * part.qty, 0);
+    return [
+      {
+        id: combo.id,
+        name: combo.name,
+        // A combo never raises a price: priced above its products, the backend
+        // charges their normal total, so that's what the till shows.
+        price: Math.min(decimalToNumber(combo.price), normalPrice),
+        normalPrice,
+        expiresAt: combo.expires_at,
+        imageUrl: combo.images?.[0]?.url ?? parts[0].product!.imageUrl,
+        parts: sellable,
+      },
+    ];
+  });
 }
 
 /** The calendar day `days` after `day` ("YYYY-MM-DD"; negative goes back). Pure date math. */
